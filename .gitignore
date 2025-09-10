@@ -1,0 +1,28 @@
+# Environment files
+.env
+.env.*
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.next/
+.nuxt/
+.svelte-kit/
+.cache/
+coverage/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Supabase local artifacts
+.supabase/
+

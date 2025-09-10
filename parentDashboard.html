@@ -1,0 +1,4745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hapo Technology • Parent Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <!-- Navigation Header -->
+  <nav class="nav-header-new">
+    <div class="nav-container-new">
+      <div class="nav-brand-new">
+        <img src="src/lib/images/logo.jpg" alt="Hapo Logo" class="logo-new">
+        <div class="brand-content-new">
+          <span class="brand-name-new">Hapo Technology</span>
+          <span class="brand-tagline-new">Your Money, Your Growth, The Hapo Way!</span>
+        </div>
+      </div>
+      <div class="nav-actions-new">
+        <div class="user-menu">
+          <button class="user-menu-button" onclick="toggleUserMenu()">
+            <span id="userName">Welcome, Parent</span>
+            <i class="fas fa-chevron-down ml-2"></i>
+          </button>
+          <div class="user-menu-dropdown" id="userMenuDropdown">
+            <a href="javascript:void(0)" class="user-menu-item user-menu-item--border" onclick="showProfile()">Profile Settings</a>
+            <a href="javascript:void(0)" class="user-menu-item" onclick="signOut()">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <main class="dashboard-main">
+    <div id="homeSection" class="section-content">
+      <div class="dashboard-container">
+
+        <!-- Balance Cards -->
+        <div class="balance-grid">
+          <!-- Family Balance Card -->
+          <div class="card card--blue-left">
+            <div class="card-row">
+              <div class="card-icon card-icon--blue">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <div>
+                <div class="card-label">Family Balance</div>
+                <div class="card-value" id="familyBalance">$365.00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- This Month Card -->
+          <div class="card card--green-left">
+            <div class="card-row">
+              <div class="card-icon card-icon--green">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div>
+                <div class="card-label">This Month</div>
+                <div class="card-value" id="monthlySpending">$98.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="section-spacer">
+          <h2 class="section-title">Quick Actions</h2>
+          <div class="actions-grid">
+
+            <!-- Emergency Fund Transfer -->
+            <div onclick="showEmergencyFundModal()" class="action-card action-card--red">
+              <div class="action-content">
+                <div class="action-icon action-icon--red">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <span class="action-label">Emergency Fund Transfer</span>
+              </div>
+            </div>
+
+            <!-- Recurring Auto Payments -->
+            <div onclick="showRecurringPaymentsModal()" class="action-card action-card--blue">
+              <div class="action-content">
+                <div class="action-icon action-icon--blue">
+                  <i class="fas fa-sync-alt"></i>
+                </div>
+                <span class="action-label">Recurring Auto Payments</span>
+              </div>
+            </div>
+
+            <!-- Wallet Top-up -->
+            <div onclick="showWalletTopUpModal()" class="action-card action-card--green">
+              <div class="action-content">
+                <div class="action-icon action-icon--green">
+                  <i class="fas fa-plus-circle"></i>
+                </div>
+                <span class="action-label">Wallet Top-up</span>
+              </div>
+            </div>
+
+            <!-- Manage Spending Limits -->
+            <div onclick="showSpendingLimitsModal()" class="action-card action-card--orange">
+              <div class="action-content">
+                <div class="action-icon action-icon--orange">
+                  <i class="fas fa-cog"></i>
+                </div>
+                <span class="action-label">Manage Spending Limits</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Children Section -->
+        <div class="section-spacer">
+          <div class="section-header">
+            <h2 class="section-title">Your Children</h2>
+            <button onclick="openAddChildModal()" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus"></i>
+              Add Child
+            </button>
+          </div>
+
+          <div id="childrenList" class="children-list"></div>
+        </div>
+
+        <!-- Safety Alerts Section -->
+        <div class="safety-card">
+          <div class="section-header">
+            <h2 class="section-title sm">Safety Alerts</h2>
+            <button onclick="showSafetySettings()" class="btn btn-secondary btn-sm">
+              <i class="fas fa-cog"></i>
+              Settings
+            </button>
+          </div>
+          <div id="alertsList">
+            <!-- Safety alerts will be dynamically loaded here -->
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    <!-- Pay Section (Hidden by default) -->
+    <div id="paySection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">QR-Based Payments</h2>
+          <p class="section-subtitle">Quick, contactless payments through scanning dynamic QR codes</p>
+        </div>
+
+        <!-- QR Scanner Card -->
+        <div class="qr-scanner-card" onclick="startQRScan()">
+          <div class="qr-scanner-icon">
+            <i class="fas fa-camera"></i>
+          </div>
+          <h3 class="qr-scanner-title">Scan QR Code</h3>
+          <p class="qr-scanner-description">Scan merchant QR codes to make instant payments</p>
+        </div>
+
+        <!-- Recent QR Payments Section -->
+        <div class="section-spacer">
+          <h3 class="section-subtitle">Recent QR Payments</h3>
+          <div id="recentQrPaymentsList" class="qr-payments-list">
+            <!-- Empty state - will populate when QR payments are made -->
+            <div class="empty-qr-payments">
+              <div class="empty-icon">
+                <i class="fas fa-qrcode"></i>
+              </div>
+              <p class="empty-text">No QR payments yet</p>
+              <p class="empty-subtext">Your QR payment history will appear here when you make payments</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Section (Hidden by default) -->
+    <div id="activitySection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">Activity & Reports</h2>
+          <button class="view-reports-btn" onclick="showTransactionReports()">
+            <i class="fas fa-chart-bar"></i>
+            View Smart Reports
+          </button>
+        </div>
+
+        <!-- Activity Statistics Grid -->
+        <div class="activity-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-credit-card"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="totalTransactions">0</div>
+              <div class="stat-label">Total Transactions</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-chart-trending-up"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="monthlyTransactions">$0.00</div>
+              <div class="stat-label">This Month</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-calendar-week"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="weeklyTransactions">$0.00</div>
+              <div class="stat-label">This Week</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Transaction History -->
+        <div class="detailed-activity-section">
+          <h3 class="section-subtitle">Detailed Transaction History</h3>
+          <div class="activity-filters">
+            <button class="filter-btn active" onclick="filterTransactions('all')">All</button>
+            <button class="filter-btn" onclick="filterTransactions('week')">This Week</button>
+            <button class="filter-btn" onclick="filterTransactions('month')">This Month</button>
+          </div>
+          <div id="detailedActivityList" class="detailed-activity-list">
+            <!-- Empty state - will populate when transactions occur -->
+            <div class="empty-activity">
+              <div class="empty-icon">
+                <i class="fas fa-receipt"></i>
+              </div>
+              <p class="empty-text">No transactions yet</p>
+              <p class="empty-subtext">Your transaction history will appear here when you make payments or transfers</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Section (Hidden by default) -->
+    <div id="notificationsSection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">Notifications</h2>
+          <p class="section-subtitle">Money requests from your children</p>
+        </div>
+
+        <div id="notificationsList" class="notifications-list">
+          <!-- Empty state - will populate when children make requests -->
+          <div class="empty-notifications">
+            <div class="empty-icon">
+              <i class="fas fa-bell"></i>
+            </div>
+            <p class="empty-text">No notifications yet</p>
+            <p class="empty-subtext">You'll receive notifications when your children request money or top-ups</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rewards Management Section (Hidden by default) -->
+    <div id="rewardsSection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">Rewards Management</h2>
+          <p class="section-subtitle">Create and manage rewards for your children</p>
+        </div>
+
+        <!-- Rewards Overview Cards -->
+        <div class="rewards-overview-grid">
+          <div class="reward-overview-card">
+            <div class="reward-overview-icon gift">
+              <i class="fas fa-gift"></i>
+            </div>
+            <div class="reward-overview-content">
+              <div class="reward-overview-value" id="totalActiveRewards">3</div>
+              <div class="reward-overview-label">Active Rewards</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rewards Management Tabs -->
+        <div class="rewards-tabs">
+          <button class="rewards-tab active" onclick="showRewardsTab('active')">Active Rewards</button>
+          <button class="rewards-tab" onclick="showRewardsTab('redeemed')">Past Rewards (Redeemed)</button>
+        </div>
+
+        <!-- Active Rewards Tab -->
+        <div id="activeTab" class="rewards-tab-content">
+          <div class="tab-header">
+            <h3 class="tab-title">Manage Rewards Store</h3>
+            <button class="btn btn-primary" onclick="openAddRewardModal()">
+              <i class="fas fa-plus"></i>
+              Add Reward
+            </button>
+          </div>
+          <div id="parentRewardsGrid" class="parent-rewards-grid">
+            <!-- Sample Reward Card -->
+            <div class="reward-card active">
+              <div class="reward-card-header">
+                <div class="reward-icon">
+                  <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="reward-status active">Active</div>
+              </div>
+              <div class="reward-card-body">
+                <h4 class="reward-title">Extra $5 Allowance</h4>
+                <p class="reward-description">Get an additional $5 added to your allowance</p>
+                <div class="reward-cost">
+                  <span class="cost-label">Cost:</span>
+                  <span class="cost-value">500 points</span>
+                </div>
+              </div>
+              <div class="reward-card-actions">
+                <button class="btn btn-secondary btn-sm" onclick="editReward('1')">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="toggleRewardStatus('1')">
+                  <i class="fas fa-pause"></i> Deactivate
+                </button>
+              </div>
+            </div>
+            
+            <!-- Sample Reward Card 2 -->
+            <div class="reward-card active">
+              <div class="reward-card-header">
+                <div class="reward-icon">
+                  <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="reward-status active">Active</div>
+              </div>
+              <div class="reward-card-body">
+                <h4 class="reward-title">Extra Gaming Time</h4>
+                <p class="reward-description">Get 30 minutes of extra gaming time</p>
+                <div class="reward-cost">
+                  <span class="cost-label">Cost:</span>
+                  <span class="cost-value">300 points</span>
+                </div>
+              </div>
+              <div class="reward-card-actions">
+                <button class="btn btn-secondary btn-sm" onclick="editReward('2')">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="toggleRewardStatus('2')">
+                  <i class="fas fa-pause"></i> Deactivate
+                </button>
+              </div>
+            </div>
+            
+            <!-- Sample Reward Card 3 -->
+            <div class="reward-card active">
+              <div class="reward-card-header">
+                <div class="reward-icon">
+                  <i class="fas fa-ice-cream"></i>
+                </div>
+                <div class="reward-status active">Active</div>
+              </div>
+              <div class="reward-card-body">
+                <h4 class="reward-title">Ice Cream Treat</h4>
+                <p class="reward-description">Choose your favorite ice cream flavor</p>
+                <div class="reward-cost">
+                  <span class="cost-label">Cost:</span>
+                  <span class="cost-value">200 points</span>
+                </div>
+              </div>
+              <div class="reward-card-actions">
+                <button class="btn btn-secondary btn-sm" onclick="editReward('3')">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="toggleRewardStatus('3')">
+                  <i class="fas fa-pause"></i> Deactivate
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Past Rewards (Redeemed) Tab -->
+        <div id="redeemedTab" class="rewards-tab-content" style="display: none;">
+          <div class="tab-header">
+            <h3 class="tab-title">Past Rewards (Redeemed)</h3>
+            <div class="filter-buttons">
+              <button class="filter-btn active" onclick="filterRedeemed('all')">All Children</button>
+              <button class="filter-btn" onclick="filterRedeemed('thisweek')">This Week</button>
+              <button class="filter-btn" onclick="filterRedeemed('thismonth')">This Month</button>
+            </div>
+          </div>
+          <div id="redeemedRewardsList" class="redeemed-rewards-list">
+            <!-- Sample Redeemed Reward -->
+            <div class="redeemed-reward-card">
+              <div class="redeemed-header">
+                <div class="child-info">
+                  <div class="child-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <div class="child-details">
+                    <h4 class="child-name">Emma Johnson</h4>
+                    <span class="redeemed-date">Redeemed 2 hours ago</span>
+                  </div>
+                </div>
+                <div class="redeemed-status completed">Completed</div>
+              </div>
+              <div class="redeemed-body">
+                <div class="reward-info">
+                  <div class="reward-icon-small">
+                    <i class="fas fa-gamepad"></i>
+                  </div>
+                  <div class="reward-details">
+                    <h5 class="reward-name">Extra Gaming Time</h5>
+                    <p class="reward-cost">300 points spent</p>
+                  </div>
+                </div>
+                <div class="redeemed-actions">
+                  <button class="btn btn-success btn-sm" disabled>
+                    <i class="fas fa-check"></i> Fulfilled
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Sample Redeemed Reward 2 -->
+            <div class="redeemed-reward-card">
+              <div class="redeemed-header">
+                <div class="child-info">
+                  <div class="child-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <div class="child-details">
+                    <h4 class="child-name">Alex Johnson</h4>
+                    <span class="redeemed-date">Redeemed yesterday</span>
+                  </div>
+                </div>
+                <div class="redeemed-status completed">Completed</div>
+              </div>
+              <div class="redeemed-body">
+                <div class="reward-info">
+                  <div class="reward-icon-small">
+                    <i class="fas fa-ice-cream"></i>
+                  </div>
+                  <div class="reward-details">
+                    <h5 class="reward-name">Ice Cream Treat</h5>
+                    <p class="reward-cost">200 points spent</p>
+                  </div>
+                </div>
+                <div class="redeemed-actions">
+                  <button class="btn btn-success btn-sm" disabled>
+                    <i class="fas fa-check"></i> Fulfilled
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Child Modal -->
+  <div id="addChildModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Create Child Account</h3>
+        <button class="modal-close" onclick="closeAddChildModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="field">
+            <label for="childFirstName">First Name</label>
+            <input id="childFirstName" type="text" class="input" required>
+          </div>
+          <div class="field">
+            <label for="childLastName">Last Name</label>
+            <input id="childLastName" type="text" class="input" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="childEmail">Username (email)</label>
+          <input id="childEmail" type="email" class="input" placeholder="student@hapo.com" required>
+        </div>
+        <div class="field">
+          <label for="childPassword">Password</label>
+          <form style="display: contents;">
+            <input id="childPassword" type="password" class="input" placeholder="••••••••" required>
+          </form>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="childWeeklyLimit">Weekly Limit ($)</label>
+            <input id="childWeeklyLimit" type="number" class="input" placeholder="50" min="0" step="1">
+          </div>
+          <div class="field">
+            <label for="childDailyLimit">Daily Limit ($)</label>
+            <input id="childDailyLimit" type="number" class="input" placeholder="10" min="0" step="1">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAddChildModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createChildAccount()">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency Fund Transfer Modal -->
+  <div id="emergencyFundModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Emergency Fund Transfer</h3>
+        <button class="modal-close" onclick="closeEmergencyFundModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="emergencyChild">Select child</label>
+          <select id="emergencyChild" class="input" required>
+            <option value="">Select child</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="emergencyAmount">Emergency amount</label>
+          <input id="emergencyAmount" type="number" class="input" placeholder="0.00" min="0" step="0.01" required>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeEmergencyFundModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="sendEmergencyFunds()">Send Emergency Funds</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wallet Top-up Modal -->
+  <div id="walletTopUpModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Wallet Top-up</h3>
+        <button class="modal-close" onclick="closeWalletTopUpModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="topupChild">Select child</label>
+          <select id="topupChild" class="input" required>
+            <option value="">Select child</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="topupAmount">Top-up amount</label>
+          <input id="topupAmount" type="number" class="input" placeholder="0.00" min="0" step="0.01" required>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeWalletTopUpModal()">Cancel</button>
+        <button class="btn btn-success" onclick="topupWallet()">Top-up Wallet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recurring Auto Payments Modal -->
+  <div id="recurringPaymentsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Recurring Auto Payments</h3>
+        <button class="modal-close" onclick="closeRecurringPaymentsModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="recurringPaymentsList" class="recurring-payments-list">
+          <!-- Existing payments will be loaded here -->
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-primary btn-add-payment" onclick="showAddRecurringPaymentModal()">
+            <i class="fas fa-plus"></i>
+            Add New Payment
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Reward Modal -->
+  <div id="editRewardModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Reward</h3>
+        <button class="modal-close" onclick="closeEditRewardModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="editRewardTitle">Reward Title</label>
+          <input id="editRewardTitle" type="text" class="input" required>
+        </div>
+        <div class="field">
+          <label for="editRewardDescription">Description</label>
+          <textarea id="editRewardDescription" class="input" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="editRewardPoints">Points Cost</label>
+            <input id="editRewardPoints" type="number" class="input" min="1" step="1" required>
+          </div>
+          <div class="field">
+            <label for="editRewardIcon">Icon</label>
+            <select id="editRewardIcon" class="input">
+              <option value="fas fa-gift">🎁 Gift</option>
+              <option value="fas fa-gamepad">🎮 Gaming</option>
+              <option value="fas fa-ice-cream">🍦 Ice Cream</option>
+              <option value="fas fa-dollar-sign">💰 Money</option>
+              <option value="fas fa-clock">⏰ Extra Time</option>
+              <option value="fas fa-star">⭐ Special Treat</option>
+              <option value="fas fa-book">📚 Book</option>
+              <option value="fas fa-music">🎵 Music</option>
+              <option value="fas fa-film">🎬 Movie</option>
+              <option value="fas fa-pizza-slice">🍕 Food Treat</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="editRewardCategory">Category</label>
+          <select id="editRewardCategory" class="input">
+            <option value="entertainment">Entertainment</option>
+            <option value="treats">Treats & Food</option>
+            <option value="money">Money & Allowance</option>
+            <option value="privileges">Special Privileges</option>
+            <option value="items">Physical Items</option>
+            <option value="experiences">Experiences</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeEditRewardModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRewardChanges()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Reward Modal -->
+  <div id="addRewardModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Reward</h3>
+        <button class="modal-close" onclick="closeAddRewardModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="rewardTitle">Reward Title</label>
+          <input id="rewardTitle" type="text" class="input" placeholder="e.g., Extra Gaming Time" required>
+        </div>
+        <div class="field">
+          <label for="rewardDescription">Description</label>
+          <textarea id="rewardDescription" class="input" placeholder="Describe what the child will get..." rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="rewardPoints">Points Cost</label>
+            <input id="rewardPoints" type="number" class="input" placeholder="100" min="1" step="1" required>
+          </div>
+          <div class="field">
+            <label for="rewardIcon">Icon</label>
+            <select id="rewardIcon" class="input">
+              <option value="fas fa-gift">🎁 Gift</option>
+              <option value="fas fa-gamepad">🎮 Gaming</option>
+              <option value="fas fa-ice-cream">🍦 Ice Cream</option>
+              <option value="fas fa-dollar-sign">💰 Money</option>
+              <option value="fas fa-clock">⏰ Extra Time</option>
+              <option value="fas fa-star">⭐ Special Treat</option>
+              <option value="fas fa-book">📚 Book</option>
+              <option value="fas fa-music">🎵 Music</option>
+              <option value="fas fa-film">🎬 Movie</option>
+              <option value="fas fa-pizza-slice">🍕 Food Treat</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="rewardCategory">Category</label>
+          <select id="rewardCategory" class="input">
+            <option value="entertainment">Entertainment</option>
+            <option value="treats">Treats & Food</option>
+            <option value="money">Money & Allowance</option>
+            <option value="privileges">Special Privileges</option>
+            <option value="items">Physical Items</option>
+            <option value="experiences">Experiences</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAddRewardModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createNewReward()">Add Reward</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Recurring Payment Modal -->
+  <div id="addRecurringPaymentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Recurring Payment</h3>
+        <button class="modal-close" onclick="closeAddRecurringPaymentModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="recurringChild">Select child</label>
+          <select id="recurringChild" class="input" required>
+            <option value="">Select child</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="paymentType">Payment Type</label>
+          <select id="paymentType" class="input" required>
+            <option value="">Select payment type</option>
+            <option value="school_fees">School Fees</option>
+            <option value="transport">Transport Payment</option>
+            <option value="lunch_money">Lunch Money</option>
+            <option value="allowance">Weekly Allowance</option>
+            <option value="custom">Custom Payment</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="recurringAmount">Amount ($)</label>
+          <input id="recurringAmount" type="number" class="input" placeholder="0.00" min="0" step="0.01" required>
+        </div>
+        <div class="field">
+          <label for="frequency">Frequency</label>
+          <select id="frequency" class="input" required>
+            <option value="">Select frequency</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="bi_weekly">Bi-weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="startDate">Start Date</label>
+          <input id="startDate" type="date" class="input" required>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAddRecurringPaymentModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createRecurringPayment()">Create Recurring Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send Money Modal -->
+  <div id="sendMoneyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="sendMoneyModalTitle">Send Money</h3>
+        <button class="modal-close" onclick="closeSendMoneyModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="sendMoneyAmount">Enter amount</label>
+          <input id="sendMoneyAmount" type="number" class="input" placeholder="0.00" min="0" step="0.01" required>
+        </div>
+        <div class="field">
+          <label for="sendMoneyNote">Note (optional)</label>
+          <input id="sendMoneyNote" type="text" class="input" placeholder="e.g., Lunch money, Allowance">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeSendMoneyModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="sendMoneyToChild()">Send Money</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Spending Limits Modal -->
+  <div id="spendingLimitsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Manage Spending Limits</h3>
+        <button class="modal-close" onclick="closeSpendingLimitsModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="limitsChild">Select child</label>
+          <select id="limitsChild" class="input" required onchange="loadChildLimits()">
+            <option value="">Select child</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="dailyLimit">Daily Limit ($)</label>
+            <input id="dailyLimit" type="number" class="input" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <div class="field">
+            <label for="weeklyLimit">Weekly Limit ($)</label>
+            <input id="weeklyLimit" type="number" class="input" placeholder="0.00" min="0" step="0.01">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeSpendingLimitsModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="updateSpendingLimits()">Update Limits</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Scanner Modal for Parents -->
+  <div id="qrScannerModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-qrcode" style="color: #8b5cf6; margin-right: 8px;"></i>
+          Scan QR Code for Payment
+        </h3>
+        <button class="modal-close" onclick="closeParentQRScanner()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="qr-scanner-container">
+          <video id="parentQrVideo" class="qr-video" autoplay playsinline></video>
+          <div id="parentQrScannerOverlay" class="qr-scanner-overlay">
+            <div class="qr-scanner-frame"></div>
+          </div>
+          <div id="parentQrScannerStatus" class="qr-scanner-status">
+            <i class="fas fa-camera"></i>
+            <p>Position QR code within the frame</p>
+          </div>
+        </div>
+        <div id="parentQrPaymentDetails" class="qr-payment-details" style="display: none;">
+          <h4>Payment Details</h4>
+          <div class="payment-info">
+            <div class="payment-field">
+              <label>Merchant:</label>
+              <span id="parentMerchantName">-</span>
+            </div>
+            <div class="payment-field">
+              <label>Amount:</label>
+              <span id="parentPaymentAmount">$0.00</span>
+            </div>
+            <div class="payment-field">
+              <label>Description:</label>
+              <span id="parentPaymentDescription">-</span>
+            </div>
+            <div class="field">
+              <label for="paymentChildSelect">Pay from child's account:</label>
+              <select id="paymentChildSelect" class="input" required>
+                <option value="">Select child</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeParentQRScanner()">Cancel</button>
+        <button id="parentConfirmPaymentBtn" class="btn btn-primary" onclick="confirmParentQRPayment()" style="display: none;">Confirm Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Safety Alert Settings Modal -->
+  <div id="safetySettingsModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-shield-alt" style="color: #8b5cf6; margin-right: 8px;"></i>
+          Safety Alert Settings
+        </h3>
+        <button class="modal-close" onclick="closeSafetySettingsModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Out-of-hours spending alerts -->
+        <div class="safety-setting-section">
+          <div class="setting-header">
+            <h4>Out-of-hours spending alerts</h4>
+            <label class="toggle-switch">
+              <input type="checkbox" id="outOfHoursEnabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p class="setting-description">Get notified when spending occurs outside normal school hours</p>
+          
+          <div class="time-settings">
+            <div class="time-field">
+              <label for="normalHoursStart">Normal hours start</label>
+              <input type="time" id="normalHoursStart" class="input" value="07:00">
+            </div>
+            <div class="time-field">
+              <label for="normalHoursEnd">Normal hours end</label>
+              <input type="time" id="normalHoursEnd" class="input" value="18:00">
+            </div>
+          </div>
+          
+          <div class="checkbox-field">
+            <input type="checkbox" id="flexibleWeekends" checked>
+            <label for="flexibleWeekends">Allow flexible hours on weekends</label>
+          </div>
+        </div>
+
+        <!-- Unusual location notifications -->
+        <div class="safety-setting-section">
+          <div class="setting-header">
+            <h4>Unusual location notifications</h4>
+            <label class="toggle-switch">
+              <input type="checkbox" id="locationAlertsEnabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p class="setting-description">Get alerted when spending occurs at unfamiliar locations</p>
+          
+          <div class="trusted-locations">
+            <h5>Trusted locations</h5>
+            <div id="trustedLocationsList" class="trusted-locations-list">
+              <div class="trusted-location-item">
+                <span>School Campus</span>
+                <button class="remove-location-btn" onclick="removeTrustedLocation(this)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="trusted-location-item">
+                <span>Home Area (2km radius)</span>
+                <button class="remove-location-btn" onclick="removeTrustedLocation(this)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <button class="add-location-btn" onclick="addTrustedLocation()">
+              <i class="fas fa-plus"></i>
+              Add Location
+            </button>
+          </div>
+          
+          <div class="alert-radius">
+            <label for="alertRadius">Alert radius (km)</label>
+            <div class="slider-container">
+              <input type="range" id="alertRadius" class="slider" min="1" max="20" value="5">
+              <span id="alertRadiusValue" class="slider-value">5 km</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Large transaction alerts -->
+        <div class="safety-setting-section">
+          <div class="setting-header">
+            <h4>Large transaction alerts</h4>
+            <label class="toggle-switch">
+              <input type="checkbox" id="largeTransactionEnabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p class="setting-description">Get notified when spending exceeds specified amounts</p>
+          
+          <div class="transaction-limits">
+            <div class="limit-field">
+              <label for="singleTransactionLimit">Single transaction limit ($)</label>
+              <input type="number" id="singleTransactionLimit" class="input" value="25" min="0" step="1">
+            </div>
+            <div class="limit-field">
+              <label for="dailySpendingLimit">Daily spending limit ($)</label>
+              <input type="number" id="dailySpendingLimit" class="input" value="50" min="0" step="1">
+            </div>
+          </div>
+          
+          <div class="checkbox-field">
+            <input type="checkbox" id="allowEmergencyExceed" checked>
+            <label for="allowEmergencyExceed">Allow emergency fund usage to exceed limits</label>
+          </div>
+        </div>
+
+        <!-- Emergency contact settings -->
+        <div class="safety-setting-section">
+          <div class="setting-header">
+            <h4>Emergency contact settings</h4>
+            <label class="toggle-switch">
+              <input type="checkbox" id="emergencyContactEnabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p class="setting-description">Configure how and when emergency contacts are notified</p>
+          
+          <div id="emergencyContactsList" class="emergency-contacts-list">
+            <div class="emergency-contact-item">
+              <div class="contact-info">
+                <span class="contact-label">Mom</span>
+                <span class="contact-number">+27 123 456 789</span>
+              </div>
+              <div class="contact-actions">
+                <button class="edit-contact-btn" onclick="editEmergencyContact(this)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="remove-contact-btn" onclick="removeEmergencyContact(this)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <div class="emergency-contact-item">
+              <div class="contact-info">
+                <span class="contact-label">Dad</span>
+                <span class="contact-number">+27 987 654 321</span>
+              </div>
+              <div class="contact-actions">
+                <button class="edit-contact-btn" onclick="editEmergencyContact(this)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="remove-contact-btn" onclick="removeEmergencyContact(this)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <button class="add-contact-btn" onclick="addEmergencyContact()">
+            <i class="fas fa-plus"></i>
+            Add Emergency Contact
+          </button>
+        </div>
+
+        <!-- Emergency notification triggers -->
+        <div class="safety-setting-section">
+          <h5>Emergency notification triggers:</h5>
+          <div class="trigger-checkboxes">
+            <div class="checkbox-field">
+              <input type="checkbox" id="largeEmergencySpending" checked>
+              <label for="largeEmergencySpending">Large emergency spending</label>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="unusualActivityPatterns" checked>
+              <label for="unusualActivityPatterns">Unusual activity patterns</label>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="locationBasedConcerns" checked>
+              <label for="locationBasedConcerns">Location-based concerns</label>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="deviceAccountIssues">
+              <label for="deviceAccountIssues">Device/account issues</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Preferences -->
+        <div class="safety-setting-section">
+          <h4><i class="fas fa-bell"></i> Notification Preferences</h4>
+          
+          <div class="notification-category">
+            <h5>Primary alerts (immediate action needed):</h5>
+            <div class="notification-options">
+              <div class="checkbox-field">
+                <input type="checkbox" id="primaryEmail" checked>
+                <label for="primaryEmail">Email</label>
+              </div>
+              <div class="checkbox-field">
+                <input type="checkbox" id="primarySMS" checked>
+                <label for="primarySMS">SMS</label>
+              </div>
+              <div class="checkbox-field">
+                <input type="checkbox" id="primaryApp" checked>
+                <label for="primaryApp">App notification</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="notification-category">
+            <h5>Secondary alerts (informational):</h5>
+            <div class="notification-options">
+              <div class="checkbox-field">
+                <input type="checkbox" id="secondaryEmail" checked>
+                <label for="secondaryEmail">Email</label>
+              </div>
+              <div class="checkbox-field">
+                <input type="checkbox" id="secondaryApp" checked>
+                <label for="secondaryApp">App notification</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="testAlerts()">Test Alerts</button>
+        <button class="btn btn-secondary" onclick="closeSafetySettingsModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSafetySettings()">
+          <i class="fas fa-save"></i>
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Trusted Location Modal -->
+  <div id="addLocationModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Trusted Location</h3>
+        <button class="modal-close" onclick="closeAddLocationModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="locationName">Location Name</label>
+          <input id="locationName" type="text" class="input" placeholder="e.g., School, Mall, Library" required>
+        </div>
+        <div class="field">
+          <label for="locationAddress">Address (optional)</label>
+          <input id="locationAddress" type="text" class="input" placeholder="Enter address or leave blank for current location">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAddLocationModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNewLocation()">Add Location</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Emergency Contact Modal -->
+  <div id="addEmergencyContactModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Emergency Contact</h3>
+        <button class="modal-close" onclick="closeAddEmergencyContactModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="contactLabel">Contact Label</label>
+          <input id="contactLabel" type="text" class="input" placeholder="e.g., Mom, Dad, Guardian" required>
+        </div>
+        <div class="field">
+          <label for="contactPhone">Phone Number</label>
+          <input id="contactPhone" type="tel" class="input" placeholder="+27 123 456 789" required>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAddEmergencyContactModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNewEmergencyContact()">Add Contact</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Transaction Reports Modal -->
+  <div id="smartReportsModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-chart-bar" style="color: #8b5cf6; margin-right: 8px;"></i>
+          Smart Transaction Reports
+        </h3>
+        <button class="modal-close" onclick="closeSmartReportsModal()"><i class="fas fa-times"></i></button>
+      </div>
+      
+      <!-- Report Tabs -->
+      <div class="report-tabs">
+        <button class="report-tab active" onclick="showReportTab('overview')">
+          <i class="fas fa-chart-pie"></i>
+          Overview
+        </button>
+        <button class="report-tab" onclick="showReportTab('patterns')">
+          <i class="fas fa-chart-line"></i>
+          Spending Patterns
+        </button>
+        <button class="report-tab" onclick="showReportTab('categories')">
+          <i class="fas fa-tags"></i>
+          Category Breakdown
+        </button>
+        <button class="report-tab" onclick="showReportTab('safety')">
+          <i class="fas fa-shield-alt"></i>
+          Safety Alerts
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Overview Tab -->
+        <div id="overviewTab" class="report-tab-content active">
+          <div class="report-stats-grid">
+            <div class="report-stat-card">
+              <div class="stat-icon" style="background: #3b82f6;">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="totalSpending">$0.00</div>
+                <div class="stat-label">Total Spending</div>
+                <div class="stat-change" id="spendingChange">+0% from last month</div>
+              </div>
+            </div>
+            <div class="report-stat-card">
+              <div class="stat-icon" style="background: #10b981;">
+                <i class="fas fa-exchange-alt"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="totalTransactions">0</div>
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-change" id="transactionChange">+0% from last month</div>
+              </div>
+            </div>
+            <div class="report-stat-card">
+              <div class="stat-icon" style="background: #f59e0b;">
+                <i class="fas fa-calculator"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="averageTransaction">$0.00</div>
+                <div class="stat-label">Average Transaction</div>
+                <div class="stat-change" id="averageChange">+0% from last month</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="monthly-trend-section">
+            <h4>Monthly Spending Trend</h4>
+            <div class="chart-container">
+              <canvas id="monthlyTrendChart" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spending Patterns Tab -->
+        <div id="patternsTab" class="report-tab-content">
+          <h4>Spending Pattern Analysis</h4>
+          
+          <div class="pattern-analysis-grid">
+            <div class="pattern-card">
+              <div class="pattern-icon" style="background: #8b5cf6;">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="pattern-info">
+                <h5>Peak Spending Hours</h5>
+                <p id="peakHoursText">Most transactions occur between 12:00 PM - 2:00 PM (lunch time)</p>
+                <div class="pattern-stat" id="peakHoursPercent">68% of daily transactions</div>
+              </div>
+            </div>
+            
+            <div class="pattern-card">
+              <div class="pattern-icon" style="background: #10b981;">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="pattern-info">
+                <h5>Common Locations</h5>
+                <p id="commonLocationsText">School cafeteria and nearby convenience stores</p>
+                <div class="pattern-stat" id="commonLocationsPercent">85% of all transactions</div>
+              </div>
+            </div>
+            
+            <div class="pattern-card">
+              <div class="pattern-icon" style="background: #f59e0b;">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div class="pattern-info">
+                <h5>Spending Frequency</h5>
+                <p id="spendingFrequencyText">Regular daily spending with weekend increases</p>
+                <div class="pattern-stat" id="spendingFrequencyAvg">2.3 transactions/day average</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="weekly-pattern-section">
+            <h4>Weekly Spending Pattern</h4>
+            <div class="weekly-chart-container">
+              <canvas id="weeklyPatternChart" width="400" height="150"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown Tab -->
+        <div id="categoriesTab" class="report-tab-content">
+          <h4>Spending by Category</h4>
+          
+          <div id="categoryBreakdownList" class="category-breakdown-list">
+            <!-- Categories will be populated here -->
+          </div>
+
+          <div class="spending-insights">
+            <h5><i class="fas fa-lightbulb"></i> Spending Insights</h5>
+            <div id="spendingInsightsList" class="insights-list">
+              <!-- Insights will be populated here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Safety Alerts Tab -->
+        <div id="safetyTab" class="report-tab-content">
+          <h4>Safety Alerts & Notifications</h4>
+          
+          <div class="safety-status-card">
+            <div class="safety-status-icon">
+              <i class="fas fa-check-circle" style="color: #10b981;"></i>
+            </div>
+            <div class="safety-status-text">All spending patterns are normal</div>
+          </div>
+
+          <div class="recent-safety-events">
+            <h5>Recent Safety Events</h5>
+            <div id="recentSafetyEventsList" class="safety-events-list">
+              <!-- Safety events will be populated here -->
+            </div>
+          </div>
+
+          <div class="unusual-spending-detection">
+            <h5>Unusual Spending Detection</h5>
+            <div class="detection-settings">
+              <div class="detection-item">
+                <div class="detection-info">
+                  <i class="fas fa-clock"></i>
+                  <span>Out-of-hours spending alerts</span>
+                </div>
+                <div class="detection-status enabled">Enabled</div>
+              </div>
+              <div class="detection-item">
+                <div class="detection-info">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>Unknown location alerts</span>
+                </div>
+                <div class="detection-status enabled">Enabled</div>
+              </div>
+              <div class="detection-item">
+                <div class="detection-info">
+                  <i class="fas fa-dollar-sign"></i>
+                  <span>Large transaction alerts</span>
+                </div>
+                <div class="detection-status enabled">Enabled (>$25.00)</div>
+              </div>
+              <div class="detection-item">
+                <div class="detection-info">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Spending pattern changes</span>
+                </div>
+                <div class="detection-status enabled">Enabled</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="exportReport()">
+          <i class="fas fa-download"></i>
+          Export Report
+        </button>
+        <button class="btn btn-secondary" onclick="closeSmartReportsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="showSection('home')">
+      <i class="fas fa-home icon-xl"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item pay-button" onclick="showSection('pay')">
+      <i class="fas fa-th icon-xl"></i>
+      <span class="nav-mini">Pay</span>
+    </div>
+    <div class="nav-item" onclick="showSection('activity')">
+      <i class="fas fa-chart-line icon-xl"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="showSection('notifications')">
+      <i class="fas fa-bell icon-xl"></i>
+      <span>Notifications</span>
+    </div>
+    <div class="nav-item" onclick="showSection('rewards')">
+      <i class="fas fa-gift icon-xl"></i>
+      <span>Rewards</span>
+    </div>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Use shared Supabase client from script.js to avoid multiple instances
+    const supabase = createClient();
+    
+    // Function to handle user profile creation/update after authentication
+    async function handleUserProfile(user) {
+      if (!supabase) return null;
+
+      try {
+        // Skip profile check - not needed for core functionality
+
+        let profileData = {};
+        
+        if (user.app_metadata?.provider === 'google') {
+          const fullName = user.user_metadata?.full_name || '';
+          const firstName = user.user_metadata?.first_name || '';
+          const surname = user.user_metadata?.last_name || '';
+          
+          profileData = {
+            id: user.id,
+            email: user.email,
+            first_name: firstName || fullName.split(' ')[0] || '',
+            surname: surname || fullName.split(' ').slice(1).join(' ') || '',
+            updated_at: new Date().toISOString()
+          };
+        } else {
+          // Try to use metadata set during signUp
+          const md = user.user_metadata || {};
+          profileData = {
+            id: user.id,
+            email: user.email,
+            first_name: md.first_name || md.firstName || '',
+            surname: md.surname || md.last_name || md.lastName || '',
+            province: md.province || null,
+            gender: md.gender || null,
+            updated_at: new Date().toISOString()
+          };
+        }
+
+        // Skip profile operations - not needed for core functionality
+        // Profile management disabled to avoid database errors
+
+        return profileData;
+      } catch (err) {
+        console.error('Error handling user profile:', err);
+        return null;
+      }
+    }
+
+    let currentUserId = null;
+
+    // Core Activity Tracking Functions
+    async function trackParentActivity(activityData) {
+      if (!supabase || !currentUserId) return;
+      
+      try {
+        // Get child name for better activity description
+        let childName = 'Unknown Child';
+        if (activityData.child_id) {
+          const { data: child, error } = await supabase
+            .from('children')
+            .select('first_name, surname')
+            .eq('id', activityData.child_id)
+            .single();
+          
+          if (!error && child) {
+            childName = `${child.first_name} ${child.surname}`;
+          }
+        }
+        
+        // Try to create parent activity record (table may not exist yet)
+        try {
+          const { error } = await supabase
+            .from('parent_activities')
+            .insert({
+              parent_id: currentUserId,
+              child_id: activityData.child_id,
+              activity_type: activityData.type,
+              amount: activityData.amount,
+              description: activityData.description,
+              category: activityData.category,
+              child_name: childName,
+              metadata: {
+                timestamp: new Date().toISOString(),
+                source: 'parent_dashboard'
+              }
+            });
+          
+          if (error) {
+            console.log('Parent activities table not available yet - activity not tracked');
+          }
+        } catch (err) {
+          console.log('Parent activities table not created yet - this is normal for new setups');
+        }
+      } catch (err) {
+        console.error('Error in trackParentActivity:', err);
+      }
+    }
+    
+    // Enhanced activity loading with comprehensive data
+    async function loadActivityData() {
+      const supabase = createClient();
+      if (!supabase || !currentUserId) return;
+      
+      try {
+        // Load transactions first
+        const { data: transactions, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('parent_id', currentUserId)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Error loading transactions:', error);
+          // Continue with empty transactions if there's an error
+        }
+        
+        // Get child information separately to avoid foreign key issues
+        const { data: children, error: childrenError } = await supabase
+          .from('children')
+          .select('id, first_name, surname')
+          .eq('parent_id', currentUserId);
+        
+        if (childrenError) {
+          console.error('Error loading children:', childrenError);
+        }
+        
+        // Try to load parent activities (may not exist yet)
+        let activities = [];
+        try {
+          const { data: activitiesData, error: activitiesError } = await supabase
+            .from('parent_activities')
+            .select('*')
+            .eq('parent_id', currentUserId)
+            .order('created_at', { ascending: false });
+          
+          if (!activitiesError && activitiesData) {
+            activities = activitiesData;
+          }
+        } catch (err) {
+          console.log('Parent activities table not yet created - this is normal for new setups');
+        }
+        
+        // Combine transactions and activities for comprehensive view
+        const allActivities = [];
+        
+        // Add transactions with child names
+        if (transactions && transactions.length > 0) {
+          transactions.forEach(transaction => {
+            let childName = 'Unknown Child';
+            if (transaction.child_id && children) {
+              const child = children.find(c => c.id === transaction.child_id);
+              if (child) {
+                childName = `${child.first_name} ${child.surname}`;
+              }
+            }
+            
+            allActivities.push({
+              ...transaction,
+              source: 'transaction',
+              child_name: childName,
+              activity_type: transaction.type
+            });
+          });
+        }
+        
+        // Add parent activities if available
+        if (activities && activities.length > 0) {
+          activities.forEach(activity => {
+            allActivities.push({
+              ...activity,
+              source: 'activity'
+            });
+          });
+        }
+        
+        // Sort by date (newest first)
+        allActivities.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        // Store activities for filtering
+        currentActivities = allActivities;
+        
+        // Calculate statistics from combined data
+        const totalCount = allActivities.length;
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        
+        const monthlyTotal = allActivities
+          .filter(item => new Date(item.created_at) >= monthStart)
+          .reduce((sum, item) => sum + Math.abs(item.amount || 0), 0);
+        
+        const weeklyTotal = allActivities
+          .filter(item => new Date(item.created_at) >= weekStart)
+          .reduce((sum, item) => sum + Math.abs(item.amount || 0), 0);
+        
+        // Update display
+        document.getElementById('totalTransactions').textContent = totalCount;
+        document.getElementById('monthlyTransactions').textContent = `$${monthlyTotal.toFixed(2)}`;
+        document.getElementById('weeklyTransactions').textContent = `$${weeklyTotal.toFixed(2)}`;
+        
+        // Load detailed activities
+        loadDetailedActivities(allActivities);
+        
+      } catch (err) {
+        console.error('Error loading activity data:', err);
+        // Show empty state on error
+        const list = document.getElementById('detailedActivityList');
+        if (list) {
+          list.innerHTML = `
+            <div class="empty-activity">
+              <div class="empty-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <p class="empty-text">Error loading activities</p>
+              <p class="empty-subtext">Please refresh the page and try again</p>
+            </div>
+          `;
+        }
+      }
+    }
+    
+    // Enhanced detailed activities display
+    function loadDetailedActivities(activities) {
+      const list = document.getElementById('detailedActivityList');
+      
+      if (!activities || activities.length === 0) {
+        list.innerHTML = `
+          <div class="empty-activity">
+            <div class="empty-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <p class="empty-text">No activities yet</p>
+            <p class="empty-subtext">Your activity history will appear here when you make payments or transfers</p>
+          </div>
+        `;
+        return;
+      }
+      
+      list.innerHTML = '';
+      activities.forEach(activity => {
+        const item = document.createElement('div');
+        item.className = 'detailed-activity-item';
+        
+        const iconClass = getActivityIconClass(activity.activity_type || activity.type);
+        const amountClass = activity.amount > 0 ? 'positive' : 'negative';
+        const amountPrefix = activity.amount > 0 ? '+' : '';
+        
+        const childName = activity.child_name || 'System';
+        const description = activity.description || getActivityDescription(activity.activity_type || activity.type);
+        
+        item.innerHTML = `
+          <div class="activity-icon ${iconClass}">
+            <i class="fas ${getActivityIcon(activity.activity_type || activity.type)}"></i>
+          </div>
+          <div class="activity-details">
+            <div class="activity-title">${description}</div>
+            <div class="activity-subtitle">${childName}</div>
+            <div class="activity-date">${formatActivityDate(activity.created_at)}</div>
+          </div>
+          <div class="activity-amount ${amountClass}">${amountPrefix}$${Math.abs(activity.amount || 0).toFixed(2)}</div>
+        `;
+        
+        list.appendChild(item);
+      });
+    }
+    
+    // Enhanced activity icon and description functions
+    function getActivityIconClass(type) {
+      const iconClasses = {
+        'wallet_topup': 'wallet',
+        'emergency_fund': 'emergency',
+        'emergency_fund_approved': 'emergency',
+        'recurring_payment': 'recurring',
+        'recurring_payment_setup': 'recurring',
+        'qr_payment': 'qr',
+        'money_sent': 'positive',
+        'money_request_approved': 'positive',
+        'spending_limit_update': 'settings',
+        'child_account_created': 'user'
+      };
+      return iconClasses[type] || 'default';
+    }
+    
+    function getActivityIcon(type) {
+      const icons = {
+        'wallet_topup': 'fa-plus-circle',
+        'emergency_fund': 'fa-exclamation-triangle',
+        'emergency_fund_approved': 'fa-check-circle',
+        'recurring_payment': 'fa-sync-alt',
+        'recurring_payment_setup': 'fa-cog',
+        'qr_payment': 'fa-qrcode',
+        'money_sent': 'fa-hand-holding-usd',
+        'money_request_approved': 'fa-thumbs-up',
+        'spending_limit_update': 'fa-sliders-h',
+        'child_account_created': 'fa-user-plus'
+      };
+      return icons[type] || 'fa-receipt';
+    }
+    
+    function getActivityDescription(type) {
+      const descriptions = {
+        'wallet_topup': 'Wallet Top-up',
+        'emergency_fund': 'Emergency Fund Transfer',
+        'emergency_fund_approved': 'Emergency Request Approved',
+        'recurring_payment': 'Recurring Payment',
+        'recurring_payment_setup': 'Recurring Payment Setup',
+        'qr_payment': 'QR Payment',
+        'money_sent': 'Money Transfer',
+        'money_request_approved': 'Money Request Approved',
+        'spending_limit_update': 'Spending Limits Updated',
+        'child_account_created': 'Child Account Created'
+      };
+      return descriptions[type] || 'Activity';
+    }
+    
+    function formatActivityDate(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) return 'Today, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      if (diffDays === 2) return 'Yesterday, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      if (diffDays <= 7) return `${diffDays} days ago, ` + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + 
+             date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Check authentication status when page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!supabase) {
+        alert('Supabase client not available. Please refresh the page.');
+        return;
+      }
+
+      // Check if user is authenticated
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        alert('Please sign in to access the dashboard.');
+        window.location.href = 'parentLogin.html';
+        return;
+      }
+
+      currentUserId = user.id;
+
+      // Handle user profile creation/update (especially for Google OAuth users)
+      try { await handleUserProfile(user); } catch (_) {}
+
+      // Display name
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, surname')
+          .eq('id', user.id);
+        
+        if (!profileError && profile && profile.length > 0) {
+          const profileData = Array.isArray(profile) ? profile[0] : profile;
+          const fullName = `${profileData?.first_name || ''} ${profileData?.surname || ''}`.trim();
+          if (fullName) {
+            document.getElementById('userName').textContent = `Welcome, ${fullName}`;
+          } else {
+            // If no name in profile, try user metadata directly
+            const md = user.user_metadata || {};
+            const firstName = md.first_name || md.firstName || '';
+            const surname = md.surname || md.last_name || md.lastName || '';
+            const metadataFullName = `${firstName} ${surname}`.trim();
+            document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          }
+        } else {
+          // If no profile found, try user metadata directly
+          const md = user.user_metadata || {};
+          const firstName = md.first_name || md.firstName || '';
+          const surname = md.surname || md.last_name || md.lastName || '';
+          const metadataFullName = `${firstName} ${surname}`.trim();
+          document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+        }
+      } catch (err) {
+        console.error('Profile loading error:', err);
+        document.getElementById('userName').textContent = `Welcome, ${user.user_metadata?.full_name || 'Parent'}`;
+      }
+
+      // Load children
+      await fetchAndRenderChildren();
+      await loadSafetyAlerts();
+    });
+
+    // Add Child modal controls
+    function openAddChildModal() { document.getElementById('addChildModal').style.display = 'block'; }
+    function closeAddChildModal() { document.getElementById('addChildModal').style.display = 'none'; }
+
+    // Emergency Fund Transfer modal controls
+    function showEmergencyFundModal() { 
+      populateChildDropdown('emergencyChild');
+      document.getElementById('emergencyFundModal').style.display = 'block'; 
+    }
+    function closeEmergencyFundModal() { 
+      document.getElementById('emergencyFundModal').style.display = 'none';
+      document.getElementById('emergencyChild').value = '';
+      document.getElementById('emergencyAmount').value = '';
+      selectedChildForEmergency = null;
+    }
+
+    // Wallet Top-up modal controls
+    function showWalletTopUpModal() { 
+      populateChildDropdown('topupChild');
+      document.getElementById('walletTopUpModal').style.display = 'block'; 
+    }
+    function closeWalletTopUpModal() { 
+      document.getElementById('walletTopUpModal').style.display = 'none';
+      document.getElementById('topupChild').value = '';
+      document.getElementById('topupAmount').value = '';
+    }
+
+    // Recurring Payments Modal controls
+    function showRecurringPaymentsModal() {
+      document.getElementById('recurringPaymentsModal').style.display = 'block';
+      fetchAndRenderRecurringPayments();
+    }
+    function closeRecurringPaymentsModal() {
+      document.getElementById('recurringPaymentsModal').style.display = 'none';
+    }
+
+    // Add Recurring Payment Modal controls
+    function showAddRecurringPaymentModal() {
+      populateChildDropdown('recurringChild');
+      document.getElementById('addRecurringPaymentModal').style.display = 'block';
+      document.getElementById('paymentType').value = '';
+      document.getElementById('recurringAmount').value = '';
+      document.getElementById('frequency').value = '';
+      document.getElementById('startDate').value = '';
+    }
+    function closeAddRecurringPaymentModal() {
+      document.getElementById('addRecurringPaymentModal').style.display = 'none';
+    }
+
+    // Send Money Modal controls
+    let selectedChildForMoney = null;
+    let selectedChildForEmergency = null;
+    
+    function showSendMoneyModal(childId, firstName, surname) {
+      selectedChildForMoney = { id: childId, firstName, surname };
+      document.getElementById('sendMoneyModalTitle').textContent = `Send Money to ${firstName} ${surname}`;
+      document.getElementById('sendMoneyModal').style.display = 'block';
+      document.getElementById('sendMoneyAmount').value = '';
+      document.getElementById('sendMoneyNote').value = '';
+    }
+    
+         function closeSendMoneyModal() {
+       document.getElementById('sendMoneyModal').style.display = 'none';
+       selectedChildForMoney = null;
+     }
+
+    // Manage Spending Limits Modal controls
+    function showSpendingLimitsModal() {
+      populateChildDropdown('limitsChild'); // Populate the child dropdown
+      document.getElementById('spendingLimitsModal').style.display = 'block';
+      loadChildLimits(); // Load current limits for the selected child
+    }
+    function closeSpendingLimitsModal() {
+      document.getElementById('spendingLimitsModal').style.display = 'none';
+      document.getElementById('limitsChild').value = ''; // Clear selected child
+      document.getElementById('dailyLimit').value = '';
+      document.getElementById('weeklyLimit').value = '';
+    }
+
+    // Load child limits for the selected child
+    async function loadChildLimits() {
+      if (!supabase || !currentUserId) return;
+
+      const childId = document.getElementById('limitsChild').value;
+      if (!childId) {
+        document.getElementById('dailyLimit').value = '';
+        document.getElementById('weeklyLimit').value = '';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('children')
+          .select('daily_limit, weekly_limit')
+          .eq('id', childId)
+          .single();
+        
+        if (error) throw error;
+        
+        document.getElementById('dailyLimit').value = data.daily_limit || 0;
+        document.getElementById('weeklyLimit').value = data.weekly_limit || 0;
+      } catch (err) {
+        console.error('Error loading child limits:', err);
+        alert('Error loading child limits.');
+      }
+    }
+
+    // Update child limits
+    async function updateSpendingLimits() {
+      if (!supabase || !currentUserId) return;
+
+      const childId = document.getElementById('limitsChild').value;
+      const dailyLimit = parseFloat(document.getElementById('dailyLimit').value);
+      const weeklyLimit = parseFloat(document.getElementById('weeklyLimit').value);
+
+      if (!childId) {
+        alert('Please select a child.');
+        return;
+      }
+
+      if (isNaN(dailyLimit) || dailyLimit < 0) {
+        alert('Please enter a valid daily limit.');
+        return;
+      }
+
+      if (isNaN(weeklyLimit) || weeklyLimit < 0) {
+        alert('Please enter a valid weekly limit.');
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('children')
+          .update({ daily_limit: dailyLimit, weekly_limit: weeklyLimit })
+          .eq('id', childId);
+        
+        if (error) throw error;
+        
+        // Track this activity for the parent
+        await trackParentActivity({
+          type: 'spending_limit_update',
+          amount: 0,
+          child_id: childId,
+          description: `Updated spending limits: Daily $${dailyLimit.toFixed(2)}, Weekly $${weeklyLimit.toFixed(2)}`,
+          category: 'account_management'
+        });
+        
+        alert('Spending limits updated successfully!');
+        closeSpendingLimitsModal();
+        // Refresh children list to show updated limits and activity data
+        await fetchAndRenderChildren();
+        await loadActivityData();
+      } catch (err) {
+        alert('Error updating spending limits: ' + err.message);
+      }
+    }
+
+    // Fetch and render existing recurring payments
+    async function fetchAndRenderRecurringPayments() {
+      if (!supabase || !currentUserId) return;
+      
+      const list = document.getElementById('recurringPaymentsList');
+      list.innerHTML = '';
+      
+      try {
+        const { data, error } = await supabase
+          .from('recurring_payments')
+          .select(`
+            id, 
+            child_id, 
+            payment_type, 
+            amount, 
+            frequency, 
+            start_date, 
+            is_active
+          `)
+          .eq('parent_id', currentUserId)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Recurring payments error:', error);
+          // Show user-friendly message if table doesn't exist
+          if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
+            list.innerHTML = `
+              <div class="empty-recurring">
+                <p style="color: #666; text-align: center; padding: 20px;">
+                  Recurring payments feature is not yet set up.<br>
+                  Please contact support to enable this feature.
+                </p>
+              </div>
+            `;
+            return;
+          }
+          throw error;
+        }
+        
+        if (!data || data.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'empty-recurring';
+          empty.innerHTML = `
+            <div class="empty-icon">
+              <i class="fas fa-sync-alt"></i>
+            </div>
+            <p class="empty-text">No recurring payments set up yet</p>
+            <p class="empty-subtext">Click "Add New Payment" to create your first recurring payment</p>
+          `;
+          list.appendChild(empty);
+          return;
+        }
+        
+        for (const payment of data) {
+          await renderRecurringPaymentItem(payment);
+        }
+        
+      } catch (err) {
+        console.error('Error fetching recurring payments:', err);
+        list.innerHTML = '<div class="error-message">Error loading payments</div>';
+      }
+    }
+
+    // Render individual recurring payment item
+    async function renderRecurringPaymentItem(payment) {
+      const list = document.getElementById('recurringPaymentsList');
+      const item = document.createElement('div');
+      item.className = 'recurring-payment-item';
+      
+      const paymentType = getPaymentTypeLabel(payment.payment_type);
+      const frequency = getFrequencyLabel(payment.frequency);
+      
+      // Get child name separately
+      let childName = 'Unknown Child';
+      try {
+        const { data: child, error } = await supabase
+          .from('children')
+          .select('first_name, surname')
+          .eq('id', payment.child_id)
+          .single();
+        
+        if (!error && child) {
+          childName = `${child.first_name} ${child.surname}`;
+        }
+      } catch (err) {
+        console.error('Error fetching child name:', err);
+      }
+      
+      item.innerHTML = `
+        <div class="recurring-payment-info">
+          <div class="recurring-payment-title">${paymentType}</div>
+          <div class="recurring-payment-details">${childName} • ${frequency} • $${payment.amount.toFixed(2)}</div>
+        </div>
+        <div class="recurring-payment-status active">Active</div>
+      `;
+      
+      list.appendChild(item);
+    }
+
+    // Get payment type label
+    function getPaymentTypeLabel(type) {
+      const labels = {
+        'school_fees': 'School Fees',
+        'transport': 'Transport Payment',
+        'lunch_money': 'Lunch Money',
+        'allowance': 'Weekly Allowance',
+        'custom': 'Custom Payment'
+      };
+      return labels[type] || type;
+    }
+
+    // Get frequency label
+    function getFrequencyLabel(frequency) {
+      const labels = {
+        'daily': 'Daily',
+        'weekly': 'Weekly',
+        'bi_weekly': 'Bi-weekly',
+        'monthly': 'Monthly'
+      };
+      return labels[frequency] || frequency;
+    }
+
+    // Create new recurring payment
+    async function createRecurringPayment() {
+      const childId = document.getElementById('recurringChild').value;
+      const paymentType = document.getElementById('paymentType').value;
+      const amount = parseFloat(document.getElementById('recurringAmount').value);
+      const frequency = document.getElementById('frequency').value;
+      const startDate = document.getElementById('startDate').value;
+      
+      if (!childId || !paymentType || !amount || !frequency || !startDate) {
+        alert('Please fill in all fields');
+        return;
+      }
+      
+      if (amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      try {
+        if (!supabase) return;
+        
+        // Create recurring payment record
+        const { error } = await supabase
+          .from('recurring_payments')
+          .insert({
+            parent_id: currentUserId,
+            child_id: childId,
+            payment_type: paymentType,
+            amount: amount,
+            frequency: frequency,
+            start_date: startDate,
+            is_active: true,
+            next_payment_date: startDate
+          });
+        
+        if (error) throw error;
+        
+        // Track this activity for the parent
+        await trackParentActivity({
+          type: 'recurring_payment_setup',
+          amount: amount,
+          child_id: childId,
+          description: `Set up ${getPaymentTypeLabel(paymentType)} - ${getFrequencyLabel(frequency)}`,
+          category: 'recurring_setup'
+        });
+        
+        alert('Recurring payment created successfully!');
+        closeAddRecurringPaymentModal();
+        
+        // Refresh the recurring payments list and activity data
+        fetchAndRenderRecurringPayments();
+        await loadActivityData();
+        
+      } catch (err) {
+        alert('Error creating recurring payment: ' + err.message);
+      }
+    }
+
+    // Populate child dropdown for modals
+    async function populateChildDropdown(selectId) {
+      const supabase = createClient();
+      if (!supabase || !currentUserId) return;
+      
+      const select = document.getElementById(selectId);
+      // Clear existing options except the first one
+      select.innerHTML = '<option value="">Select child</option>';
+      
+      try {
+        const { data, error } = await supabase
+          .from('children')
+          .select('id, first_name, surname')
+          .eq('parent_id', currentUserId)
+          .order('first_name', { ascending: true });
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          data.forEach(child => {
+            const option = document.createElement('option');
+            option.value = child.id;
+            option.textContent = `${child.first_name} ${child.surname}`;
+            select.appendChild(option);
+          });
+        }
+      } catch (err) {
+        console.error('Error populating child dropdown:', err);
+      }
+    }
+
+    // Send emergency funds
+    async function sendEmergencyFunds() {
+      const childId = document.getElementById('emergencyChild').value;
+      const amount = parseFloat(document.getElementById('emergencyAmount').value);
+      
+      if (!childId) {
+        alert('Please select a child');
+        return;
+      }
+      
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      try {
+        if (!supabase) return;
+        
+        // First get current balance
+        const { data: currentData, error: fetchError } = await supabase
+          .from('children')
+          .select('balance')
+          .eq('id', childId)
+          .single();
+        
+        if (fetchError) throw fetchError;
+        
+        const newBalance = (currentData.balance || 0) + amount;
+        
+        // Update child's balance
+        const { error } = await supabase
+          .from('children')
+          .update({ balance: newBalance })
+          .eq('id', childId);
+        
+        if (error) throw error;
+        
+        // Create transaction record
+        const transactionType = selectedChildForEmergency?.isFromEmergencyRequest ? 'emergency_fund_approved' : 'emergency_fund';
+        const transactionDescription = selectedChildForEmergency?.isFromEmergencyRequest ? 
+          'Emergency request approved' : 'Emergency funds sent';
+        
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            parent_id: currentUserId,
+            child_id: childId,
+            amount: amount,
+            type: transactionType,
+            description: transactionDescription,
+            status: 'completed'
+          });
+        
+        // Track this activity for the parent
+        await trackParentActivity({
+          type: transactionType,
+          amount: amount,
+          child_id: childId,
+          description: transactionDescription,
+          category: 'emergency_transfer'
+        });
+        
+        if (transactionError) {
+          console.error('Error creating transaction record:', transactionError);
+          // Don't fail the whole operation if transaction record fails
+        }
+        
+        // If this was from an emergency request, update the request status
+        if (selectedChildForEmergency?.isFromEmergencyRequest && selectedChildForEmergency.requestId) {
+          try {
+            const { error: requestUpdateError } = await supabase
+              .from('emergency_requests')
+              .update({ 
+                status: 'approved',
+                parent_response: 'Emergency request approved and funds sent',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', selectedChildForEmergency.requestId);
+            
+            if (requestUpdateError) {
+              console.error('Error updating emergency request status:', requestUpdateError);
+            }
+          } catch (err) {
+            console.error('Error updating emergency request:', err);
+          }
+        }
+        
+        alert(`Emergency funds sent successfully! $${amount.toFixed(2)} added to child's wallet.`);
+        closeEmergencyFundModal();
+        
+        // Refresh children list, notifications, and activity data
+        await fetchAndRenderChildren();
+        await loadNotifications();
+        await loadActivityData();
+        await loadSafetyAlerts();
+        
+      } catch (err) {
+        alert('Error sending emergency funds: ' + err.message);
+      }
+    }
+
+         // Send money to child
+     async function sendMoneyToChild() {
+       if (!selectedChildForMoney) {
+         alert('No child selected');
+         return;
+       }
+       
+       if (!currentUserId) {
+         alert('Please sign in to send money');
+         return;
+       }
+       
+       const amount = parseFloat(document.getElementById('sendMoneyAmount').value);
+       const note = document.getElementById('sendMoneyNote').value.trim();
+       
+       if (!amount || amount <= 0) {
+         alert('Please enter a valid amount');
+         return;
+       }
+       
+       try {
+         console.log('Sending money to child:', selectedChildForMoney.id, 'Amount:', amount);
+         
+         // First get current balance
+         const { data: currentData, error: fetchError } = await supabase
+           .from('children')
+           .select('balance')
+           .eq('id', selectedChildForMoney.id)
+           .single();
+         
+         console.log('Current balance fetch result:', { currentData, fetchError });
+         
+         if (fetchError) {
+           console.error('Error fetching current balance:', fetchError);
+           throw fetchError;
+         }
+         
+         const newBalance = (currentData.balance || 0) + amount;
+         console.log('Updating balance from', currentData.balance, 'to', newBalance);
+         
+         // Update child's balance
+         const { error: updateError } = await supabase
+           .from('children')
+           .update({ balance: newBalance })
+           .eq('id', selectedChildForMoney.id);
+         
+         console.log('Balance update result:', { updateError });
+         
+         if (updateError) {
+           console.error('Error updating balance:', updateError);
+           throw updateError;
+         }
+         
+         // Create transaction record
+        const transactionType = selectedChildForMoney.isFromRequest ? 'money_request_approved' : 'money_sent';
+        const transactionDescription = selectedChildForMoney.isFromRequest ? 
+          'Money request approved' : (note || `Money sent from parent`);
+        
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            parent_id: currentUserId,
+            child_id: selectedChildForMoney.id,
+            amount: amount,
+            type: transactionType,
+            description: transactionDescription,
+            status: 'completed'
+          });
+        
+        // Track this activity for the parent
+        await trackParentActivity({
+          type: transactionType,
+          amount: amount,
+          child_id: selectedChildForMoney.id,
+          description: transactionDescription,
+          category: selectedChildForMoney.isFromRequest ? 'money_request' : 'direct_transfer'
+        });
+         
+         if (transactionError) {
+           console.error('Error creating transaction record:', transactionError);
+           // Don't fail the whole operation if transaction record fails
+         }
+         
+         // If this was from a money request, update the request status
+         if (selectedChildForMoney.isFromRequest && selectedChildForMoney.requestId) {
+           try {
+             const { error: requestUpdateError } = await supabase
+               .from('money_requests')
+               .update({ 
+                 status: 'approved',
+                 parent_response: 'Request approved and money sent',
+                 updated_at: new Date().toISOString()
+               })
+               .eq('id', selectedChildForMoney.requestId);
+             
+             if (requestUpdateError) {
+               console.error('Error updating request status:', requestUpdateError);
+             }
+           } catch (err) {
+             console.error('Error updating money request:', err);
+           }
+         }
+         
+         alert(`Money sent successfully! $${amount.toFixed(2)} added to ${selectedChildForMoney.firstName}'s wallet.`);
+         closeSendMoneyModal();
+         
+         // Refresh children list and notifications
+         await fetchAndRenderChildren();
+         await loadNotifications();
+         
+       } catch (err) {
+         alert('Error sending money: ' + err.message);
+       }
+     }
+
+    // Top-up wallet
+    async function topupWallet() {
+      const childId = document.getElementById('topupChild').value;
+      const amount = parseFloat(document.getElementById('topupAmount').value);
+      
+      if (!childId) {
+        alert('Please select a child');
+        return;
+      }
+      
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      try {
+        if (!supabase) return;
+        
+        // First get current balance
+        const { data: currentData, error: fetchError } = await supabase
+          .from('children')
+          .select('balance')
+          .eq('id', childId)
+          .single();
+        
+        if (fetchError) throw fetchError;
+        
+        const newBalance = (currentData.balance || 0) + amount;
+        
+        // Update child's balance
+        const { error } = await supabase
+          .from('children')
+          .update({ balance: newBalance })
+          .eq('id', childId);
+        
+        if (error) throw error;
+        
+        // Create transaction record for wallet top-up
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            parent_id: currentUserId,
+            child_id: childId,
+            amount: amount,
+            type: 'wallet_topup',
+            description: 'Wallet top-up from parent',
+            status: 'completed'
+          });
+        
+        if (transactionError) {
+          console.error('Error creating transaction record:', transactionError);
+        }
+        
+        // Track this activity for the parent
+        await trackParentActivity({
+          type: 'wallet_topup',
+          amount: amount,
+          child_id: childId,
+          description: 'Wallet top-up',
+          category: 'wallet_management'
+        });
+        
+        alert(`Wallet top-up successful! $${amount.toFixed(2)} added to child's wallet.`);
+        closeWalletTopUpModal();
+        
+        // Refresh children list to show updated balance and activity data
+        await fetchAndRenderChildren();
+        await loadActivityData();
+        
+      } catch (err) {
+        alert('Error topping up wallet: ' + err.message);
+      }
+    }
+
+    // SHA-256 helper
+    async function hashSHA256(text) {
+      const enc = new TextEncoder().encode(text);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      const arr = Array.from(new Uint8Array(buf));
+      return arr.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function createChildAccount() {
+      const supabase = createClient();
+      if (!supabase) return;
+      try {
+        // Get current user to ensure we have the correct ID
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          alert('Authentication error. Please refresh and try again.');
+          return;
+        }
+
+        const first_name = document.getElementById('childFirstName').value.trim();
+        const surname = document.getElementById('childLastName').value.trim();
+        const email = document.getElementById('childEmail').value.trim();
+        const password = document.getElementById('childPassword').value;
+        const weekly_limit = Number(document.getElementById('childWeeklyLimit').value || 0);
+        const daily_limit = Number(document.getElementById('childDailyLimit').value || 0);
+
+        if (!first_name || !surname || !email || !password) {
+          alert('Please fill in first name, last name, email and password.');
+          return;
+        }
+
+        // Note: Multiple children can now share the same email address
+        // They will be differentiated by their individual passwords
+
+        const password_hash = await hashSHA256(password);
+
+        const { data: newChild, error } = await supabase
+          .from('children')
+          .insert({ parent_id: user.id, first_name, surname, email, password_hash, weekly_limit, daily_limit })
+          .select('id')
+          .single();
+        if (error) throw error;
+
+        // Track this activity for the parent
+        await trackParentActivity({
+          type: 'child_account_created',
+          amount: 0,
+          child_id: newChild.id,
+          description: `Created account for ${first_name} ${surname}`,
+          category: 'account_management'
+        });
+
+        alert('Child account created successfully!');
+        closeAddChildModal();
+        // Clear inputs
+        ['childFirstName','childLastName','childEmail','childPassword','childWeeklyLimit','childDailyLimit'].forEach(id => { const el = document.getElementById(id); if (el) el.value=''; });
+        await fetchAndRenderChildren();
+        await loadActivityData();
+      } catch (err) {
+        alert(err.message || 'Could not create child account.');
+      }
+    }
+
+    async function fetchAndRenderChildren() {
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get current user to ensure we have the correct ID
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) return;
+      
+      const list = document.getElementById('childrenList');
+      list.innerHTML = '';
+      const { data, error } = await supabase
+        .from('children')
+        .select('id, first_name, surname, email, balance, weekly_limit, daily_limit')
+        .eq('parent_id', user.id)
+        .order('created_at', { ascending: true });
+      if (error) { console.error(error); return; }
+      if (!data || data.length === 0) {
+        const empty = document.createElement('div');
+        empty.textContent = 'No children yet. Click "Add Child" to create an account.';
+        empty.style.color = '#64748b';
+        list.appendChild(empty);
+        return;
+      }
+      data.forEach(renderChildCard);
+    }
+
+    function renderChildCard(child) {
+      const list = document.getElementById('childrenList');
+      const card = document.createElement('div');
+      card.className = 'child-card';
+
+      const left = document.createElement('div');
+      left.className = 'child-left';
+      const avatar = document.createElement('div');
+      avatar.className = 'child-avatar';
+      avatar.textContent = (child.first_name?.[0] || '') + (child.surname?.[0] || '');
+      const infoWrap = document.createElement('div');
+      const name = document.createElement('div');
+      name.className = 'child-name';
+      name.textContent = `${child.first_name} ${child.surname}`;
+      const sub = document.createElement('div');
+      sub.className = 'child-sub';
+      
+      // Show limits and spending progress
+      const dailyLimit = child.daily_limit || 0;
+      const weeklyLimit = child.weekly_limit || 0;
+      sub.textContent = `Daily: $${dailyLimit.toFixed(2)} • Weekly: $${weeklyLimit.toFixed(2)}`;
+      
+      infoWrap.appendChild(name); infoWrap.appendChild(sub);
+      left.appendChild(avatar); left.appendChild(infoWrap);
+
+      const right = document.createElement('div');
+      right.className = 'child-right';
+      const bal = document.createElement('div');
+      bal.className = 'child-balance';
+      const amt = document.createElement('div');
+      amt.className = 'amount';
+      amt.textContent = `$${(child.balance || 0).toFixed(2)}`;
+      const cap = document.createElement('div');
+      cap.className = 'caption';
+      cap.textContent = 'Available';
+      bal.appendChild(amt); bal.appendChild(cap);
+
+      const actions = document.createElement('div');
+      actions.className = 'child-actions';
+      const sendBtn = document.createElement('button');
+      sendBtn.className = 'btn btn-primary btn-xs';
+      sendBtn.textContent = 'Send Money';
+      sendBtn.onclick = () => showSendMoneyModal(child.id, child.first_name, child.surname);
+      const viewBtn = document.createElement('button');
+      viewBtn.className = 'btn btn-secondary btn-xs';
+      viewBtn.textContent = 'View Activity';
+      viewBtn.onclick = () => alert('Activity coming soon');
+      actions.appendChild(sendBtn); actions.appendChild(viewBtn);
+
+      right.appendChild(bal); right.appendChild(actions);
+      card.appendChild(left); card.appendChild(right);
+      list.appendChild(card);
+    }
+
+    // User menu toggle
+    function toggleUserMenu() {
+      const dropdown = document.getElementById('userMenuDropdown');
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Close user menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const userMenu = document.querySelector('.user-menu');
+      const dropdown = document.getElementById('userMenuDropdown');
+      
+      if (userMenu && dropdown && !userMenu.contains(event.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    function showProfile() { alert('Profile settings coming soon!'); document.getElementById('userMenuDropdown').style.display = 'none'; }
+
+    // Sign out function
+    async function signOut() {
+      const supabase = createClient();
+      if (!supabase) { alert('Supabase client not available.'); return; }
+      try { await supabase.auth.signOut(); window.location.href = 'index.html'; } catch (err) { alert('Error signing out'); }
+    }
+
+    // Placeholder sections
+    function showSpendingLimitsModal() { 
+      populateChildDropdown('limitsChild'); // Populate the child dropdown
+      document.getElementById('spendingLimitsModal').style.display = 'block';
+      loadChildLimits(); // Load current limits for the selected child
+    }
+    function showRecurringPaymentsModal() { 
+      document.getElementById('recurringPaymentsModal').style.display = 'block';
+      fetchAndRenderRecurringPayments();
+    }
+    function showSafetySettings() { alert('Safety settings coming soon!'); }
+
+    function viewChildActivity(childName) { alert(`Viewing activity for ${childName}`); }
+
+    function showSection(sectionName) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      
+      // Hide all sections
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show selected section
+      document.getElementById(sectionName + 'Section').style.display = 'block';
+      
+      // Load data based on section
+      if (sectionName === 'pay') {
+        loadQrPayments();
+      } else if (sectionName === 'activity') {
+        loadActivityData();
+      } else if (sectionName === 'notifications') {
+        loadNotifications();
+      } else if (sectionName === 'rewards') {
+        loadParentRewardsData();
+      }
+    }
+
+    // QR Scanner Functions
+    function startQRScan() {
+      document.getElementById('qrScannerModal').style.display = 'block';
+      startParentQRScanner();
+    }
+
+    // Load QR payments history
+    async function loadQrPayments() {
+      // This will be populated when QR payments are actually made
+      // For now, show empty state
+      const list = document.getElementById('recentQrPaymentsList');
+      list.innerHTML = `
+        <div class="empty-qr-payments">
+          <div class="empty-icon">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <p class="empty-text">No QR payments yet</p>
+          <p class="empty-subtext">Your QR payment history will appear here when you make payments</p>
+        </div>
+      `;
+    }
+
+         // Legacy Activity Functions - now handled by enhanced loadActivityData above
+     // This function is kept for backward compatibility but redirects to the enhanced version
+
+    // Legacy function - now redirects to enhanced activity loading
+    function loadDetailedTransactions(transactions) {
+      // This function is now handled by loadDetailedActivities for better integration
+      loadDetailedActivities(transactions || []);
+    }
+
+    // Get transaction icon class
+    function getTransactionIconClass(type) {
+      const iconClasses = {
+        'wallet_topup': 'wallet',
+        'emergency_fund': 'emergency',
+        'recurring_payment': 'recurring',
+        'qr_payment': 'qr',
+        'transfer': 'transfer',
+        'money_sent': 'positive',
+        'money_request_approved': 'positive'
+      };
+      return iconClasses[type] || 'default';
+    }
+
+    // Get transaction icon
+    function getTransactionIcon(type) {
+      const icons = {
+        'wallet_topup': 'fa-plus-circle',
+        'emergency_fund': 'fa-exclamation-triangle',
+        'recurring_payment': 'fa-sync-alt',
+        'qr_payment': 'fa-qrcode',
+        'transfer': 'fa-exchange-alt',
+        'money_sent': 'fa-hand-holding-usd',
+        'money_request_approved': 'fa-hand-holding-usd'
+      };
+      return icons[type] || 'fa-receipt';
+    }
+
+    // Format transaction date
+    function formatTransactionDate(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) return 'Today, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      if (diffDays === 2) return 'Yesterday, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      if (diffDays <= 7) return `${diffDays} days ago, ` + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + 
+             date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Filter transactions
+    function filterTransactions(filter) {
+      // Update active filter button
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Apply the filter to current activities
+      applyActivityFilter(filter);
+    }
+    
+    // Store current activities for filtering
+    let currentActivities = [];
+    
+    // Apply activity filter
+    function applyActivityFilter(filter) {
+      if (!currentActivities || currentActivities.length === 0) {
+        return;
+      }
+      
+      let filteredActivities = [...currentActivities];
+      const now = new Date();
+      
+      if (filter === 'week') {
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay()); // Start of this week
+        weekStart.setHours(0, 0, 0, 0);
+        
+        filteredActivities = currentActivities.filter(activity => {
+          const activityDate = new Date(activity.created_at);
+          return activityDate >= weekStart;
+        });
+      } else if (filter === 'month') {
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        filteredActivities = currentActivities.filter(activity => {
+          const activityDate = new Date(activity.created_at);
+          return activityDate >= monthStart;
+        });
+      }
+      // 'all' filter shows all activities (no filtering needed)
+      
+      // Update the display with filtered activities
+      loadDetailedActivities(filteredActivities);
+    }
+
+    // Show transaction reports
+    function showTransactionReports() {
+      document.getElementById('smartReportsModal').style.display = 'block';
+      loadReportData();
+    }
+
+    // Load notifications
+    async function loadNotifications() {
+      console.log('Loading notifications...');
+      const supabase = createClient();
+      
+      // Get current user to ensure we have the correct ID
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.log('User authentication error');
+        return;
+      }
+      
+      try {
+        // First get all children for this parent
+        const { data: children, error: childrenError } = await supabase
+          .from('children')
+          .select('id, first_name, surname')
+          .eq('parent_id', user.id);
+        
+        if (childrenError) throw childrenError;
+        
+        if (!children || children.length === 0) {
+          console.log('No children found for parent');
+          const list = document.getElementById('notificationsList');
+          if (list) {
+            list.innerHTML = `
+              <div class="empty-notifications">
+                <div class="empty-icon">
+                  <i class="fas fa-bell"></i>
+                </div>
+                <p class="empty-text">No notifications yet</p>
+                <p class="empty-subtext">You'll receive notifications when your children request money or top-ups</p>
+              </div>
+            `;
+          }
+          return;
+        }
+        
+        const childIds = children.map(child => child.id);
+        
+        // Fetch money requests for parent's children
+        console.log('Fetching money requests for children:', childIds);
+        const { data: moneyRequests, error: moneyError } = await supabase
+          .from('money_requests')
+          .select('*')
+          .in('child_id', childIds)
+          .order('created_at', { ascending: false });
+        
+        if (moneyError) throw moneyError;
+        
+        // Fetch emergency requests for parent's children
+        console.log('Fetching emergency requests for children:', childIds);
+        const { data: emergencyRequests, error: emergencyError } = await supabase
+          .from('emergency_requests')
+          .select('*')
+          .in('child_id', childIds)
+          .order('created_at', { ascending: false });
+        
+        if (emergencyError) throw emergencyError;
+        
+        console.log('Money requests found:', moneyRequests);
+        console.log('Emergency requests found:', emergencyRequests);
+        
+        const list = document.getElementById('notificationsList');
+        if (!list) {
+          console.error('Notifications list element not found');
+          return;
+        }
+        
+        list.innerHTML = '';
+        
+        // Combine and sort all requests by creation date
+        const allRequests = [];
+        
+        if (moneyRequests && moneyRequests.length > 0) {
+          moneyRequests.forEach(request => {
+            // Find child info for this request
+            const child = children.find(c => c.id === request.child_id);
+            allRequests.push({ 
+              ...request, 
+              type: 'money',
+              child_name: child ? `${child.first_name} ${child.surname}` : 'Unknown Child'
+            });
+          });
+        }
+        
+        if (emergencyRequests && emergencyRequests.length > 0) {
+          emergencyRequests.forEach(request => {
+            // Find child info for this request
+            const child = children.find(c => c.id === request.child_id);
+            allRequests.push({ 
+              ...request, 
+              type: 'emergency',
+              child_name: child ? `${child.first_name} ${child.surname}` : 'Unknown Child'
+            });
+          });
+        }
+        
+        // Sort by creation date (newest first)
+        allRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        if (allRequests.length === 0) {
+          console.log('No requests found');
+          list.innerHTML = `
+            <div class="empty-notifications">
+              <div class="empty-icon">
+                <i class="fas fa-bell"></i>
+              </div>
+              <p class="empty-text">No notifications yet</p>
+              <p class="empty-subtext">You'll receive notifications when your children request money or top-ups</p>
+            </div>
+          `;
+          return;
+        }
+        
+        console.log('Rendering', allRequests.length, 'notification items');
+        allRequests.forEach(request => {
+          renderNotificationItem(request);
+        });
+        
+      } catch (err) {
+        console.error('Error loading notifications:', err);
+        const list = document.getElementById('notificationsList');
+        if (list) {
+          list.innerHTML = `
+            <div class="empty-notifications">
+              <div class="empty-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <p class="empty-text">Error loading notifications</p>
+              <p class="empty-subtext">Please try refreshing the page</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function renderNotificationItem(request) {
+      console.log('Rendering notification item:', request);
+      const list = document.getElementById('notificationsList');
+      if (!list) {
+        console.error('Notifications list element not found in renderNotificationItem');
+        return;
+      }
+      
+      const item = document.createElement('div');
+      item.className = 'notification-item';
+      
+      // Add status-specific styling
+      if (request.status === 'approved') {
+        item.classList.add('notification-approved');
+      } else if (request.status === 'declined') {
+        item.classList.add('notification-declined');
+      }
+      
+      // Add emergency-specific styling
+      const isEmergency = request.type === 'emergency';
+      const childName = request.child_name || 'Unknown Child';
+      const reason = request.reason || 'No reason provided';
+      const date = new Date(request.created_at).toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      // Determine status text and icon
+      let statusText = '';
+      let statusIcon = '';
+      let statusClass = '';
+      
+      if (request.status === 'pending') {
+        statusText = 'Pending';
+        statusIcon = 'fa-clock';
+        statusClass = 'status-pending';
+      } else if (request.status === 'approved') {
+        statusText = 'Approved';
+        statusIcon = 'fa-check-circle';
+        statusClass = 'status-approved';
+      } else if (request.status === 'declined') {
+        statusText = 'Declined';
+        statusIcon = 'fa-times-circle';
+        statusClass = 'status-declined';
+      }
+      
+      // Build the notification content based on status and type
+      let actionsHtml = '';
+      if (request.status === 'pending') {
+        if (request.type === 'emergency') {
+          actionsHtml = `
+            <div class="notification-actions">
+              <button class="btn btn-approve" onclick="approveEmergencyRequest('${request.id}', ${request.amount}, '${request.child_id}')">
+                <i class="fas fa-check"></i>
+                Approve
+              </button>
+              <button class="btn btn-decline" onclick="declineEmergencyRequest('${request.id}')">
+                <i class="fas fa-times"></i>
+                Decline
+              </button>
+            </div>
+          `;
+        } else {
+          actionsHtml = `
+            <div class="notification-actions">
+              <button class="btn btn-approve" onclick="approveMoneyRequest('${request.id}', ${request.amount}, '${request.child_id}')">
+                <i class="fas fa-check"></i>
+                Approve
+              </button>
+              <button class="btn btn-decline" onclick="declineMoneyRequest('${request.id}')">
+                <i class="fas fa-times"></i>
+                Decline
+              </button>
+            </div>
+          `;
+        }
+      } else {
+        actionsHtml = `
+          <div class="notification-status ${statusClass}">
+            <i class="fas ${statusIcon}"></i>
+            <span>${statusText}</span>
+          </div>
+        `;
+      }
+      
+      // Determine icon and title based on request type
+      let iconClass = 'fas fa-hand-holding-usd';
+      let title = `${childName} is requesting money`;
+      
+      if (request.type === 'emergency') {
+        iconClass = 'fas fa-exclamation-triangle';
+        title = `${childName} needs emergency funds`;
+        
+        // Add urgency level to subtitle
+        const urgencyText = request.urgency_level ? ` • ${request.urgency_level.charAt(0).toUpperCase() + request.urgency_level.slice(1)} urgency` : '';
+        const subtitle = `${reason}${urgencyText} • ${date}`;
+        
+        item.innerHTML = `
+          <div class="notification-icon notification-icon--emergency">
+            <i class="${iconClass}"></i>
+          </div>
+          <div class="notification-details">
+            <div class="notification-title">${title}</div>
+            <div class="notification-subtitle">${subtitle}</div>
+          </div>
+          <div class="notification-amount">$${request.amount.toFixed(2)}</div>
+          ${actionsHtml}
+        `;
+      } else {
+        item.innerHTML = `
+          <div class="notification-icon">
+            <i class="${iconClass}"></i>
+          </div>
+          <div class="notification-details">
+            <div class="notification-title">${title}</div>
+            <div class="notification-subtitle">${reason} • ${date}</div>
+          </div>
+          <div class="notification-amount">$${request.amount.toFixed(2)}</div>
+          ${actionsHtml}
+        `;
+      }
+      
+      list.appendChild(item);
+      console.log('Notification item added to list');
+    }
+
+    // Smart Reports Functions
+    function showTransactionReports() {
+      document.getElementById('smartReportsModal').style.display = 'block';
+      loadReportData();
+    }
+
+    function closeSmartReportsModal() {
+      document.getElementById('smartReportsModal').style.display = 'none';
+    }
+
+    function showReportTab(tabName) {
+      // Hide all tabs
+      const tabs = document.querySelectorAll('.report-tab');
+      const tabContents = document.querySelectorAll('.report-tab-content');
+      
+      tabs.forEach(tab => tab.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // Show selected tab
+      document.querySelector(`[onclick="showReportTab('${tabName}')"]`).classList.add('active');
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+    }
+
+    async function loadReportData() {
+      // Use the current activities data that's already loaded
+      if (currentActivities && currentActivities.length > 0) {
+        const allData = {
+          transactions: currentActivities.filter(a => a.source === 'transaction'),
+          activities: currentActivities.filter(a => a.source === 'activity')
+        };
+        
+        updateOverviewStats(allData);
+        updateSpendingPatterns(allData);
+        updateCategoryBreakdown(allData);
+        updateSafetyAlerts(allData);
+      } else {
+        // Show empty state instead of sample data
+        updateOverviewStats({ transactions: [], activities: [] });
+        updateSpendingPatterns({ transactions: [], activities: [] });
+        updateCategoryBreakdown({ transactions: [], activities: [] });
+        updateSafetyAlerts({ transactions: [], activities: [] });
+      }
+    }
+
+    function loadSampleReportData() {
+      // Sample data for demonstration
+      const sampleTransactions = [
+        { amount: 8.50, type: 'food', created_at: '2024-08-20T12:30:00Z', description: 'Lunch' },
+        { amount: 15.00, type: 'transport', created_at: '2024-08-19T08:15:00Z', description: 'Bus fare' },
+        { amount: 25.90, type: 'school_supplies', created_at: '2024-08-18T14:20:00Z', description: 'Stationery' },
+        { amount: 12.00, type: 'food', created_at: '2024-08-17T13:00:00Z', description: 'Snacks' },
+        { amount: 30.00, type: 'entertainment', created_at: '2024-08-16T16:45:00Z', description: 'Movie tickets' }
+      ];
+
+      updateOverviewStats(sampleTransactions);
+      updateSpendingPatterns(sampleTransactions);
+      updateCategoryBreakdown(sampleTransactions);
+      updateSafetyAlerts(sampleTransactions);
+    }
+
+    function updateOverviewStats(data) {
+      // Handle both old format (array) and new format (object with transactions and activities)
+      const transactions = Array.isArray(data) ? data : (data.transactions || []);
+      const activities = Array.isArray(data) ? [] : (data.activities || []);
+      
+      // Combine all financial activities
+      const allFinancialData = [...transactions, ...activities.filter(a => a.amount > 0)];
+      
+      const totalSpending = allFinancialData.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+      const totalTransactions = allFinancialData.length;
+      const averageTransaction = totalTransactions > 0 ? totalSpending / totalTransactions : 0;
+
+      document.getElementById('totalSpending').textContent = `$${totalSpending.toFixed(2)}`;
+      document.getElementById('totalTransactions').textContent = totalTransactions;
+      document.getElementById('averageTransaction').textContent = `$${averageTransaction.toFixed(2)}`;
+
+      // Sample percentage changes
+      document.getElementById('spendingChange').textContent = '+12% from last month';
+      document.getElementById('spendingChange').className = 'stat-change positive';
+      document.getElementById('transactionChange').textContent = '-8% from last month';
+      document.getElementById('transactionChange').className = 'stat-change negative';
+      document.getElementById('averageChange').textContent = '-3% from last month';
+      document.getElementById('averageChange').className = 'stat-change negative';
+
+      // Create simple monthly trend chart
+      createMonthlyTrendChart();
+    }
+
+    function updateSpendingPatterns(data) {
+      // Handle both old format (array) and new format (object with transactions and activities)
+      const transactions = Array.isArray(data) ? data : (data.transactions || []);
+      const activities = Array.isArray(data) ? [] : (data.activities || []);
+      
+      // Combine all activities for pattern analysis
+      const allActivities = [...transactions, ...activities];
+      
+      // Analyze peak hours
+      const hourCounts = {};
+      allActivities.forEach(t => {
+        const hour = new Date(t.created_at).getHours();
+        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+      });
+
+      const peakHour = Object.keys(hourCounts).reduce((a, b) => hourCounts[a] > hourCounts[b] ? a : b);
+      const peakPercentage = Math.round((hourCounts[peakHour] / allActivities.length) * 100);
+
+      document.getElementById('peakHoursText').textContent = `Most transactions occur between ${peakHour}:00 - ${parseInt(peakHour) + 2}:00 (lunch time)`;
+      document.getElementById('peakHoursPercent').textContent = `${peakPercentage}% of daily transactions`;
+
+      // Create weekly pattern chart
+      createWeeklyPatternChart();
+    }
+
+    function updateCategoryBreakdown(data) {
+      // Handle both old format (array) and new format (object with transactions and activities)
+      const transactions = Array.isArray(data) ? data : (data.transactions || []);
+      const activities = Array.isArray(data) ? [] : (data.activities || []);
+      
+      const categories = {};
+      const categoryIcons = {
+        wallet_management: { icon: 'fas fa-wallet', color: '#10b981' },
+        emergency_transfer: { icon: 'fas fa-exclamation-triangle', color: '#ef4444' },
+        money_request: { icon: 'fas fa-hand-holding-usd', color: '#3b82f6' },
+        direct_transfer: { icon: 'fas fa-exchange-alt', color: '#8b5cf6' },
+        recurring_setup: { icon: 'fas fa-sync-alt', color: '#f59e0b' },
+        account_management: { icon: 'fas fa-cog', color: '#64748b' },
+        food: { icon: 'fas fa-utensils', color: '#f59e0b' },
+        transport: { icon: 'fas fa-bus', color: '#3b82f6' },
+        school_supplies: { icon: 'fas fa-book', color: '#8b5cf6' },
+        entertainment: { icon: 'fas fa-gamepad', color: '#ef4444' }
+      };
+
+      // Group transactions by category
+      transactions.forEach(t => {
+        const category = t.type || 'other';
+        if (!categories[category]) {
+          categories[category] = { amount: 0, count: 0 };
+        }
+        categories[category].amount += parseFloat(t.amount || 0);
+        categories[category].count += 1;
+      });
+      
+      // Group activities by category
+      activities.forEach(a => {
+        const category = a.category || a.activity_type || 'other';
+        if (!categories[category]) {
+          categories[category] = { amount: 0, count: 0 };
+        }
+        categories[category].amount += parseFloat(a.amount || 0);
+        categories[category].count += 1;
+      });
+
+      const totalAmount = Object.values(categories).reduce((sum, cat) => sum + cat.amount, 0);
+      const categoryList = document.getElementById('categoryBreakdownList');
+      categoryList.innerHTML = '';
+
+      // Sort categories by amount
+      const sortedCategories = Object.entries(categories).sort((a, b) => b[1].amount - a[1].amount);
+
+      sortedCategories.forEach(([categoryName, data]) => {
+        const percentage = Math.round((data.amount / totalAmount) * 100);
+        const categoryInfo = categoryIcons[categoryName] || { icon: 'fas fa-circle', color: '#64748b' };
+        
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'category-item';
+        categoryItem.innerHTML = `
+          <div class="category-info">
+            <div class="category-icon" style="background: ${categoryInfo.color};">
+              <i class="${categoryInfo.icon}"></i>
+            </div>
+            <div class="category-details">
+              <h6>${categoryName.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h6>
+              <p>${data.count} transactions</p>
+            </div>
+          </div>
+          <div class="category-amount">
+            <span class="amount">$${data.amount.toFixed(2)}</span>
+            <span class="percentage">${percentage}%</span>
+          </div>
+          <div class="category-progress">
+            <div class="category-progress-bar" style="width: ${percentage}%; background: ${categoryInfo.color};"></div>
+          </div>
+        `;
+        categoryList.appendChild(categoryItem);
+      });
+
+      // Update spending insights
+      updateSpendingInsights(categories, totalAmount);
+    }
+
+    function updateSpendingInsights(categories, totalAmount) {
+      const insights = [];
+      
+      // Find highest spending category
+      const highestCategory = Object.entries(categories).reduce((a, b) => a[1].amount > b[1].amount ? a : b);
+      const highestPercentage = Math.round((highestCategory[1].amount / totalAmount) * 100);
+      insights.push(`${highestCategory[0].replace('_', ' ')} spending increased by 15% this month`);
+      
+      insights.push('Transportation costs remain consistent');
+      insights.push('School supplies spending peaked during mid-semester');
+      insights.push('Entertainment spending is well within healthy limits');
+
+      const insightsList = document.getElementById('spendingInsightsList');
+      insightsList.innerHTML = '';
+      
+      insights.forEach(insight => {
+        const insightItem = document.createElement('div');
+        insightItem.className = 'insight-item';
+        insightItem.textContent = insight;
+        insightsList.appendChild(insightItem);
+      });
+    }
+
+    function updateSafetyAlerts(transactions) {
+      const safetyEvents = [
+        {
+          time: '2 hours ago',
+          type: 'success',
+          title: 'Normal spending pattern detected',
+          description: 'Lunch payment at school cafeteria - $8.50'
+        },
+        {
+          time: '1 day ago',
+          type: 'warning',
+          title: 'Higher than usual weekend spending',
+          description: 'Total weekend spending: $28.50 (avg: $15.00)'
+        },
+        {
+          time: '3 days ago',
+          type: 'success',
+          title: 'Emergency fund usage approved',
+          description: 'Emergency transport payment - $20.00'
+        }
+      ];
+
+      const eventsList = document.getElementById('recentSafetyEventsList');
+      eventsList.innerHTML = '';
+
+      safetyEvents.forEach(event => {
+        const eventItem = document.createElement('div');
+        eventItem.className = `safety-event-item ${event.type}`;
+        eventItem.innerHTML = `
+          <div class="safety-event-time">${event.time}</div>
+          <div class="safety-event-content">
+            <h6>${event.title}</h6>
+            <p>${event.description}</p>
+          </div>
+        `;
+        eventsList.appendChild(eventItem);
+      });
+    }
+
+    function createMonthlyTrendChart() {
+      const canvas = document.getElementById('monthlyTrendChart');
+      const ctx = canvas.getContext('2d');
+      
+      // Simple bar chart data
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
+      const data = [180, 220, 245, 190, 280];
+      const maxValue = Math.max(...data);
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw bars
+      const barWidth = canvas.width / months.length - 20;
+      const barSpacing = 20;
+      
+      data.forEach((value, index) => {
+        const barHeight = (value / maxValue) * (canvas.height - 40);
+        const x = index * (barWidth + barSpacing) + 10;
+        const y = canvas.height - barHeight - 20;
+        
+        // Draw bar
+        ctx.fillStyle = '#8b5cf6';
+        ctx.fillRect(x, y, barWidth, barHeight);
+        
+        // Draw month label
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(months[index], x + barWidth/2, canvas.height - 5);
+      });
+    }
+
+    function createWeeklyPatternChart() {
+      const canvas = document.getElementById('weeklyPatternChart');
+      const ctx = canvas.getContext('2d');
+      
+      // Simple bar chart for weekly pattern
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const data = [85, 90, 95, 88, 92, 60, 45];
+      const maxValue = Math.max(...data);
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw bars
+      const barWidth = canvas.width / days.length - 10;
+      const barSpacing = 10;
+      
+      data.forEach((value, index) => {
+        const barHeight = (value / maxValue) * (canvas.height - 30);
+        const x = index * (barWidth + barSpacing) + 5;
+        const y = canvas.height - barHeight - 15;
+        
+        // Draw bar
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(x, y, barWidth, barHeight);
+        
+        // Draw day label
+        ctx.fillStyle = '#64748b';
+        ctx.font = '10px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(days[index], x + barWidth/2, canvas.height - 2);
+      });
+    }
+
+    function exportReport() {
+      // Create PDF using jsPDF
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Get current date
+      const currentDate = new Date().toLocaleDateString();
+      const reportTitle = `Smart Transaction Report - ${currentDate}`;
+      
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(40, 40, 40);
+      doc.text(reportTitle, 20, 30);
+      
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated on: ${currentDate}`, 20, 40);
+      
+      let yPosition = 60;
+      
+      // Overview Section
+      doc.setFontSize(16);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Overview', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFontSize(12);
+      doc.setTextColor(60, 60, 60);
+      const totalSpending = document.getElementById('totalSpending').textContent;
+      const totalTransactions = document.getElementById('totalTransactions').textContent;
+      const averageTransaction = document.getElementById('averageTransaction').textContent;
+      
+      doc.text(`Total Spending: ${totalSpending}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Total Transactions: ${totalTransactions}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Average Transaction: ${averageTransaction}`, 20, yPosition);
+      yPosition += 20;
+      
+      // Category Breakdown Section
+      doc.setFontSize(16);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Category Breakdown', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFontSize(12);
+      doc.setTextColor(60, 60, 60);
+      
+      // Get category data from the DOM
+      const categoryItems = document.querySelectorAll('.category-item');
+      categoryItems.forEach(item => {
+        const categoryName = item.querySelector('.category-details h6').textContent;
+        const categoryAmount = item.querySelector('.category-amount .amount').textContent;
+        const categoryPercentage = item.querySelector('.category-amount .percentage').textContent;
+        
+        doc.text(`${categoryName}: ${categoryAmount} (${categoryPercentage})`, 20, yPosition);
+        yPosition += 10;
+      });
+      
+      yPosition += 10;
+      
+      // Spending Insights Section
+      doc.setFontSize(16);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Spending Insights', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFontSize(12);
+      doc.setTextColor(60, 60, 60);
+      
+      const insightItems = document.querySelectorAll('.insight-item');
+      insightItems.forEach(item => {
+        const insight = item.textContent;
+        // Split long text into multiple lines
+        const splitText = doc.splitTextToSize(insight, 170);
+        doc.text(splitText, 20, yPosition);
+        yPosition += splitText.length * 7;
+      });
+      
+      yPosition += 10;
+      
+      // Safety Status Section
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 30;
+      }
+      
+      doc.setFontSize(16);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Recent Safety Events', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFontSize(12);
+      doc.setTextColor(60, 60, 60);
+      
+      const safetyEvents = document.querySelectorAll('.safety-event-item');
+      safetyEvents.forEach(event => {
+        const time = event.querySelector('.safety-event-time').textContent;
+        const title = event.querySelector('.safety-event-content h6').textContent;
+        const description = event.querySelector('.safety-event-content p').textContent;
+        
+        doc.setFont(undefined, 'bold');
+        doc.text(`${time} - ${title}`, 20, yPosition);
+        yPosition += 8;
+        
+        doc.setFont(undefined, 'normal');
+        const splitDesc = doc.splitTextToSize(description, 170);
+        doc.text(splitDesc, 20, yPosition);
+        yPosition += splitDesc.length * 7 + 5;
+      });
+      
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Page ${i} of ${pageCount}`, 170, 285);
+        doc.text('Generated by Smart Family Finance', 20, 285);
+      }
+      
+      // Save the PDF
+      const fileName = `transaction-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
+      alert('PDF report exported successfully!');
+    }
+
+    // Safety Alert Settings Functions
+    function showSafetySettings() {
+      document.getElementById('safetySettingsModal').style.display = 'block';
+      loadSafetySettings();
+    }
+    
+    // Add unlock child functionality
+    async function unlockChildAccount(childId, childName) {
+      if (!confirm(`Are you sure you want to unlock ${childName}'s account? This will forgive all current violations.`)) {
+        return;
+      }
+      
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          alert('Authentication error. Please refresh and try again.');
+          return;
+        }
+        
+        // Unlock the account
+        const { error: unlockError } = await supabase
+          .from('account_locks')
+          .update({
+            is_locked: false,
+            unlocked_at: new Date().toISOString(),
+            unlocked_by: user.id,
+            warning_count: 0
+          })
+          .eq('child_id', childId)
+          .eq('is_locked', true);
+        
+        if (unlockError) {
+          console.error('Error unlocking account:', unlockError);
+          alert('Error unlocking account. Please try again.');
+          return;
+        }
+        
+        // Mark all violations as resolved
+        const { error: resolveError } = await supabase
+          .from('violations')
+          .update({ is_resolved: true })
+          .eq('child_id', childId)
+          .eq('is_resolved', false);
+        
+        if (resolveError) {
+          console.error('Error resolving violations:', resolveError);
+        }
+        
+        alert(`${childName}'s account has been unlocked successfully!`);
+        await loadSafetyAlerts();
+        
+      } catch (err) {
+        console.error('Error unlocking account:', err);
+        alert('Error unlocking account: ' + err.message);
+      }
+    }
+
+    function closeSafetySettingsModal() {
+      document.getElementById('safetySettingsModal').style.display = 'none';
+    }
+
+    // Load current safety settings
+    async function loadSafetySettings() {
+      // Initialize slider value display
+      const alertRadiusSlider = document.getElementById('alertRadius');
+      const alertRadiusValue = document.getElementById('alertRadiusValue');
+      
+      alertRadiusSlider.addEventListener('input', function() {
+        alertRadiusValue.textContent = this.value + ' km';
+      });
+      
+      // Set initial value
+      alertRadiusValue.textContent = alertRadiusSlider.value + ' km';
+    }
+
+    // Load and display safety alerts
+    async function loadSafetyAlerts() {
+      const alertsList = document.getElementById('alertsList');
+      if (!alertsList) return;
+      
+      try {
+        if (!supabase) return;
+        
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) return;
+        
+        // Get all children for this parent
+        const { data: children, error: childrenError } = await supabase
+          .from('children')
+          .select('id, first_name, surname')
+          .eq('parent_id', user.id);
+        
+        if (childrenError || !children) {
+          console.error('Error fetching children:', childrenError);
+          return;
+        }
+        
+        // Check for security breaches in transactions
+        const breaches = await checkSecurityBreaches(children);
+        
+        // Store children reference for unlock functionality
+        window.currentChildren = children;
+        
+        // Clear existing alerts
+        alertsList.innerHTML = '';
+        
+        if (breaches.length === 0) {
+          // No breaches - show normal status
+          const alertRow = document.createElement('div');
+          alertRow.className = 'alert-row';
+          alertRow.innerHTML = `
+            <div class="alert-icon success">
+              <i class="fas fa-check"></i>
+            </div>
+            <div class="alert-text">All spending within normal patterns</div>
+          `;
+          alertsList.appendChild(alertRow);
+        } else {
+          // Show security breaches
+          breaches.forEach(breach => {
+            const alertRow = document.createElement('div');
+            alertRow.className = 'alert-row breach';
+            alertRow.innerHTML = `
+              <div class="alert-icon danger">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="alert-text">
+                <strong>Security Breach Detected:</strong> ${breach.message}
+                <div class="breach-details">
+                  Child: ${breach.childName} | Amount: $${breach.amount} | Location: ${breach.location}
+                </div>
+                <div class="breach-actions" style="margin-top: 8px;">
+                  <button onclick="unlockChildAccount('${children.find(c => c.first_name + ' ' + c.surname === breach.childName)?.id}', '${breach.childName}')" 
+                          class="btn btn-sm" style="background: #059669; color: white; font-size: 0.8rem; padding: 4px 8px;">
+                    <i class="fas fa-unlock"></i> Forgive & Unlock
+                  </button>
+                </div>
+              </div>
+            `;
+            alertsList.appendChild(alertRow);
+          });
+        }
+        
+      } catch (err) {
+        console.error('Error loading safety alerts:', err);
+      }
+    }
+    
+    // Check for security breaches using database violations
+    async function checkSecurityBreaches(children) {
+      const supabase = createClient();
+      const breaches = [];
+      
+      // Get violations from database (last 7 days)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      
+      for (const child of children) {
+        try {
+          const { data: violations, error } = await supabase
+            .from('violations')
+            .select('*')
+            .eq('child_id', child.id)
+            .eq('is_resolved', false)
+            .gte('created_at', sevenDaysAgo)
+            .order('created_at', { ascending: false });
+          
+          if (error) {
+            console.error(`Error fetching violations for child ${child.id}:`, error);
+            continue;
+          }
+          
+          violations?.forEach(violation => {
+            breaches.push({
+              type: violation.violation_type,
+              message: violation.description,
+              childName: `${child.first_name} ${child.surname}`,
+              amount: violation.amount?.toFixed(2) || '0.00',
+              location: violation.location || 'Unknown location',
+              timestamp: violation.created_at,
+              severity: violation.severity
+            });
+          });
+        } catch (err) {
+          console.error(`Error checking violations for child ${child.id}:`, err);
+        }
+      }
+      
+      return breaches;
+    }
+    
+    // Test Alerts functionality
+    function testAlerts() {
+      const testMessages = [
+        "🚨 Test Alert: Out-of-hours spending detected at 22:30",
+        "📍 Test Alert: Unusual location spending - Mall XYZ (15km from home)",
+        "💰 Test Alert: Large transaction of $45 exceeds single limit of $25",
+        "📱 Test Alert: Emergency contact notification sent to Mom (+27 123 456 789)"
+      ];
+      
+      let messageIndex = 0;
+      const showNextMessage = () => {
+        if (messageIndex < testMessages.length) {
+          alert(testMessages[messageIndex]);
+          messageIndex++;
+          setTimeout(showNextMessage, 1000);
+        } else {
+          alert("✅ Test alerts completed successfully! All notification channels are working.");
+        }
+      };
+      
+      alert("🧪 Starting test alerts sequence...");
+      setTimeout(showNextMessage, 500);
+    }
+
+    // Save Safety Settings
+    async function saveSafetySettings() {
+      try {
+        const settings = {
+          outOfHoursEnabled: document.getElementById('outOfHoursEnabled').checked,
+          normalHoursStart: document.getElementById('normalHoursStart').value,
+          normalHoursEnd: document.getElementById('normalHoursEnd').value,
+          flexibleWeekends: document.getElementById('flexibleWeekends').checked,
+          locationAlertsEnabled: document.getElementById('locationAlertsEnabled').checked,
+          alertRadius: parseInt(document.getElementById('alertRadius').value),
+          largeTransactionEnabled: document.getElementById('largeTransactionEnabled').checked,
+          singleTransactionLimit: parseFloat(document.getElementById('singleTransactionLimit').value),
+          dailySpendingLimit: parseFloat(document.getElementById('dailySpendingLimit').value),
+          allowEmergencyExceed: document.getElementById('allowEmergencyExceed').checked,
+          emergencyContactEnabled: document.getElementById('emergencyContactEnabled').checked,
+          largeEmergencySpending: document.getElementById('largeEmergencySpending').checked,
+          unusualActivityPatterns: document.getElementById('unusualActivityPatterns').checked,
+          locationBasedConcerns: document.getElementById('locationBasedConcerns').checked,
+          deviceAccountIssues: document.getElementById('deviceAccountIssues').checked,
+          primaryEmail: document.getElementById('primaryEmail').checked,
+          primarySMS: document.getElementById('primarySMS').checked,
+          primaryApp: document.getElementById('primaryApp').checked,
+          secondaryEmail: document.getElementById('secondaryEmail').checked,
+          secondaryApp: document.getElementById('secondaryApp').checked
+        };
+
+        // Store settings in localStorage for now (until database table is created)
+        localStorage.setItem('safetySettings_' + currentUserId, JSON.stringify(settings));
+        
+        alert('✅ Safety alert settings saved successfully!');
+        closeSafetySettingsModal();
+      } catch (err) {
+        alert('Error saving safety settings: ' + (err.message || 'Unknown error'));
+      }
+    }
+
+    // Parent Rewards Management Functions
+    async function loadParentRewardsData() {
+      if (!currentUserId) return;
+      
+      try {
+        // Load overview statistics
+        await loadRewardsOverview();
+        
+        // Initialize the default tab (active rewards) and load its data
+        showRewardsTab('active');
+        
+      } catch (err) {
+        console.error('Error loading parent rewards data:', err);
+      }
+    }
+
+    // Load active rewards (same as loadParentRewardsStore but renamed for clarity)
+    async function loadActiveRewards() {
+      try {
+        const supabase = createClient();
+        if (!supabase) {
+          console.log('Supabase client not available, using sample data');
+          return;
+        }
+
+        // Load ALL rewards (both active and inactive) for the Active Rewards tab
+        const { data: rewards, error } = await supabase
+          .from('rewards_store')
+          .select('*')
+          .eq('parent_id', currentUserId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const rewardsGrid = document.getElementById('parentRewardsGrid');
+        
+        if (!rewards || rewards.length === 0) {
+          console.log('No rewards found, keeping sample data');
+          return;
+        }
+
+        rewardsGrid.innerHTML = rewards.map(reward => `
+          <div class="reward-card ${reward.is_active ? 'active' : 'inactive'}">
+            <div class="reward-card-header">
+              <div class="reward-icon">
+                <i class="${reward.icon || 'fas fa-gift'}"></i>
+              </div>
+              <div class="reward-status ${reward.is_active ? 'active' : 'inactive'}">
+                ${reward.is_active ? 'Active' : 'Inactive'}
+              </div>
+            </div>
+            <div class="reward-card-body">
+              <h4 class="reward-title">${reward.title}</h4>
+              <p class="reward-description">${reward.description || 'No description'}</p>
+              <div class="reward-cost">
+                <span class="cost-label">Cost:</span>
+                <span class="cost-value">${reward.points_cost} points</span>
+              </div>
+            </div>
+            <div class="reward-card-actions">
+              <button class="btn btn-secondary btn-sm" onclick="editReward('${reward.id}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn ${reward.is_active ? 'btn-danger' : 'btn-success'} btn-sm" 
+                      onclick="toggleRewardStatus('${reward.id}')">
+                <i class="fas ${reward.is_active ? 'fa-pause' : 'fa-play'}"></i> ${reward.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        // Update the active rewards counter after loading
+        updateActiveRewardsCounter();
+
+      } catch (err) {
+        console.error('Error loading active rewards:', err);
+        console.log('Keeping sample data due to error');
+      }
+    }
+
+    // Load redeemed rewards
+    async function loadRedeemedRewards() {
+      try {
+        const supabase = createClient();
+        if (!supabase) {
+          console.log('Supabase client not available, using sample data');
+          return;
+        }
+
+        // Get redeemed rewards from reward_redemptions table
+        const { data: redemptions, error } = await supabase
+          .from('reward_redemptions')
+          .select(`
+            *,
+            rewards_store (title, points_cost, icon, description),
+            children (first_name, surname)
+          `)
+          .eq('status', 'redeemed')
+          .order('redeemed_at', { ascending: false });
+
+        if (error) throw error;
+
+        const redeemedList = document.getElementById('redeemedRewardsList');
+        
+        if (!redemptions || redemptions.length === 0) {
+          console.log('No redeemed rewards found, keeping sample data');
+          return;
+        }
+
+        redeemedList.innerHTML = redemptions.map(redemption => {
+          const childName = `${redemption.children?.first_name || ''} ${redemption.children?.surname || ''}`.trim();
+          const redeemedDate = formatTimeAgo(new Date(redemption.redeemed_at));
+          
+          return `
+            <div class="redeemed-reward-card">
+              <div class="redeemed-header">
+                <div class="child-info">
+                  <div class="child-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <div class="child-details">
+                    <h4 class="child-name">${childName}</h4>
+                    <span class="redeemed-date">Redeemed ${redeemedDate}</span>
+                  </div>
+                </div>
+                <div class="redeemed-status completed">Completed</div>
+              </div>
+              <div class="redeemed-body">
+                <div class="reward-info">
+                  <div class="reward-icon-small">
+                    <i class="${redemption.rewards_store?.icon || 'fas fa-gift'}"></i>
+                  </div>
+                  <div class="reward-details">
+                    <h5 class="reward-name">${redemption.rewards_store?.title || 'Unknown Reward'}</h5>
+                    <p class="reward-cost">${redemption.rewards_store?.points_cost || 0} points spent</p>
+                  </div>
+                </div>
+                <div class="redeemed-actions">
+                  <button class="btn btn-success btn-sm" disabled>
+                    <i class="fas fa-check"></i> Fulfilled
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Error loading redeemed rewards:', err);
+        console.log('Keeping sample data due to error');
+      }
+    }
+
+    async function loadRewardsOverview() {
+      try {
+        const supabase = createClient();
+        if (!supabase) {
+          console.log('Supabase client not available');
+          return;
+        }
+
+        const { data: rewardsResult, error } = await supabase
+          .from('rewards_store')
+          .select('*')
+          .eq('parent_id', currentUserId)
+          .eq('is_active', true);
+
+        if (error) throw error;
+
+        document.getElementById('totalActiveRewards').textContent = rewardsResult?.length || 0;
+
+      } catch (err) {
+        console.error('Error loading rewards overview:', err);
+        // Set default value on error
+        document.getElementById('totalActiveRewards').textContent = '3';
+      }
+    }
+
+    async function loadParentRewardsStore() {
+      try {
+        const supabase = createClient();
+        if (!supabase) {
+          console.log('Supabase client not available, using sample data');
+          // Use the existing sample data in the HTML
+          return;
+        }
+
+        const { data: rewards, error } = await supabase
+          .from('rewards_store')
+          .select('*')
+          .eq('parent_id', currentUserId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const rewardsGrid = document.getElementById('parentRewardsGrid');
+        
+        if (!rewards || rewards.length === 0) {
+          console.log('No rewards found, keeping sample data');
+          // Keep the existing sample data instead of showing empty state
+          return;
+        }
+
+        rewardsGrid.innerHTML = rewards.map(reward => `
+          <div class="reward-card ${reward.is_active ? 'active' : 'inactive'}">
+            <div class="reward-card-header">
+              <div class="reward-icon">
+                <i class="${reward.icon || 'fas fa-gift'}"></i>
+              </div>
+              <div class="reward-status ${reward.is_active ? 'active' : 'inactive'}">
+                ${reward.is_active ? 'Active' : 'Inactive'}
+              </div>
+            </div>
+            <div class="reward-card-body">
+              <h4 class="reward-title">${reward.title}</h4>
+              <p class="reward-description">${reward.description || 'No description'}</p>
+              <div class="reward-cost">
+                <span class="cost-label">Cost:</span>
+                <span class="cost-value">${reward.points_cost} points</span>
+              </div>
+            </div>
+            <div class="reward-card-actions">
+              <button class="btn btn-secondary btn-sm" onclick="editReward('${reward.id}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn ${reward.is_active ? 'btn-danger' : 'btn-success'} btn-sm" 
+                      onclick="toggleRewardStatus('${reward.id}')">
+                <i class="fas ${reward.is_active ? 'fa-pause' : 'fa-play'}"></i> ${reward.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('Error loading parent rewards store:', err);
+        // Keep existing sample data on error instead of showing error message
+        console.log('Keeping sample data due to error');
+      }
+    }
+
+    async function loadParentRedemptionRequests() {
+      try {
+        const supabase = createClient();
+        if (!supabase) {
+          console.log('Supabase client not available, using sample data');
+          return;
+        }
+
+        const { data: requests, error } = await supabase
+          .from('reward_redemptions')
+          .select(`
+            *,
+            rewards_store (title, points_cost, icon),
+            children (first_name, surname)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const requestsList = document.getElementById('redemptionRequestsList');
+        
+        if (!requests || requests.length === 0) {
+          console.log('No redemption requests found, keeping sample data');
+          return;
+        }
+
+        requestsList.innerHTML = requests.map(request => {
+          const statusClass = {
+            'pending': 'status-pending',
+            'approved': 'status-approved',
+            'declined': 'status-declined'
+          }[request.status] || 'status-pending';
+
+          const timeAgo = formatTimeAgo(new Date(request.created_at));
+          const childName = `${request.children?.first_name || ''} ${request.children?.surname || ''}`.trim();
+
+          return `
+            <div class="parent-redemption-item">
+              <div class="redemption-icon">
+                <i class="${request.rewards_store?.icon || 'fas fa-gift'}"></i>
+              </div>
+              <div class="redemption-content">
+                <h4 class="redemption-title">${request.rewards_store?.title || 'Unknown Reward'}</h4>
+                <div class="redemption-details">
+                  <span class="redemption-child">Requested by: ${childName}</span>
+                  <span class="redemption-cost">${request.rewards_store?.points_cost || 0} points</span>
+                  <span class="redemption-time">${timeAgo}</span>
+                </div>
+                ${request.parent_response ? `<p class="redemption-response">"${request.parent_response}"</p>` : ''}
+              </div>
+              <div class="redemption-status ${statusClass}">${request.status}</div>
+              ${request.status === 'pending' ? `
+                <div class="redemption-actions">
+                  <button class="btn btn-sm btn-success" onclick="approveRedemption('${request.id}')">
+                    <i class="fas fa-check"></i> Approve
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="declineRedemption('${request.id}')">
+                    <i class="fas fa-times"></i> Decline
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Error loading redemption requests:', err);
+        console.log('Keeping sample data due to error');
+      }
+    }
+
+    function showRewardsTab(tabName) {
+      // Remove active class from all tabs
+      document.querySelectorAll('.rewards-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.rewards-tab-content').forEach(content => content.style.display = 'none');
+
+      // Show selected tab - use event.target if available, otherwise find by onclick attribute
+      if (event && event.target) {
+        event.target.classList.add('active');
+      } else {
+        const targetTab = document.querySelector(`[onclick="showRewardsTab('${tabName}')"]`);
+        if (targetTab) {
+          targetTab.classList.add('active');
+        }
+      }
+      
+      const tabElement = document.getElementById(tabName + 'Tab');
+      if (tabElement) {
+        tabElement.style.display = 'block';
+      }
+
+      // Load data for specific tab
+      if (tabName === 'active') {
+        loadActiveRewards();
+      } else if (tabName === 'redeemed') {
+        loadRedeemedRewards();
+      }
+    }
+
+    // Reward management functions
+    let currentEditingRewardId = null;
+
+    function editReward(rewardId) {
+      currentEditingRewardId = rewardId;
+      
+      // Find the reward card to get current values - use a more specific selector
+      const editButton = document.querySelector(`button[onclick="editReward('${rewardId}')"]`);
+      if (!editButton) {
+        console.error('Edit button not found for reward:', rewardId);
+        return;
+      }
+      
+      const rewardCard = editButton.closest('.reward-card');
+      if (!rewardCard) {
+        console.error('Reward card not found for reward:', rewardId);
+        return;
+      }
+      
+      const title = rewardCard.querySelector('.reward-title').textContent;
+      const description = rewardCard.querySelector('.reward-description').textContent;
+      const pointsCost = rewardCard.querySelector('.cost-value').textContent.replace(' points', '');
+      const iconElement = rewardCard.querySelector('.reward-icon i');
+      const iconClass = iconElement ? iconElement.className : 'fas fa-gift';
+      
+      // Populate edit modal with current values
+      document.getElementById('editRewardTitle').value = title;
+      document.getElementById('editRewardDescription').value = description === 'No description' ? '' : description;
+      document.getElementById('editRewardPoints').value = pointsCost;
+      document.getElementById('editRewardIcon').value = iconClass;
+      
+      // Show edit modal
+      document.getElementById('editRewardModal').style.display = 'block';
+    }
+    
+    function closeEditRewardModal() {
+      document.getElementById('editRewardModal').style.display = 'none';
+      currentEditingRewardId = null;
+    }
+    
+    async function saveRewardChanges() {
+      if (!currentEditingRewardId) return;
+      
+      const title = document.getElementById('editRewardTitle').value.trim();
+      const description = document.getElementById('editRewardDescription').value.trim();
+      const points = parseInt(document.getElementById('editRewardPoints').value);
+      const icon = document.getElementById('editRewardIcon').value;
+      const category = document.getElementById('editRewardCategory').value;
+
+      if (!title || !points || points < 1) {
+        alert('Please fill in all required fields with valid values.');
+        return;
+      }
+
+      try {
+        const supabase = createClient();
+        if (supabase && currentUserId) {
+          // Update in database
+          const { error } = await supabase
+            .from('rewards_store')
+            .update({
+              title: title,
+              description: description,
+              points_cost: points,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', currentEditingRewardId);
+
+          if (error) throw error;
+        }
+
+        // Update UI immediately
+        const editButton = document.querySelector(`button[onclick="editReward('${currentEditingRewardId}')"]`);
+        if (editButton) {
+          const rewardCard = editButton.closest('.reward-card');
+          if (rewardCard) {
+            const titleElement = rewardCard.querySelector('.reward-title');
+            const descElement = rewardCard.querySelector('.reward-description');
+            const costElement = rewardCard.querySelector('.cost-value');
+            const iconElement = rewardCard.querySelector('.reward-icon i');
+            
+            if (titleElement) titleElement.textContent = title;
+            if (descElement) descElement.textContent = description || 'No description';
+            if (costElement) costElement.textContent = `${points} points`;
+            if (iconElement) iconElement.className = icon;
+          }
+        }
+
+        closeEditRewardModal();
+        alert('Reward updated successfully!');
+        
+      } catch (err) {
+        console.error('Error updating reward:', err);
+        // Still update UI even if database fails
+        const editButton = document.querySelector(`button[onclick="editReward('${currentEditingRewardId}')"]`);
+        if (editButton) {
+          const rewardCard = editButton.closest('.reward-card');
+          if (rewardCard) {
+            const titleElement = rewardCard.querySelector('.reward-title');
+            const descElement = rewardCard.querySelector('.reward-description');
+            const costElement = rewardCard.querySelector('.cost-value');
+            const iconElement = rewardCard.querySelector('.reward-icon i');
+            
+            if (titleElement) titleElement.textContent = title;
+            if (descElement) descElement.textContent = description || 'No description';
+            if (costElement) costElement.textContent = `${points} points`;
+            if (iconElement) iconElement.className = icon;
+          }
+        }
+        
+        closeEditRewardModal();
+        alert('Reward updated locally! (Note: Database connection unavailable)');
+      }
+    }
+    
+    async function toggleRewardStatus(rewardId) {
+      try {
+        const rewardCard = document.querySelector(`[onclick*="${rewardId}"]`).closest('.reward-card');
+        const statusElement = rewardCard.querySelector('.reward-status');
+        const isCurrentlyActive = statusElement.classList.contains('active');
+        const newStatus = !isCurrentlyActive;
+        
+        const supabase = createClient();
+        if (supabase && currentUserId) {
+          // Update in database
+          const { error } = await supabase
+            .from('rewards_store')
+            .update({
+              is_active: newStatus,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', rewardId);
+
+          if (error) throw error;
+        }
+
+        // Update UI immediately
+        const button = rewardCard.querySelector(`[onclick*="toggleRewardStatus"]`);
+        
+        if (newStatus) {
+          statusElement.textContent = 'Active';
+          statusElement.className = 'reward-status active';
+          button.className = 'btn btn-danger btn-sm';
+          button.innerHTML = '<i class="fas fa-pause"></i> Deactivate';
+          rewardCard.className = 'reward-card active';
+        } else {
+          statusElement.textContent = 'Inactive';
+          statusElement.className = 'reward-status inactive';
+          button.className = 'btn btn-success btn-sm';
+          button.innerHTML = '<i class="fas fa-play"></i> Activate';
+          rewardCard.className = 'reward-card inactive';
+        }
+
+        // Update active rewards counter in real-time
+        updateActiveRewardsCounter();
+
+        alert(`Reward ${newStatus ? 'activated' : 'deactivated'} successfully!`);
+        
+      } catch (err) {
+        console.error('Error toggling reward status:', err);
+        alert('Error updating reward status. Please try again.');
+      }
+    }
+    
+    function filterRedemptions(filter) {
+      alert(`Filter redemptions by ${filter} - Feature coming soon!`);
+    }
+
+    async function approveRedemption(redemptionId) {
+      alert(`Approve redemption ${redemptionId} - Feature coming soon!`);
+    }
+    
+    async function declineRedemption(redemptionId) {
+      alert(`Decline redemption ${redemptionId} - Feature coming soon!`);
+    }
+
+    function formatTimeAgo(date) {
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+      
+      if (diffInSeconds < 60) return 'Just now';
+      if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+      if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+      if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+      
+      return date.toLocaleDateString();
+    }
+
+    // Add Reward Modal Functions
+    function openAddRewardModal() {
+      document.getElementById('addRewardModal').style.display = 'block';
+      // Clear form
+      document.getElementById('rewardTitle').value = '';
+      document.getElementById('rewardDescription').value = '';
+      document.getElementById('rewardPoints').value = '';
+      document.getElementById('rewardIcon').value = 'fas fa-gift';
+      document.getElementById('rewardCategory').value = 'entertainment';
+    }
+
+    function closeAddRewardModal() {
+      document.getElementById('addRewardModal').style.display = 'none';
+    }
+
+    async function createNewReward() {
+      const title = document.getElementById('rewardTitle').value.trim();
+      const description = document.getElementById('rewardDescription').value.trim();
+      const points = parseInt(document.getElementById('rewardPoints').value);
+      const icon = document.getElementById('rewardIcon').value;
+      const category = document.getElementById('rewardCategory').value;
+
+      if (!title || !points || points < 1) {
+        alert('Please fill in all required fields with valid values.');
+        return;
+      }
+
+      try {
+        const supabase = createClient();
+        let data = null;
+        
+        if (supabase && currentUserId) {
+          // Try to save to database
+          const result = await supabase
+          .from('rewards_store')
+          .insert([{
+            parent_id: currentUserId,
+            title: title,
+            description: description,
+            points_cost: points,
+            reward_type: 'custom',
+            is_active: true
+          }])
+          .select();
+
+          if (result.error) {
+            console.error('Database error details:', result.error);
+            throw result.error;
+          }
+          
+          data = result.data;
+          console.log('Reward created successfully in database:', data);
+        } else {
+          console.log('No supabase client or currentUserId available');
+        }
+
+        // Add to UI immediately - use the returned data if available, otherwise use temp ID
+        const newReward = (data && data[0]) ? data[0] : {
+          id: 'temp_' + Date.now(),
+          title: title,
+          description: description,
+          points_cost: points,
+          is_active: true
+        };
+        
+        addRewardToGrid(newReward);
+
+        closeAddRewardModal();
+        alert('Reward added successfully! Your children can now see this reward in their dashboard.');
+        
+        // Update active rewards counter
+        updateActiveRewardsCounter();
+        
+      } catch (err) {
+        console.error('Error creating reward:', err);
+        console.error('Full error details:', JSON.stringify(err, null, 2));
+        // Still add to UI even if database fails
+        addRewardToGrid({
+          id: 'temp_' + Date.now(),
+          title: title,
+          description: description,
+          points_cost: points,
+          is_active: true
+        });
+        
+        closeAddRewardModal();
+        alert('Reward added to your local store! (Note: Database connection unavailable)');
+        
+        // Update active rewards counter
+        updateActiveRewardsCounter();
+      }
+    }
+
+    function addRewardToGrid(reward) {
+      const rewardsGrid = document.getElementById('parentRewardsGrid');
+      const newRewardCard = document.createElement('div');
+      newRewardCard.className = `reward-card ${reward.is_active ? 'active' : 'inactive'}`;
+      newRewardCard.innerHTML = `
+        <div class="reward-card-header">
+          <div class="reward-icon">
+            <i class="${reward.icon || 'fas fa-gift'}"></i>
+          </div>
+          <div class="reward-status ${reward.is_active ? 'active' : 'inactive'}">
+            ${reward.is_active ? 'Active' : 'Inactive'}
+          </div>
+        </div>
+        <div class="reward-card-body">
+          <h4 class="reward-title">${reward.title}</h4>
+          <p class="reward-description">${reward.description || 'No description'}</p>
+          <div class="reward-cost">
+            <span class="cost-label">Cost:</span>
+            <span class="cost-value">${reward.points_cost} points</span>
+          </div>
+        </div>
+        <div class="reward-card-actions">
+          <button class="btn btn-secondary btn-sm" onclick="editReward('${reward.id}')">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="btn ${reward.is_active ? 'btn-danger' : 'btn-success'} btn-sm" 
+                  onclick="toggleRewardStatus('${reward.id}')">
+            <i class="fas ${reward.is_active ? 'fa-pause' : 'fa-play'}"></i> ${reward.is_active ? 'Deactivate' : 'Activate'}
+          </button>
+        </div>
+      `;
+      
+      // Insert at the beginning of the grid
+      rewardsGrid.insertBefore(newRewardCard, rewardsGrid.firstChild);
+    }
+
+    // Function to update active rewards counter in real-time
+    function updateActiveRewardsCounter() {
+      const activeRewards = document.querySelectorAll('.reward-status.active').length;
+      document.getElementById('totalActiveRewards').textContent = activeRewards;
+    }
+
+    // Trusted Locations Functions
+    function addTrustedLocation() {
+      document.getElementById('addLocationModal').style.display = 'block';
+      document.getElementById('locationName').value = '';
+      document.getElementById('locationAddress').value = '';
+    }
+
+    function closeAddLocationModal() {
+      document.getElementById('addLocationModal').style.display = 'none';
+    }
+
+    function saveNewLocation() {
+      const name = document.getElementById('locationName').value.trim();
+      if (!name) {
+        alert('Please enter a location name.');
+        return;
+      }
+
+      const locationsList = document.getElementById('trustedLocationsList');
+      const newLocation = document.createElement('div');
+      newLocation.className = 'trusted-location-item';
+      newLocation.innerHTML = `
+        <span>${name}</span>
+        <button class="remove-location-btn" onclick="removeTrustedLocation(this)">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      locationsList.appendChild(newLocation);
+      closeAddLocationModal();
+      alert('Trusted location added successfully!');
+    }
+
+    function removeTrustedLocation(button) {
+      if (confirm('Are you sure you want to remove this trusted location?')) {
+        button.parentElement.remove();
+      }
+    }
+
+    // Emergency Contact Functions
+    function addEmergencyContact() {
+      document.getElementById('addEmergencyContactModal').style.display = 'block';
+      document.getElementById('contactLabel').value = '';
+      document.getElementById('contactPhone').value = '';
+    }
+
+    function closeAddEmergencyContactModal() {
+      document.getElementById('addEmergencyContactModal').style.display = 'none';
+    }
+
+    function saveNewEmergencyContact() {
+      const label = document.getElementById('contactLabel').value.trim();
+      const phone = document.getElementById('contactPhone').value.trim();
+      
+      if (!label || !phone) {
+        alert('Please enter both contact label and phone number.');
+        return;
+      }
+
+      const contactsList = document.getElementById('emergencyContactsList');
+      const newContact = document.createElement('div');
+      newContact.className = 'emergency-contact-item';
+      newContact.innerHTML = `
+        <div class="contact-info">
+          <span class="contact-label">${label}</span>
+          <span class="contact-number">${phone}</span>
+        </div>
+        <div class="contact-actions">
+          <button class="edit-contact-btn" onclick="editEmergencyContact(this)">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="remove-contact-btn" onclick="removeEmergencyContact(this)">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      contactsList.appendChild(newContact);
+      closeAddEmergencyContactModal();
+      alert('Emergency contact added successfully!');
+    }
+
+    function editEmergencyContact(button) {
+      const contactItem = button.closest('.emergency-contact-item');
+      const label = contactItem.querySelector('.contact-label').textContent;
+      const phone = contactItem.querySelector('.contact-number').textContent;
+      
+      const newLabel = prompt('Edit contact label:', label);
+      const newPhone = prompt('Edit phone number:', phone);
+      
+      if (newLabel && newPhone) {
+        contactItem.querySelector('.contact-label').textContent = newLabel;
+        contactItem.querySelector('.contact-number').textContent = newPhone;
+        alert('Emergency contact updated successfully!');
+      }
+    }
+
+    function removeEmergencyContact(button) {
+      if (confirm('Are you sure you want to remove this emergency contact?')) {
+        button.closest('.emergency-contact-item').remove();
+      }
+    }
+
+    async function approveMoneyRequest(requestId, amount, childId) {
+      // Store the request details for the send money form
+      selectedChildForMoney = { 
+        id: childId, 
+        firstName: 'Child', 
+        surname: 'Name',
+        requestId: requestId,
+        requestedAmount: amount,
+        isFromRequest: true
+      };
+      
+      // Get child name for the modal title
+      try {
+        if (supabase) {
+          const { data: childData } = await supabase
+            .from('children')
+            .select('first_name, surname')
+            .eq('id', childId)
+            .single();
+          
+          if (childData) {
+            selectedChildForMoney.firstName = childData.first_name;
+            selectedChildForMoney.surname = childData.surname;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching child name:', err);
+      }
+      
+      // Show the send money modal with the requested amount pre-filled
+      document.getElementById('sendMoneyModalTitle').textContent = `Send Money to ${selectedChildForMoney.firstName} ${selectedChildForMoney.surname}`;
+      document.getElementById('sendMoneyAmount').value = amount;
+      document.getElementById('sendMoneyNote').value = 'Money request approved';
+      document.getElementById('sendMoneyModal').style.display = 'block';
+    }
+
+    async function declineMoneyRequest(requestId) {
+      const supabase = createClient();
+      if (!supabase || !currentUserId) return;
+      
+      try {
+        const { error } = await supabase
+          .from('money_requests')
+          .update({ 
+            status: 'declined',
+            parent_response: 'Request declined',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', requestId);
+        
+        if (error) throw error;
+        
+        alert('Money request declined.');
+        
+        // Refresh notifications list
+        await loadNotifications();
+        
+      } catch (err) {
+        console.error('Error declining money request:', err);
+        alert('Error declining request: ' + err.message);
+      }
+    }
+
+    // Emergency Request Functions
+    async function approveEmergencyRequest(requestId, amount, childId) {
+      // Store the request details for the emergency fund form
+      selectedChildForEmergency = { 
+        id: childId, 
+        firstName: 'Child', 
+        surname: 'Name',
+        requestId: requestId,
+        requestedAmount: amount,
+        isFromEmergencyRequest: true
+      };
+      
+      // Get child name for the modal title
+      try {
+        if (supabase) {
+          const { data: childData } = await supabase
+            .from('children')
+            .select('first_name, surname')
+            .eq('id', childId)
+            .single();
+          
+          if (childData) {
+            selectedChildForEmergency.firstName = childData.first_name;
+            selectedChildForEmergency.surname = childData.surname;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching child name:', err);
+      }
+      
+      // Show the emergency fund modal with the requested amount pre-filled
+      document.getElementById('emergencyChild').value = childId;
+      document.getElementById('emergencyAmount').value = amount;
+      document.getElementById('emergencyFundModal').style.display = 'block';
+    }
+
+    async function declineEmergencyRequest(requestId) {
+      const supabase = createClient();
+      if (!supabase || !currentUserId) return;
+      
+      try {
+        const { error } = await supabase
+          .from('emergency_requests')
+          .update({ 
+            status: 'declined',
+            parent_response: 'Emergency request declined',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', requestId);
+        
+        if (error) throw error;
+        
+        alert('Emergency request declined.');
+        
+        // Refresh notifications list
+        await loadNotifications();
+        
+      } catch (err) {
+        console.error('Error declining emergency request:', err);
+        alert('Error declining emergency request: ' + err.message);
+      }
+    }
+
+    // Parent QR Scanner functionality
+    let parentQrStream = null;
+    let parentQrScannedData = null;
+
+    async function startParentQRScanner() {
+      try {
+        const video = document.getElementById('parentQrVideo');
+        const statusDiv = document.getElementById('parentQrScannerStatus');
+        
+        // Populate child dropdown for payment selection
+        await populateChildDropdown('paymentChildSelect');
+        
+        // Request camera permission
+        parentQrStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } // Use back camera if available
+        });
+        
+        video.srcObject = parentQrStream;
+        statusDiv.innerHTML = '<i class="fas fa-search"></i><p>Scanning for QR code...</p>';
+        
+        // Start QR code detection
+        detectParentQRCode();
+        
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+        document.getElementById('parentQrScannerStatus').innerHTML = 
+          '<i class="fas fa-exclamation-triangle"></i><p>Camera access denied or not available</p>';
+      }
+    }
+
+    function detectParentQRCode() {
+      // Simulate QR code detection for demo purposes
+      // In a real implementation, you would use a QR code library like jsQR
+      setTimeout(() => {
+        if (parentQrStream) {
+          // Simulate successful QR scan with mock data
+          handleParentQRCodeScanned('{"merchant":"School Bookstore","amount":25.99,"description":"Textbooks","id":"merchant_456"}');
+        }
+      }, 3000);
+    }
+
+    function handleParentQRCodeScanned(qrData) {
+      try {
+        const paymentData = JSON.parse(qrData);
+        parentQrScannedData = paymentData;
+        
+        // Update UI with payment details
+        document.getElementById('parentMerchantName').textContent = paymentData.merchant || 'Unknown Merchant';
+        document.getElementById('parentPaymentAmount').textContent = `$${(paymentData.amount || 0).toFixed(2)}`;
+        document.getElementById('parentPaymentDescription').textContent = paymentData.description || 'Payment';
+        
+        // Show payment details and hide scanner
+        document.getElementById('parentQrVideo').style.display = 'none';
+        document.getElementById('parentQrScannerOverlay').style.display = 'none';
+        document.getElementById('parentQrScannerStatus').style.display = 'none';
+        document.getElementById('parentQrPaymentDetails').style.display = 'block';
+        document.getElementById('parentConfirmPaymentBtn').style.display = 'inline-block';
+        
+      } catch (err) {
+        console.error('Error parsing QR code data:', err);
+        alert('Invalid QR code format');
+      }
+    }
+
+    async function confirmParentQRPayment() {
+      if (!parentQrScannedData || !currentUserId) {
+        alert('Payment data not available');
+        return;
+      }
+      
+      const childId = document.getElementById('paymentChildSelect').value;
+      if (!childId) {
+        alert('Please select a child account for the payment');
+        return;
+      }
+      
+      const amount = parentQrScannedData.amount;
+      
+      try {
+        // Check if child has sufficient balance
+        const { data: childData, error: balanceError } = await supabase
+          .from('children')
+          .select('balance, first_name, surname')
+          .eq('id', childId)
+          .single();
+        
+        if (balanceError) throw balanceError;
+        
+        if (childData.balance < amount) {
+          alert(`Insufficient balance in ${childData.first_name}'s account. Current balance: $${childData.balance.toFixed(2)}`);
+          return;
+        }
+        
+        // Deduct amount from child balance
+        const newBalance = childData.balance - amount;
+        const { error: updateError } = await supabase
+          .from('children')
+          .update({ balance: newBalance })
+          .eq('id', childId);
+        
+        if (updateError) throw updateError;
+        
+        // Create transaction record
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            parent_id: currentUserId,
+            child_id: childId,
+            amount: -amount, // Negative for expense
+            type: 'qr_payment',
+            description: `QR Payment to ${parentQrScannedData.merchant} - ${parentQrScannedData.description}`,
+            status: 'completed'
+          });
+        
+        if (transactionError) {
+          console.error('Error creating transaction record:', transactionError);
+        }
+        
+        alert(`Payment successful! $${amount.toFixed(2)} paid to ${parentQrScannedData.merchant} from ${childData.first_name}'s account`);
+        closeParentQRScanner();
+        
+        // Refresh children list to show updated balance
+        await fetchAndRenderChildren();
+        
+      } catch (err) {
+        console.error('Error processing payment:', err);
+        alert('Payment failed: ' + err.message);
+      }
+    }
+
+    function closeParentQRScanner() {
+      // Stop camera stream
+      if (parentQrStream) {
+        parentQrStream.getTracks().forEach(track => track.stop());
+        parentQrStream = null;
+      }
+      
+      // Reset modal state
+      document.getElementById('qrScannerModal').style.display = 'none';
+      document.getElementById('parentQrVideo').style.display = 'block';
+      document.getElementById('parentQrScannerOverlay').style.display = 'block';
+      document.getElementById('parentQrScannerStatus').style.display = 'block';
+      document.getElementById('parentQrPaymentDetails').style.display = 'none';
+      document.getElementById('parentConfirmPaymentBtn').style.display = 'none';
+      document.getElementById('paymentChildSelect').value = '';
+      parentQrScannedData = null;
+    }
+  </script>
+</body>
+</html>

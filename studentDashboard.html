@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Hapo • Student Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="nav-header-new">
+    <div class="nav-container-new">
+      <div class="nav-brand-new">
+        <img src="src/lib/images/logo.jpg" alt="Hapo Logo" class="logo-new">
+        <div class="brand-content-new">
+          <span class="brand-name-new">Hapo Technology</span>
+          <span class="brand-tagline-new" id="studentName">Student Dashboard</span>
+        </div>
+      </div>
+      <div class="nav-actions-new">
+        <button class="parent-signup-btn-new" onclick="logoutStudent()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="dashboard-main">
+    <div id="homeSection" class="section-content">
+      <div class="dashboard-container">
+
+        <!-- Balance Cards -->
+        <div class="balance-grid">
+          <!-- Available Balance Card -->
+          <div class="card card--blue-left">
+            <div class="card-row">
+              <div class="card-icon card-icon--blue">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <div>
+                <div class="card-label">Available Balance</div>
+                <div class="card-value" id="studentBalance">$0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- This Month Card -->
+          <div class="card card--green-left">
+            <div class="card-row">
+              <div class="card-icon card-icon--green">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div>
+                <div class="card-label">This Month</div>
+                <div class="card-value" id="monthlySpending">$0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="section-spacer">
+          <h2 class="section-title">Quick Actions</h2>
+          <div class="actions-grid">
+
+            <!-- Scan QR to Pay -->
+            <div onclick="showQRScan()" class="action-card action-card--blue">
+              <div class="action-content">
+                <div class="action-icon action-icon--blue">
+                  <i class="fas fa-th"></i>
+                </div>
+                <span class="action-label">Scan QR to Pay</span>
+              </div>
+            </div>
+
+                         <!-- Request Money -->
+             <div onclick="showRequestMoney()" class="action-card action-card--green">
+               <div class="action-content">
+                 <div class="action-icon action-icon--green">
+                   <i class="fas fa-plus-circle"></i>
+                 </div>
+                 <span class="action-label">Request Money</span>
+               </div>
+             </div>
+
+             <!-- Emergency Request -->
+             <div onclick="showEmergencyRequest()" class="action-card action-card--red">
+              <div class="action-content">
+                <div class="action-icon action-icon--red">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <span class="action-label">Emergency Request</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="section-spacer">
+          <h2 class="section-title">Recent Activity</h2>
+          <div class="activity-card">
+            <div id="recentActivityList" class="activity-list">
+              <!-- Empty state - will populate when transactions occur -->
+              <div class="empty-activity">
+                <div class="empty-icon">
+                  <i class="fas fa-receipt"></i>
+                </div>
+                <p class="empty-text">No recent transactions</p>
+                <p class="empty-subtext">Your activity will appear here when you make payments or receive money</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction History Section -->
+        <div class="section-spacer">
+          <h2 class="section-title">Transaction History</h2>
+          <div class="transaction-card">
+            <div id="transactionHistoryList" class="transaction-list">
+              <!-- Empty state - will populate when transactions occur -->
+              <div class="empty-transactions">
+                <div class="empty-icon">
+                  <i class="fas fa-history"></i>
+                </div>
+                <p class="empty-text">No transaction history yet</p>
+                <p class="empty-subtext">Your complete transaction history will appear here</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rewards Section (Hidden by default) -->
+    <div id="rewardsSection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">My Rewards</h2>
+          <p class="section-subtitle">Earn points for responsible spending and saving</p>
+        </div>
+
+        <!-- Rewards Overview -->
+        <div class="section-spacer">
+          <div class="rewards-overview">
+            <div class="rewards-card">
+              <div class="rewards-icon">
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="rewards-content">
+                <div class="rewards-label">Total Points</div>
+                <div class="rewards-value" id="totalPoints">Loading...</div>
+              </div>
+            </div>
+            <div class="rewards-month-card">
+              <div class="rewards-month-icon">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div class="rewards-month-content">
+                <div class="rewards-month-label">Points This Month</div>
+                <div class="rewards-month-value" id="monthlyPoints">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Achievements Section -->
+        <div class="section-spacer">
+          <h3 class="section-title sm">Achievements</h3>
+          <div class="achievements-grid" id="achievementsGrid">
+            <div class="loading-placeholder">Loading achievements...</div>
+          </div>
+        </div>
+
+        <!-- Rewards Store Section -->
+        <div class="section-spacer">
+          <h3 class="section-title sm">Rewards Store</h3>
+          <div class="rewards-store-grid" id="rewardsStoreGrid">
+            <div class="loading-placeholder">Loading rewards...</div>
+          </div>
+        </div>
+
+        <!-- Redemption Requests Section -->
+        <div class="section-spacer">
+          <h3 class="section-title sm">My Reward Requests</h3>
+          <div class="redemption-requests" id="redemptionRequests">
+            <div class="loading-placeholder">Loading requests...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Section (Hidden by default) -->
+    <div id="profileSection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">My Profile</h2>
+          <p class="section-subtitle">View your account information and parent details</p>
+        </div>
+
+        <!-- User Overview Card -->
+        <div class="profile-overview-card">
+          <div class="profile-avatar">
+            <span id="profileInitials">BM</span>
+          </div>
+          <div class="profile-info">
+            <h3 class="profile-name" id="profileName">Student Name</h3>
+            <p class="profile-status">Student Account • Active</p>
+          </div>
+        </div>
+
+        <!-- Personal Information Section -->
+        <div class="profile-section">
+          <div class="profile-section-header">
+            <i class="fas fa-user profile-section-icon"></i>
+            <h3 class="profile-section-title">Personal Information</h3>
+          </div>
+          <div class="profile-fields-grid">
+            <div class="profile-field">
+              <label class="profile-field-label">Full Name</label>
+              <div class="profile-field-value" id="profileFullName">Student Name</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Username</label>
+              <div class="profile-field-value" id="profileUsername">student@hapo.com</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Account Email</label>
+              <div class="profile-field-value" id="profileEmail">student@hapo.com</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Account Password</label>
+              <div class="profile-field-value">••••••••••</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Account Status</label>
+              <div class="profile-field-value profile-status-badge">Active</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Account Created</label>
+              <div class="profile-field-value" id="profileCreatedDate">Date</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parent Information Section -->
+        <div class="profile-section">
+          <div class="profile-section-header">
+            <i class="fas fa-users profile-section-icon"></i>
+            <h3 class="profile-section-title">Parent Information</h3>
+          </div>
+          <div class="profile-fields-grid">
+            <div class="profile-field">
+              <label class="profile-field-label">Parent's Full Name</label>
+              <div class="profile-field-value" id="parentFullName">Parent Name</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Emergency Contact Number</label>
+              <div class="profile-field-value" id="parentPhone">Phone Number</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Parent's Email</label>
+              <div class="profile-field-value" id="parentEmail">parent@email.com</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Relationship</label>
+              <div class="profile-field-value">Parent/Guardian</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spending Limits Section -->
+        <div class="profile-section">
+          <div class="profile-section-header">
+            <i class="fas fa-cog profile-section-icon"></i>
+            <h3 class="profile-section-title">Account Settings</h3>
+          </div>
+          <div class="profile-fields-grid">
+            <div class="profile-field">
+              <label class="profile-field-label">Weekly Spending Limit</label>
+              <div class="profile-field-value" id="profileWeeklyLimit">$0.00</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Daily Spending Limit</label>
+              <div class="profile-field-value" id="profileDailyLimit">$0.00</div>
+            </div>
+            <div class="profile-field">
+              <label class="profile-field-label">Current Balance</label>
+              <div class="profile-field-value profile-balance-badge" id="profileCurrentBalance">$0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Security Notice -->
+        <div class="security-notice">
+          <div class="security-notice-header">
+            <i class="fas fa-shield-alt security-notice-icon"></i>
+            <h4 class="security-notice-title">Account Security</h4>
+          </div>
+          <p class="security-notice-text">
+            Your account information is managed by your parent/guardian. If you need to update any personal information or have security concerns, please contact your parent or guardian.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Games Section (Hidden by default) -->
+    <div id="gamesSection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">My Games</h2>
+          <p class="section-subtitle">Play games and earn points for rewards!</p>
+        </div>
+
+        <!-- Games Overview -->
+        <div class="section-spacer">
+          <div class="games-overview">
+            <div class="games-stats-card">
+              <div class="games-stats-icon">
+                <i class="fas fa-trophy"></i>
+              </div>
+              <div class="games-stats-content">
+                <div class="games-stats-label">Points Earned Today</div>
+                <div class="games-stats-value" id="dailyGamePoints">0</div>
+              </div>
+            </div>
+            <div class="games-stats-card">
+              <div class="games-stats-icon">
+                <i class="fas fa-gamepad"></i>
+              </div>
+              <div class="games-stats-content">
+                <div class="games-stats-label">Games Played</div>
+                <div class="games-stats-value" id="gamesPlayedToday">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Games -->
+        <div class="section-spacer">
+          <h3 class="section-title sm">Available Games</h3>
+          <div class="games-grid">
+            <!-- Memory Game Card -->
+            <div class="game-card">
+              <div class="game-card-header">
+                <div class="game-icon">
+                  <i class="fas fa-brain"></i>
+                </div>
+                <div class="game-info">
+                  <h4 class="game-title">Memory Game</h4>
+                  <p class="game-description">Test your memory skills by matching pairs of cards</p>
+                </div>
+              </div>
+              <div class="game-card-stats">
+                <div class="game-stat">
+                  <span class="game-stat-label">Best Score:</span>
+                  <span class="game-stat-value" id="memoryBestScore">0</span>
+                </div>
+                <div class="game-stat">
+                  <span class="game-stat-label">Points per win:</span>
+                  <span class="game-stat-value">50 pts</span>
+                </div>
+              </div>
+              <div class="game-card-actions">
+                <button class="btn btn-primary game-play-btn" onclick="startMemoryGame()">
+                  <i class="fas fa-play"></i>
+                  Play Now
+                </button>
+              </div>
+            </div>
+
+            <!-- Coming Soon Games -->
+            <div class="game-card game-card--coming-soon">
+              <div class="game-card-header">
+                <div class="game-icon">
+                  <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <div class="game-info">
+                  <h4 class="game-title">Puzzle Challenge</h4>
+                  <p class="game-description">Coming Soon! Solve puzzles to earn bonus points</p>
+                </div>
+              </div>
+              <div class="game-card-actions">
+                <button class="btn btn-secondary" disabled>
+                  <i class="fas fa-clock"></i>
+                  Coming Soon
+                </button>
+              </div>
+            </div>
+
+            <div class="game-card game-card--coming-soon">
+              <div class="game-card-header">
+                <div class="game-icon">
+                  <i class="fas fa-calculator"></i>
+                </div>
+                <div class="game-info">
+                  <h4 class="game-title">Math Quiz</h4>
+                  <p class="game-description">Coming Soon! Practice math skills and earn rewards</p>
+                </div>
+              </div>
+              <div class="game-card-actions">
+                <button class="btn btn-secondary" disabled>
+                  <i class="fas fa-clock"></i>
+                  Coming Soon
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Game Activity -->
+        <div class="section-spacer">
+          <h3 class="section-title sm">Recent Game Activity</h3>
+          <div class="game-activity-card">
+            <div id="gameActivityList" class="game-activity-list">
+              <div class="empty-activity">
+                <div class="empty-icon">
+                  <i class="fas fa-gamepad"></i>
+                </div>
+                <p class="empty-text">No games played yet</p>
+                <p class="empty-subtext">Start playing games to see your activity here</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+   </main>
+
+   <!-- Money Request Modal -->
+   <div id="moneyRequestModal" class="modal">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h3 class="modal-title">Request Money</h3>
+         <button class="modal-close" onclick="closeMoneyRequestModal()"><i class="fas fa-times"></i></button>
+       </div>
+       <div class="modal-body">
+         <div class="field">
+           <label for="requestAmount">Amount needed</label>
+           <input id="requestAmount" type="number" class="input" placeholder="0.00" min="0" step="0.01" required>
+         </div>
+         <div class="field">
+           <label for="requestReason">Reason (optional)</label>
+           <textarea id="requestReason" class="input" placeholder="What do you need this money for?" rows="3"></textarea>
+         </div>
+       </div>
+       <div class="modal-actions">
+         <button class="btn btn-secondary" onclick="closeMoneyRequestModal()">Cancel</button>
+         <button class="btn btn-primary" onclick="submitMoneyRequest()">Send Request</button>
+       </div>
+     </div>
+   </div>
+
+   <!-- Emergency Request Modal -->
+   <div id="emergencyRequestModal" class="modal">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h3 class="modal-title">
+           <i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 8px;"></i>
+           Emergency Request
+         </h3>
+         <button class="modal-close" onclick="closeEmergencyRequestModal()"><i class="fas fa-times"></i></button>
+       </div>
+       <div class="modal-body">
+         <div class="field">
+           <label for="emergencyAmount">Emergency amount needed</label>
+           <input id="emergencyAmount" type="number" class="input" placeholder="0.00" min="0" step="0.01" required>
+         </div>
+         <div class="field">
+           <label for="emergencyReason">Emergency reason</label>
+           <textarea id="emergencyReason" class="input" placeholder="Please describe the emergency situation..." rows="3" required></textarea>
+         </div>
+         <div class="field">
+           <label for="emergencyUrgency">Urgency level</label>
+           <select id="emergencyUrgency" class="input" required>
+             <option value="">Select urgency level</option>
+             <option value="low">Low - Can wait a few hours</option>
+             <option value="medium">Medium - Need within 1-2 hours</option>
+             <option value="high">High - Need immediately</option>
+           </select>
+         </div>
+       </div>
+       <div class="modal-actions">
+         <button class="btn btn-secondary" onclick="closeEmergencyRequestModal()">Cancel</button>
+         <button class="btn btn-danger" onclick="submitEmergencyRequest()">Send Emergency Request</button>
+       </div>
+     </div>
+   </div>
+
+   <!-- QR Scanner Modal -->
+   <div id="qrScannerModal" class="modal">
+     <div class="modal-content modal-large">
+       <div class="modal-header">
+         <h3 class="modal-title">
+           <i class="fas fa-qrcode" style="color: #8b5cf6; margin-right: 8px;"></i>
+           Scan QR Code to Pay
+         </h3>
+         <button class="modal-close" onclick="closeQRScanner()"><i class="fas fa-times"></i></button>
+       </div>
+       <div class="modal-body">
+         <div class="qr-scanner-container">
+           <video id="qrVideo" class="qr-video" autoplay playsinline></video>
+           <div id="qrScannerOverlay" class="qr-scanner-overlay">
+             <div class="qr-scanner-frame"></div>
+           </div>
+           <div id="qrScannerStatus" class="qr-scanner-status">
+             <i class="fas fa-camera"></i>
+             <p>Position QR code within the frame</p>
+           </div>
+         </div>
+         <div id="qrPaymentDetails" class="qr-payment-details" style="display: none;">
+           <h4>Payment Details</h4>
+           <div class="payment-info">
+             <div class="payment-field">
+               <label>Merchant:</label>
+               <span id="merchantName">-</span>
+             </div>
+             <div class="payment-field">
+               <label>Amount:</label>
+               <span id="paymentAmount">$0.00</span>
+             </div>
+             <div class="payment-field">
+               <label>Description:</label>
+               <span id="paymentDescription">-</span>
+             </div>
+           </div>
+         </div>
+       </div>
+       <div class="modal-actions">
+         <button class="btn btn-secondary" onclick="closeQRScanner()">Cancel</button>
+         <button id="confirmPaymentBtn" class="btn btn-primary" onclick="confirmQRPayment()" style="display: none;">Confirm Payment</button>
+       </div>
+     </div>
+   </div>
+
+   <!-- Memory Game Modal -->
+   <div id="memoryGameModal" class="modal">
+     <div class="modal-content modal-large">
+       <div class="modal-header">
+         <h3 class="modal-title">
+           <i class="fas fa-brain" style="color: #8b5cf6; margin-right: 8px;"></i>
+           Memory Game
+         </h3>
+         <button class="modal-close" onclick="closeMemoryGame()"><i class="fas fa-times"></i></button>
+       </div>
+       <div class="modal-body">
+         <!-- Game iframe container -->
+         <div class="game-iframe-container">
+           <iframe 
+             id="memoryGameFrame" 
+             src="https://memory-game-plum-pi.vercel.app/" 
+             frameborder="0" 
+             allowfullscreen
+             class="memory-game-iframe">
+           </iframe>
+         </div>
+
+         <!-- Game completion notification -->
+         <div class="game-completion-notice" id="gameCompletionNotice" style="display: none;">
+           <div class="completion-content">
+             <div class="completion-icon">
+               <i class="fas fa-trophy"></i>
+             </div>
+             <h4 class="completion-title">Round Progress</h4>
+             <div class="completion-stats">
+               <div class="completion-stat">
+                 <span class="stat-label">Current Round:</span>
+                 <span class="stat-value" id="currentRound">1</span>
+               </div>
+               <div class="completion-stat">
+                 <span class="stat-label">Difficulties Completed:</span>
+                 <span class="stat-value" id="difficultiesCompleted">0/3</span>
+               </div>
+               <div class="completion-stat">
+                 <span class="stat-label">Round Points:</span>
+                 <span class="stat-value" id="roundPoints">0</span>
+               </div>
+             </div>
+             <div class="difficulty-progress">
+               <div class="difficulty-item" id="easyProgress">
+                 <span class="difficulty-name">Easy</span>
+                 <span class="difficulty-status">Not Started</span>
+                 <span class="difficulty-points" id="easyPoints">10 pts</span>
+               </div>
+               <div class="difficulty-item" id="mediumProgress">
+                 <span class="difficulty-name">Medium</span>
+                 <span class="difficulty-status">Not Started</span>
+                 <span class="difficulty-points" id="mediumPoints">15 pts</span>
+               </div>
+               <div class="difficulty-item" id="hardProgress">
+                 <span class="difficulty-name">Hard</span>
+                 <span class="difficulty-status">Not Started</span>
+                 <span class="difficulty-points" id="hardPoints">25 pts</span>
+               </div>
+             </div>
+           </div>
+         </div>
+         <div class="completion-actions">
+           <button class="btn btn-primary" onclick="playAgain()">
+             <i class="fas fa-play"></i>
+             Play Again
+           </button>
+           <button class="btn btn-success" onclick="goToRewards()">
+             <i class="fas fa-star"></i>
+             View Rewards
+           </button>
+         </div>
+       </div>
+       <div class="modal-actions">
+         <button class="btn btn-secondary" onclick="closeMemoryGame()">Close Game</button>
+         <button class="btn btn-primary" onclick="markGameCompleted()">
+           <i class="fas fa-check"></i>
+           Mark as Completed
+         </button>
+       </div>
+     </div>
+   </div>
+
+   <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="showSection('home')">
+      <i class="fas fa-home icon-xl"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="showSection('rewards')">
+      <i class="fas fa-star icon-xl"></i>
+      <span>Rewards</span>
+    </div>
+    <div class="nav-item" onclick="showSection('games')">
+      <i class="fas fa-gamepad icon-xl"></i>
+      <span>My Games</span>
+    </div>
+    <div class="nav-item" onclick="showSection('profile')">
+      <i class="fas fa-user icon-xl"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    // Emergency Request Feature - Version 1.0
+    // Updated: Emergency request modal and functionality implemented
+    const supabase = window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+    let currentStudent = null;
+
+    // Load student data on page load - WITH DATABASE CONNECTION
+    document.addEventListener('DOMContentLoaded', async function() {
+      const studentId = localStorage.getItem('studentId');
+      console.log('Page loaded, checking studentId:', studentId);
+      
+      if (!studentId) {
+        console.log('No studentId found, redirecting to login');
+        window.location.href = 'studentLogin.html';
+        return;
+      }
+      
+      try {
+        console.log('Fetching student data from database...');
+        
+        // Get fresh student data from database
+        const { data: student, error } = await supabase
+          .from('children')
+          .select('id, first_name, surname, email, balance, parent_id')
+          .eq('id', studentId)
+          .single();
+        
+        console.log('Database response:', { student, error });
+        
+        if (error) {
+          console.error('Database error:', error);
+          // Don't redirect immediately, show error but stay on page
+          document.getElementById('studentName').textContent = 'Error loading data';
+          document.getElementById('studentBalance').textContent = '$0.00';
+          return;
+        }
+        
+        if (!student) {
+          console.error('No student found');
+          // Don't redirect immediately, show error but stay on page
+          document.getElementById('studentName').textContent = 'Student not found';
+          document.getElementById('studentBalance').textContent = '$0.00';
+          return;
+        }
+        
+        currentStudent = student;
+        console.log('Student loaded successfully:', student);
+        
+        // Update UI with fresh database data - check if elements exist
+        const nameElement = document.getElementById('studentName');
+        const balanceElement = document.getElementById('studentBalance');
+        
+        if (nameElement) {
+          nameElement.textContent = `${student.first_name} ${student.surname}`;
+        } else {
+          console.error('studentName element not found in DOM');
+        }
+        
+        if (balanceElement) {
+          balanceElement.textContent = `$${(student.balance || 0).toFixed(2)}`;
+        } else {
+          console.error('studentBalance element not found in DOM');
+        }
+        
+        // Load recent activity on initial load
+        await loadRecentActivity();
+        
+        // Set up periodic refresh to catch parent transfers
+        setInterval(async () => {
+          await refreshBalance();
+          await loadRecentActivity();
+        }, 5000); // Refresh every 5 seconds
+        
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        // Don't redirect on errors, just show error message with null checks
+        const nameElement = document.getElementById('studentName');
+        const balanceElement = document.getElementById('studentBalance');
+        
+        if (nameElement) nameElement.textContent = 'Error occurred';
+        if (balanceElement) balanceElement.textContent = '$0.00';
+      }
+    });
+
+    // Function to refresh balance from database
+    async function refreshBalance() {
+      if (!currentStudent) return;
+      
+      try {
+        const { data: student, error } = await supabase
+          .from('children')
+          .select('balance')
+          .eq('id', currentStudent.id)
+          .single();
+        
+        if (!error && student) {
+          currentStudent.balance = student.balance;
+          const balanceElement = document.getElementById('studentBalance');
+          if (balanceElement) {
+            balanceElement.textContent = `$${(student.balance || 0).toFixed(2)}`;
+          }
+        }
+      } catch (err) {
+        console.error('Error refreshing balance:', err);
+      }
+    }
+
+    // Quick Action Functions
+    function showQRScan() {
+      document.getElementById('qrScannerModal').style.display = 'block';
+      startQRScanner();
+    }
+
+    function showRequestMoney() {
+      document.getElementById('moneyRequestModal').style.display = 'block';
+      document.getElementById('requestAmount').value = '';
+      document.getElementById('requestReason').value = '';
+    }
+
+    function showEmergencyRequest() {
+      document.getElementById('emergencyRequestModal').style.display = 'block';
+      document.getElementById('emergencyAmount').value = '';
+      document.getElementById('emergencyReason').value = '';
+      document.getElementById('emergencyUrgency').value = '';
+    }
+
+    // Money Request Modal functions
+    function closeMoneyRequestModal() {
+      document.getElementById('moneyRequestModal').style.display = 'none';
+    }
+
+    async function submitMoneyRequest() {
+      const amount = parseFloat(document.getElementById('requestAmount').value);
+      const reason = document.getElementById('requestReason').value.trim();
+      
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('money_requests')
+          .insert({
+            child_id: currentStudent.id,
+            amount: amount,
+            reason: reason || 'No reason provided',
+            status: 'pending'
+          });
+        
+        if (error) throw error;
+        
+        alert('Money request sent successfully! Your parent will review it.');
+        closeMoneyRequestModal();
+        
+      } catch (err) {
+        console.error('Error submitting money request:', err);
+        alert('Error sending request: ' + err.message);
+      }
+    }
+
+    // Emergency Request Modal functions
+    function closeEmergencyRequestModal() {
+      document.getElementById('emergencyRequestModal').style.display = 'none';
+    }
+
+    async function submitEmergencyRequest() {
+      const amount = parseFloat(document.getElementById('emergencyAmount').value);
+      const reason = document.getElementById('emergencyReason').value.trim();
+      const urgency = document.getElementById('emergencyUrgency').value;
+      
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid emergency amount');
+        return;
+      }
+      
+      if (!reason) {
+        alert('Please describe the emergency situation');
+        return;
+      }
+      
+      if (!urgency) {
+        alert('Please select an urgency level');
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('emergency_requests')
+          .insert({
+            child_id: currentStudent.id,
+            amount: amount,
+            reason: reason,
+            urgency_level: urgency,
+            status: 'pending'
+          });
+        
+        if (error) throw error;
+        
+        alert('Emergency request sent successfully! Your parent will be notified immediately.');
+        closeEmergencyRequestModal();
+        
+      } catch (err) {
+        console.error('Error submitting emergency request:', err);
+        alert('Error sending emergency request: ' + err.message);
+      }
+    }
+
+    // QR Scanner functionality
+    let qrStream = null;
+    let qrScannedData = null;
+
+    async function startQRScanner() {
+      try {
+        const video = document.getElementById('qrVideo');
+        const statusDiv = document.getElementById('qrScannerStatus');
+
+        // Request camera permission
+        qrStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } // Use back camera if available
+        });
+
+        video.srcObject = qrStream;
+        statusDiv.innerHTML = '<i class="fas fa-search"></i><p>Scanning for QR code...</p>';
+
+        // Start QR code detection
+        detectQRCode();
+
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+        document.getElementById('qrScannerStatus').innerHTML = 
+          '<i class="fas fa-exclamation-triangle"></i><p>Camera access denied or not available</p>';
+      }
+    }
+
+    function detectQRCode() {
+      // Simulate QR code detection for demo purposes
+      // In a real implementation, you would use a QR code library like jsQR
+      setTimeout(() => {
+        if (qrStream) {
+          // Simulate successful QR scan with mock data
+          handleQRCodeScanned('{"merchant":"Campus Cafeteria","amount":12.50,"description":"Lunch","id":"merchant_123"}');
+        }
+      }, 3000);
+    }
+
+    function handleQRCodeScanned(qrData) {
+      try {
+        const paymentData = JSON.parse(qrData);
+        qrScannedData = paymentData;
+
+        // Update UI with payment details
+        document.getElementById('merchantName').textContent = paymentData.merchant || 'Unknown Merchant';
+        document.getElementById('paymentAmount').textContent = `$${(paymentData.amount || 0).toFixed(2)}`;
+        document.getElementById('paymentDescription').textContent = paymentData.description || 'Payment';
+
+        // Show payment details and hide scanner
+        document.getElementById('qrVideo').style.display = 'none';
+        document.getElementById('qrScannerOverlay').style.display = 'none';
+        document.getElementById('qrScannerStatus').style.display = 'none';
+        document.getElementById('qrPaymentDetails').style.display = 'block';
+        document.getElementById('confirmPaymentBtn').style.display = 'inline-block';
+
+      } catch (err) {
+        console.error('Error parsing QR code data:', err);
+        alert('Invalid QR code format');
+      }
+    }
+
+    async function processPayment() {
+      if (!currentStudent || !qrScannedData) return;
+      
+      try {
+        const amount = parseFloat(qrScannedData.amount);
+        const merchant = qrScannedData.merchant || 'Unknown Merchant';
+        
+        if (amount <= 0) {
+          alert('Invalid payment amount');
+          return;
+        }
+        
+        if (amount > currentStudent.balance) {
+          alert('Insufficient balance');
+          return;
+        }
+        
+        // Check for safety violations before processing payment
+        const violation = await checkTransactionViolation(currentStudent.id, amount, merchant);
+        
+        if (violation) {
+          const warningCount = await handleViolationWarning(currentStudent.id, violation);
+          
+          if (warningCount >= 2) {
+            // Lock account after 2 warnings
+            await lockStudentAccount(currentStudent.id, 'Repeated safety violations');
+            showAccountLockedScreen();
+            return;
+          } else {
+            // Show warning but allow transaction
+            showViolationWarning(violation, warningCount);
+            // Continue with transaction after warning
+          }
+        }
+        
+        // Update balance
+        const newBalance = currentStudent.balance - amount;
+        
+        const { error: updateError } = await supabase
+          .from('children')
+          .update({ balance: newBalance })
+          .eq('id', currentStudent.id);
+        
+        if (updateError) throw updateError;
+        
+        // Create transaction record
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            child_id: currentStudent.id,
+            parent_id: currentStudent.parent_id,
+            amount: amount,
+            type: 'qr_payment',
+            description: `Payment to ${merchant}`,
+            status: 'completed'
+          });
+        
+        if (transactionError) {
+          console.error('Error creating transaction record:', transactionError);
+        }
+        
+        // Update current student balance
+        currentStudent.balance = newBalance;
+        
+        alert(`Payment successful! $${amount.toFixed(2)} paid to ${merchant}`);
+        closeQRScanner();
+        
+        // Refresh balance display
+        document.getElementById('studentBalance').textContent = `$${newBalance.toFixed(2)}`;
+        loadRecentActivity();
+
+      } catch (err) {
+        console.error('Error processing payment:', err);
+        alert('Payment failed: ' + err.message);
+      }
+    }
+
+    function closeQRScanner() {
+      // Stop camera stream
+      if (qrStream) {
+        qrStream.getTracks().forEach(track => track.stop());
+        qrStream = null;
+      }
+
+      // Reset modal state
+      document.getElementById('qrScannerModal').style.display = 'none';
+      document.getElementById('qrVideo').style.display = 'block';
+      document.getElementById('qrScannerOverlay').style.display = 'block';
+      document.getElementById('qrScannerStatus').style.display = 'block';
+      document.getElementById('qrPaymentDetails').style.display = 'none';
+      document.getElementById('confirmPaymentBtn').style.display = 'none';
+      qrScannedData = null;
+    }
+
+    // Section Navigation
+    function showSection(sectionName) {
+      // Skip account lock check for navigation to prevent issues
+      // if (currentStudent) {
+      //   checkAccountLock(currentStudent.id).then(isLocked => {
+      //     if (isLocked) {
+      //       showAccountLockedScreen();
+      //       return;
+      //     }
+      //   });
+      // }
+      
+      // Hide all sections
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Remove active class from all nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById(sectionName + 'Section').style.display = 'block';
+      
+      // Add active class to selected nav item
+      document.querySelector(`[onclick="showSection('${sectionName}')"]`).classList.add('active');
+      
+      // Load data based on section
+      if (sectionName === 'dashboard') {
+        loadRecentActivity();
+      } else if (sectionName === 'profile') {
+        loadProfileData();
+      } else if (sectionName === 'rewards') {
+        loadRewardsData();
+      } else if (sectionName === 'games') {
+        loadGamesData();
+      }
+    }
+
+    // Load rewards data
+    async function loadRewardsData() {
+      if (!currentStudent) return;
+      
+      try {
+        // For now, we'll use mock data. In a real implementation, you would fetch from database
+        const totalPoints = 1250;
+        const monthlyPoints = 350;
+        
+        document.getElementById('totalPoints').textContent = totalPoints.toLocaleString();
+        document.getElementById('monthlyPoints').textContent = monthlyPoints.toString();
+        
+        // Update redeem button states based on points
+        updateRedeemButtons(totalPoints);
+        
+      } catch (err) {
+        console.error('Error loading rewards data:', err);
+      }
+    }
+
+    // Update redeem button states
+    function updateRedeemButtons(totalPoints) {
+      const redeemButtons = document.querySelectorAll('.reward-redeem-btn');
+      redeemButtons.forEach(button => {
+        const rewardItem = button.closest('.reward-item');
+        const cost = parseInt(button.getAttribute('onclick')?.match(/\d+/)?.[0] || '0');
+        
+        if (totalPoints >= cost) {
+          button.disabled = false;
+          button.textContent = 'Redeem';
+          button.className = 'btn btn-primary reward-redeem-btn';
+          rewardItem.classList.remove('reward-item--locked');
+        } else {
+          button.disabled = true;
+          button.textContent = 'Not enough points';
+          button.className = 'btn btn-secondary reward-redeem-btn';
+          rewardItem.classList.add('reward-item--locked');
+        }
+      });
+    }
+
+    // Redeem reward function
+    async function redeemReward(rewardType, cost) {
+      if (!currentStudent) return;
+      
+      const currentPoints = parseInt(document.getElementById('totalPoints').textContent.replace(',', ''));
+      
+      if (currentPoints < cost) {
+        alert('You don\'t have enough points for this reward!');
+        return;
+      }
+      
+      const confirmRedeem = confirm(`Are you sure you want to redeem this reward for ${cost} points?`);
+      if (!confirmRedeem) return;
+      
+      try {
+        // In a real implementation, you would update the database
+        // For now, we'll just update the UI
+        const newPoints = currentPoints - cost;
+        document.getElementById('totalPoints').textContent = newPoints.toLocaleString();
+        
+        // Update button states
+        updateRedeemButtons(newPoints);
+        
+        alert(`Reward redeemed successfully! You now have ${newPoints} points remaining.`);
+        
+        // Here you would typically also create a reward redemption record
+        // and notify the parent about the reward redemption
+        
+      } catch (err) {
+        console.error('Error redeeming reward:', err);
+        alert('Error redeeming reward: ' + err.message);
+      }
+    }
+
+    // Load recent activity
+    async function loadRecentActivity() {
+      if (!currentStudent) return;
+      
+      try {
+        console.log('Loading recent activity for student:', currentStudent.id);
+        
+        // Get current date and calculate date ranges
+        const now = new Date();
+        const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
+        const oneWeekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+        const oneMonthAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        
+        // Fetch all types of activities
+        const [transactionsResult, moneyRequestsResult, emergencyRequestsResult] = await Promise.all([
+          // Get transactions
+          supabase
+            .from('transactions')
+            .select('*')
+            .eq('child_id', currentStudent.id)
+            .order('created_at', { ascending: false }),
+          
+          // Get money requests for this student (all statuses)
+          supabase
+            .from('money_requests')
+            .select('*')
+            .eq('child_id', currentStudent.id)
+            .order('created_at', { ascending: false }),
+          
+          // Get emergency requests for this student (all statuses)
+          supabase
+            .from('emergency_requests')
+            .select('*')
+            .eq('child_id', currentStudent.id)
+            .order('created_at', { ascending: false }),
+        ]);
+        
+        if (transactionsResult.error) {
+          console.error('Error fetching transactions:', transactionsResult.error);
+        }
+        
+        if (moneyRequestsResult.error) {
+          console.error('Error fetching money requests:', moneyRequestsResult.error);
+        }
+        
+        if (emergencyRequestsResult.error) {
+          console.error('Error fetching emergency requests:', emergencyRequestsResult.error);
+        }
+        
+        const transactions = transactionsResult.data || [];
+        const moneyRequests = moneyRequestsResult.data || [];
+        const emergencyRequests = emergencyRequestsResult.data || [];
+        
+        console.log('Fetched transactions:', transactions.length);
+        console.log('Fetched money requests:', moneyRequests.length);
+        console.log('Fetched emergency requests:', emergencyRequests.length);
+        
+        // Combine and sort all activities
+        const allActivities = [
+          ...transactions.map(t => ({ ...t, activity_type: 'transaction' })),
+          ...moneyRequests.map(r => ({ ...r, activity_type: 'money_request' })),
+          ...emergencyRequests.map(r => ({ ...r, activity_type: 'emergency_request' }))
+        ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        console.log('Total activities:', allActivities.length);
+        
+        // Filter recent activities (last 3 days)
+        const recentActivities = allActivities.filter(activity => 
+          new Date(activity.created_at) >= threeDaysAgo
+        );
+        
+        // Filter transaction history (older than 3 days)
+        const historyActivities = allActivities.filter(activity => 
+          new Date(activity.created_at) < threeDaysAgo
+        );
+        
+        const recentActivityList = document.getElementById('recentActivityList');
+        const transactionHistoryList = document.getElementById('transactionHistoryList');
+        
+        // Clear existing content
+        recentActivityList.innerHTML = '';
+        transactionHistoryList.innerHTML = '';
+        
+        // Render recent activity (last 3 days)
+        if (recentActivities.length === 0) {
+          recentActivityList.innerHTML = `
+            <div class="empty-activity">
+              <div class="empty-icon">
+                <i class="fas fa-receipt"></i>
+              </div>
+              <p class="empty-text">No recent activity</p>
+              <p class="empty-subtext">Your activity from the last 3 days will appear here</p>
+            </div>
+          `;
+        } else {
+          recentActivities.slice(0, 10).forEach(activity => {
+            renderActivityItem(activity, recentActivityList);
+          });
+        }
+        
+        // Render transaction history (last month)
+        if (historyActivities.length === 0) {
+          transactionHistoryList.innerHTML = `
+            <div class="empty-transactions">
+              <div class="empty-icon">
+                <i class="fas fa-history"></i>
+              </div>
+              <p class="empty-text">No transaction history</p>
+              <p class="empty-subtext">Your transaction history will appear here</p>
+            </div>
+          `;
+        } else {
+          historyActivities.forEach(activity => {
+            renderActivityItem(activity, transactionHistoryList);
+          });
+        }
+        
+      } catch (err) {
+        console.error('Error loading recent activity:', err);
+        document.getElementById('recentActivityList').innerHTML = `
+          <div class="error-message">Error loading activity: ${err.message}</div>
+        `;
+      }
+    }
+    
+    // Render individual activity item
+    function renderActivityItem(activity, container) {
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      
+      let icon, title, subtitle, amount, amountClass;
+      
+      if (activity.activity_type === 'transaction') {
+        // Handle transaction activities
+        icon = getTransactionIcon(activity.type);
+        title = getTransactionTitle(activity.type, 'Parent');
+        subtitle = activity.description || getTransactionDescription(activity.type);
+        amount = `+$${Math.abs(activity.amount || 0).toFixed(2)}`;
+        amountClass = 'amount-positive';
+      } else if (activity.activity_type === 'money_request') {
+        // Handle money request activities
+        if (activity.status === 'approved') {
+          icon = 'fa-check-circle';
+          title = 'Money request approved';
+          subtitle = activity.reason || 'Request approved by parent';
+          amount = `+$${activity.amount}`;
+          amountClass = 'amount-positive';
+        } else if (activity.status === 'declined') {
+          icon = 'fa-times-circle';
+          title = 'Money request declined';
+          subtitle = activity.reason || 'Request declined by parent';
+          amount = `$${activity.amount}`;
+          amountClass = 'amount-neutral';
+        } else {
+          icon = 'fa-clock';
+          title = 'Money request pending';
+          subtitle = activity.reason || 'Waiting for parent response';
+          amount = `$${activity.amount}`;
+          amountClass = 'amount-neutral';
+        }
+      } else if (activity.activity_type === 'emergency_request') {
+        // Handle emergency request activities
+        if (activity.status === 'approved') {
+          icon = 'fa-check-circle';
+          title = 'Emergency request approved';
+          subtitle = activity.reason || 'Emergency request approved by parent';
+          amount = `+$${activity.amount}`;
+          amountClass = 'amount-positive';
+        } else if (activity.status === 'declined') {
+          icon = 'fa-times-circle';
+          title = 'Emergency request declined';
+          subtitle = activity.reason || 'Emergency request declined by parent';
+          amount = `$${activity.amount}`;
+          amountClass = 'amount-neutral';
+        } else {
+          icon = 'fa-exclamation-triangle';
+          title = 'Emergency request pending';
+          subtitle = activity.reason || 'Waiting for parent response';
+          amount = `$${activity.amount}`;
+          amountClass = 'amount-neutral';
+        }
+      }
+      
+      const iconClass = activity.status === 'approved' ? 'positive' : 
+                       activity.status === 'declined' ? 'negative' : 'neutral';
+      
+      // Add status badge for requests
+      let statusBadge = '';
+      if (activity.activity_type === 'money_request' || activity.activity_type === 'emergency_request') {
+        const statusColors = {
+          'approved': 'green',
+          'declined': 'red', 
+          'pending': 'orange'
+        };
+        const statusColor = statusColors[activity.status] || 'gray';
+        statusBadge = `<span class="status-badge" style="color: ${statusColor}; font-weight: bold; margin-left: 8px;">${activity.status.toUpperCase()}</span>`;
+      }
+      
+      item.innerHTML = `
+        <div class="activity-icon ${iconClass}">
+          <i class="fas ${icon}"></i>
+        </div>
+        <div class="activity-details">
+          <div class="activity-title">${title}</div>
+          <div class="activity-subtitle">${subtitle}</div>
+          <div class="activity-date">${formatTransactionDate(activity.created_at)}</div>
+        </div>
+        <div class="activity-amount ${amountClass}">
+          ${amount}${statusBadge}
+        </div>
+      `;
+      
+      container.appendChild(item);
+    }
+    
+    // Get transaction icon class
+    function getTransactionIconClass(type) {
+      const iconClasses = {
+        'money_sent': 'positive',
+        'qr_payment': 'negative',
+        'wallet_topup': 'positive',
+        'emergency_fund': 'positive',
+        'money_request_approved': 'positive'
+      };
+      return iconClasses[type] || 'default';
+    }
+    
+    // Get transaction icon
+    function getTransactionIcon(type) {
+      const icons = {
+        'money_sent': 'fa-plus-circle',
+        'qr_payment': 'fa-qrcode',
+        'wallet_topup': 'fa-plus-circle',
+        'emergency_fund': 'fa-exclamation-triangle',
+        'money_request_approved': 'fa-hand-holding-usd'
+      };
+      return icons[type] || 'fa-receipt';
+    }
+    
+    // Get transaction title
+    function getTransactionTitle(type, parentName) {
+      const titles = {
+        'money_sent': `Money received from ${parentName}`,
+        'qr_payment': 'QR Payment made',
+        'wallet_topup': 'Wallet topped up',
+        'emergency_fund': 'Emergency funds received',
+        'money_request_approved': `Money request approved by ${parentName}`
+      };
+      return titles[type] || 'Transaction';
+    }
+    
+    // Get transaction description
+    function getTransactionDescription(type) {
+      const descriptions = {
+        'money_sent': 'Money sent from parent',
+        'qr_payment': 'Payment via QR code',
+        'wallet_topup': 'Wallet top-up',
+        'emergency_fund': 'Emergency fund transfer',
+        'money_request_approved': 'Money request approved'
+      };
+      return descriptions[type] || 'Transaction';
+    }
+
+    // Money request helper functions
+    function getMoneyRequestIconClass(status) {
+      const iconClasses = {
+        'pending': 'warning',
+        'approved': 'positive',
+        'declined': 'negative'
+      };
+      return iconClasses[status] || 'default';
+    }
+    
+    function getMoneyRequestIcon(status) {
+      const icons = {
+        'pending': 'fa-clock',
+        'approved': 'fa-check-circle',
+        'declined': 'fa-times-circle'
+      };
+      return icons[status] || 'fa-hand-holding-usd';
+    }
+    
+    function getMoneyRequestTitle(status) {
+      const titles = {
+        'pending': 'Money request pending',
+        'approved': 'Money request approved',
+        'declined': 'Money request declined'
+      };
+      return titles[status] || 'Money request';
+    }
+    
+    // Format transaction date
+    function formatTransactionDate(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) return 'Today, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      if (diffDays === 2) return 'Yesterday, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      if (diffDays <= 7) return `${diffDays} days ago, ` + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + 
+             date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Load profile data
+    async function loadProfileData() {
+      if (!currentStudent) return;
+      
+      try {
+        // First get student data
+        const { data: studentData, error: studentError } = await supabase
+          .from('children')
+          .select('*')
+          .eq('id', currentStudent.id)
+          .single();
+        
+        if (studentError) throw studentError;
+        
+        if (studentData) {
+          // Update profile overview
+          const initials = (studentData.first_name?.[0] || '') + (studentData.surname?.[0] || '');
+          document.getElementById('profileInitials').textContent = initials;
+          document.getElementById('profileName').textContent = `${studentData.first_name} ${studentData.surname}`;
+          
+          // Update personal information
+          document.getElementById('profileFullName').textContent = `${studentData.first_name} ${studentData.surname}`;
+          document.getElementById('profileUsername').textContent = studentData.email || 'N/A';
+          document.getElementById('profileEmail').textContent = studentData.email || 'N/A';
+          
+          // Format creation date
+          const createdDate = new Date(studentData.created_at);
+          const formattedDate = createdDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          document.getElementById('profileCreatedDate').textContent = formattedDate;
+          
+          // Update spending limits and balance
+          document.getElementById('profileWeeklyLimit').textContent = `$${(studentData.weekly_limit || 0).toFixed(2)}`;
+          document.getElementById('profileDailyLimit').textContent = `$${(studentData.daily_limit || 0).toFixed(2)}`;
+          document.getElementById('profileCurrentBalance').textContent = `$${(studentData.balance || 0).toFixed(2)}`;
+          
+          // Now get parent information
+          if (studentData.parent_id) {
+            const { data: parentData, error: parentError } = await supabase
+              .from('profiles')
+              .select('first_name, surname, email')
+              .eq('id', studentData.parent_id)
+              .single();
+            
+            if (!parentError && parentData) {
+              document.getElementById('parentFullName').textContent = `${parentData.first_name || ''} ${parentData.surname || ''}`.trim() || 'N/A';
+              document.getElementById('parentEmail').textContent = parentData.email || 'N/A';
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading profile data:', err);
+      }
+    }
+
+    // Rewards System Functions
+    async function loadRewardsData() {
+      if (!currentStudent) return;
+      
+      try {
+        // Load student points
+        const { data: pointsData, error: pointsError } = await supabase
+          .from('student_points')
+          .select('*')
+          .eq('child_id', currentStudent.id)
+          .single();
+        
+        if (!pointsError && pointsData) {
+          document.getElementById('totalPoints').textContent = pointsData.total_points.toLocaleString();
+          document.getElementById('monthlyPoints').textContent = pointsData.points_this_month.toLocaleString();
+        } else {
+          // Create initial points record if it doesn't exist
+          await supabase
+            .from('student_points')
+            .insert([{ child_id: currentStudent.id, total_points: 0, points_this_month: 0 }]);
+          document.getElementById('totalPoints').textContent = '0';
+          document.getElementById('monthlyPoints').textContent = '0';
+        }
+        
+        // Load achievements
+        await loadAchievements();
+        
+        // Load rewards store
+        await loadRewardsStore();
+        
+        // Load redemption requests
+        await loadRedemptionRequests();
+        
+      } catch (err) {
+        console.error('Error loading rewards data:', err);
+      }
+    }
+    
+    async function loadAchievements() {
+      try {
+        const { data: achievements, error } = await supabase
+          .from('achievements')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const achievementsGrid = document.getElementById('achievementsGrid');
+        
+        if (!achievements || achievements.length === 0) {
+          achievementsGrid.innerHTML = '<div class="no-data">No achievements available yet</div>';
+          return;
+        }
+        
+        achievementsGrid.innerHTML = achievements.map(achievement => {
+          const isEarned = achievement.student_id === currentStudent.id;
+          const cardClass = isEarned ? 'achievement-earned' : 'achievement-locked';
+          const iconClass = isEarned ? 'achievement-icon--green' : 'achievement-icon--gray';
+          
+          return `
+            <div class="achievement-card ${cardClass}">
+              <div class="achievement-icon ${iconClass}">
+                <i class="${achievement.icon || 'fas fa-trophy'}"></i>
+              </div>
+              <div class="achievement-content">
+                <h4 class="achievement-title">${achievement.title}</h4>
+                <p class="achievement-description">${achievement.description}</p>
+                <div class="achievement-points">+${achievement.points} points</div>
+                ${achievement.progress_current !== null ? `
+                  <div class="achievement-progress">
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width: ${Math.min((achievement.progress_current / achievement.progress_target) * 100, 100)}%"></div>
+                    </div>
+                    <div class="progress-text">${achievement.progress_current}/${achievement.progress_target}</div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+      } catch (err) {
+        console.error('Error loading achievements:', err);
+        document.getElementById('achievementsGrid').innerHTML = '<div class="error-message">Error loading achievements</div>';
+      }
+    }
+    
+    async function loadRewardsStore() {
+      try {
+        const { data: rewards, error } = await supabase
+          .from('rewards_store')
+          .select('*')
+          .eq('parent_id', currentStudent.parent_id)
+          .eq('is_active', true)
+          .order('points_cost', { ascending: true });
+        
+        if (error) throw error;
+        
+        const rewardsGrid = document.getElementById('rewardsStoreGrid');
+        const currentPoints = parseInt(document.getElementById('totalPoints').textContent.replace(/,/g, '')) || 0;
+        
+        if (!rewards || rewards.length === 0) {
+          rewardsGrid.innerHTML = '<div class="no-data">No rewards available. Ask your parent to add some rewards!</div>';
+          return;
+        }
+        
+        rewardsGrid.innerHTML = rewards.map(reward => {
+          const canAfford = currentPoints >= reward.points_cost;
+          const buttonClass = canAfford ? 'btn-primary' : 'btn-secondary';
+          const buttonText = canAfford ? 'Redeem' : 'Not enough points';
+          const itemClass = canAfford ? '' : 'reward-item--locked';
+          
+          return `
+            <div class="reward-item ${itemClass}">
+              <div class="reward-icon">
+                <i class="${reward.icon || 'fas fa-gift'}"></i>
+              </div>
+              <div class="reward-content">
+                <h4 class="reward-title">${reward.title}</h4>
+                <p class="reward-description">${reward.description || ''}</p>
+                <div class="reward-cost">${reward.points_cost} points</div>
+              </div>
+              <button class="btn ${buttonClass} reward-redeem-btn" 
+                      ${canAfford ? '' : 'disabled'}
+                      onclick="redeemReward('${reward.id}', ${reward.points_cost})">
+                ${buttonText}
+              </button>
+            </div>
+          `;
+        }).join('');
+        
+      } catch (err) {
+        console.error('Error loading rewards store:', err);
+        document.getElementById('rewardsStoreGrid').innerHTML = '<div class="error-message">Error loading rewards</div>';
+      }
+    }
+    
+    async function loadRedemptionRequests() {
+      try {
+        // First try to get redemption requests with reward details
+        const { data: requests, error } = await supabase
+          .from('reward_redemptions')
+          .select('*')
+          .eq('child_id', currentStudent.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        
+        if (error) {
+          console.error('Database error:', error);
+          throw error;
+        }
+        
+        const requestsContainer = document.getElementById('redemptionRequests');
+        
+        if (!requests || requests.length === 0) {
+          requestsContainer.innerHTML = '<div class="no-data">No redemption requests yet</div>';
+          return;
+        }
+
+        // Get reward details for each request
+        const requestsWithRewards = await Promise.all(
+          requests.map(async (request) => {
+            try {
+              const { data: reward } = await supabase
+                .from('rewards_store')
+                .select('title, points_cost, icon')
+                .eq('id', request.reward_id)
+                .single();
+              
+              return { ...request, reward_details: reward };
+            } catch (err) {
+              console.warn('Could not load reward details for request:', request.id);
+              return { ...request, reward_details: null };
+            }
+          })
+        );
+        
+        requestsContainer.innerHTML = requestsWithRewards.map(request => {
+          const statusClass = {
+            'pending': 'status-pending',
+            'approved': 'status-approved',
+            'declined': 'status-declined'
+          }[request.status] || 'status-pending';
+          
+          const statusText = {
+            'pending': 'Pending approval',
+            'approved': 'Approved',
+            'declined': 'Declined'
+          }[request.status] || 'Pending';
+          
+          const timeAgo = formatTimeAgo(new Date(request.created_at));
+          const reward = request.reward_details;
+          
+          return `
+            <div class="redemption-request-item">
+              <div class="request-icon">
+                <i class="${reward?.icon || 'fas fa-gift'}"></i>
+              </div>
+              <div class="request-content">
+                <h4 class="request-title">${reward?.title || 'Reward Request'}</h4>
+                <div class="request-details">
+                  <span class="request-cost">${reward?.points_cost || 0} points</span>
+                  <span class="request-time">${timeAgo}</span>
+                </div>
+                ${request.parent_response ? `<p class="request-response">"${request.parent_response}"</p>` : ''}
+              </div>
+              <div class="request-status ${statusClass}">${statusText}</div>
+            </div>
+          `;
+        }).join('');
+        
+      } catch (err) {
+        console.error('Error loading redemption requests:', err);
+        const requestsContainer = document.getElementById('redemptionRequests');
+        requestsContainer.innerHTML = '<div class="no-data">Unable to load redemption requests. This feature will be available once you make your first reward request.</div>';
+      }
+    }
+    
+    async function redeemReward(rewardId, pointsCost) {
+      try {
+        const currentPoints = parseInt(document.getElementById('totalPoints').textContent.replace(/,/g, '')) || 0;
+        
+        if (currentPoints < pointsCost) {
+          alert('You don\'t have enough points for this reward!');
+          return;
+        }
+        
+        // Use the already initialized supabase client
+        if (!supabase) {
+          alert('Unable to process redemption. Please try again later.');
+          return;
+        }
+        
+        // Create redemption request
+        const { data, error } = await supabase
+          .from('reward_redemptions')
+          .insert([{
+            child_id: currentStudent.id,
+            reward_id: rewardId,
+            points_used: pointsCost,
+            status: 'redeemed',
+            redeemed_at: new Date().toISOString(),
+            created_at: new Date().toISOString()
+          }]);
+          
+        if (error) throw error;
+        
+        // Deduct points from student's total
+        const newPointsTotal = currentPoints - pointsCost;
+        
+        // Update student points in database
+        const { error: pointsError } = await supabase
+          .from('student_points')
+          .update({ 
+            total_points: newPointsTotal,
+            updated_at: new Date().toISOString()
+          })
+          .eq('child_id', currentStudent.id);
+        
+        if (pointsError) {
+          console.error('Error updating points:', pointsError);
+        }
+        
+        // Update UI immediately
+        document.getElementById('totalPoints').textContent = newPointsTotal.toLocaleString();
+        
+        alert('Reward redeemed successfully! Your points have been deducted.');
+        
+        // Reload rewards data to update UI
+        await loadRewardsData();
+        
+      } catch (err) {
+        console.error('Error redeeming reward:', err);
+        alert('Error processing redemption. Please try again.');
+      }
+    }
+
+    function formatTimeAgo(date) {
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+      
+      if (diffInSeconds < 60) return 'Just now';
+      if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+      if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+      if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+      
+      return date.toLocaleDateString();
+    }
+
+    // Memory Game Integration Functions
+    function startMemoryGame() {
+      document.getElementById('memoryGameModal').style.display = 'block';
+      // Reset completion notice
+      document.getElementById('gameCompletionNotice').style.display = 'none';
+      
+      // Reload iframe to start fresh game
+      const iframe = document.getElementById('memoryGameFrame');
+      iframe.src = iframe.src;
+    }
+
+    function markGameCompleted() {
+      // Calculate points earned (base 50 points for completion)
+      const pointsEarned = 50;
+      
+      // Show completion notice
+      document.getElementById('completionPoints').textContent = `+${pointsEarned}`;
+      document.getElementById('gameCompletionNotice').style.display = 'block';
+      
+      // Update student points
+      updateStudentGamePoints(pointsEarned);
+    }
+
+    // Memory Game Integration Functions
+    let gameProgress = {
+      currentRound: 1,
+      completedDifficulties: [],
+      roundPoints: 0,
+      gameStarted: false,
+      lastCompletedDifficulty: null
+    };
+
+    function startMemoryGame() {
+      document.getElementById('memoryGameModal').style.display = 'block';
+      // Initialize game progress tracking
+      initializeGameProgress();
+      // Listen for messages from the game iframe
+      window.addEventListener('message', handleGameMessage);
+    }
+
+    function closeMemoryGame() {
+      document.getElementById('memoryGameModal').style.display = 'none';
+      window.removeEventListener('message', handleGameMessage);
+    }
+
+    function initializeGameProgress() {
+      updateProgressDisplay();
+      document.getElementById('gameCompletionNotice').style.display = 'block';
+    }
+
+    function handleGameMessage(event) {
+      // Listen for completion messages from the memory game
+      if (event.origin !== 'https://memory-game-plum-pi.vercel.app') return;
+      
+      if (event.data.type === 'gameCompleted') {
+        const difficulty = event.data.difficulty; // 'easy', 'medium', 'hard'
+        handleDifficultyCompleted(difficulty);
+      }
+    }
+
+    function handleDifficultyCompleted(difficulty) {
+      if (gameProgress.completedDifficulties.includes(difficulty)) return;
+      
+      gameProgress.completedDifficulties.push(difficulty);
+      gameProgress.lastCompletedDifficulty = difficulty;
+      
+      // Calculate points for this difficulty
+      const points = calculateDifficultyPoints(difficulty, gameProgress.currentRound);
+      gameProgress.roundPoints += points;
+      
+      // Update progress display
+      updateProgressDisplay();
+      updateDifficultyStatus(difficulty, 'Completed');
+      
+      // Check if round is complete (all 3 difficulties done)
+      if (gameProgress.completedDifficulties.length === 3) {
+        enableMarkAsCompleted();
+      }
+    }
+
+    function calculateDifficultyPoints(difficulty, round) {
+      const basePoints = {
+        'easy': 10,
+        'medium': 15,
+        'hard': 25
+      };
+      
+      let multiplier = 1;
+      if (round > 1) {
+        if (round === 2) {
+          multiplier = difficulty === 'hard' ? 1.4 : 1.5; // +10 for hard, +5 for easy/medium
+        } else {
+          // Round 3+: accumulating increases
+          const easyMediumIncrease = 5 + ((round - 2) * 10);
+          const hardIncrease = 10 + ((round - 2) * 20);
+          
+          if (difficulty === 'hard') {
+            multiplier = 1 + (hardIncrease / basePoints[difficulty]);
+          } else {
+            multiplier = 1 + (easyMediumIncrease / basePoints[difficulty]);
+          }
+        }
+      }
+      
+      return Math.round(basePoints[difficulty] * multiplier);
+    }
+
+    function updateProgressDisplay() {
+      document.getElementById('currentRound').textContent = gameProgress.currentRound;
+      document.getElementById('difficultiesCompleted').textContent = `${gameProgress.completedDifficulties.length}/3`;
+      document.getElementById('roundPoints').textContent = gameProgress.roundPoints;
+      
+      // Update difficulty points display
+      ['easy', 'medium', 'hard'].forEach(difficulty => {
+        const points = calculateDifficultyPoints(difficulty, gameProgress.currentRound);
+        document.getElementById(`${difficulty}Points`).textContent = `${points} pts`;
+      });
+    }
+
+    function updateDifficultyStatus(difficulty, status) {
+      const statusElement = document.querySelector(`#${difficulty}Progress .difficulty-status`);
+      if (statusElement) {
+        statusElement.textContent = status;
+        statusElement.parentElement.classList.add('completed');
+      }
+    }
+
+    function enableMarkAsCompleted() {
+      const button = document.querySelector('button[onclick="markGameCompleted()"]');
+      button.disabled = false;
+      button.style.opacity = '1';
+      button.innerHTML = '<i class="fas fa-check"></i> Complete Round ' + gameProgress.currentRound;
+    }
+
+    function playAgain() {
+      // Reset the iframe to restart the game
+      const iframe = document.getElementById('memoryGameFrame');
+      iframe.src = iframe.src;
+      
+      // Reset current round progress but keep round number
+      gameProgress.completedDifficulties = [];
+      gameProgress.roundPoints = 0;
+      gameProgress.lastCompletedDifficulty = null;
+      
+      updateProgressDisplay();
+      
+      // Reset difficulty statuses
+      ['easy', 'medium', 'hard'].forEach(difficulty => {
+        updateDifficultyStatus(difficulty, 'Not Started');
+        document.querySelector(`#${difficulty}Progress`).classList.remove('completed');
+      });
+      
+      // Disable mark as completed button
+      const button = document.querySelector('button[onclick="markGameCompleted()"]');
+      button.disabled = true;
+      button.style.opacity = '0.5';
+      button.innerHTML = '<i class="fas fa-check"></i> Complete All Difficulties First';
+    }
+
+    function goToRewards() {
+      closeMemoryGame();
+      // Navigate to rewards section if it exists
+      alert('Rewards section coming soon!');
+    }
+
+    async function markGameCompleted() {
+      // Only allow if all difficulties are completed
+      if (gameProgress.completedDifficulties.length !== 3) {
+        alert('Please complete all difficulty levels (Easy, Medium, Hard) before marking as completed!');
+        return;
+      }
+      
+      const pointsEarned = gameProgress.roundPoints;
+      
+      try {
+        // Save game session to database
+        await saveGameSession('Memory Game', pointsEarned, gameProgress.currentRound);
+        
+        // Update daily game stats
+        const today = new Date().toDateString();
+        if (!dailyGameStats[today]) {
+          dailyGameStats[today] = { gamesPlayed: 0, totalPoints: 0 };
+        }
+        dailyGameStats[today].gamesPlayed++;
+        dailyGameStats[today].totalPoints += pointsEarned;
+        
+        // Update points display
+        updatePointsDisplay();
+        
+        // Prepare for next round
+        gameProgress.currentRound++;
+        gameProgress.completedDifficulties = [];
+        gameProgress.roundPoints = 0;
+        
+        alert(`Round completed! You earned ${pointsEarned} points. Starting Round ${gameProgress.currentRound}!`);
+        
+        // Reset for next round
+        playAgain();
+        
+      } catch (error) {
+        console.error('Error marking game as completed:', error);
+        alert('Error saving game progress. Please try again.');
+      }
+    }
+
+    function addGameActivity(gameName, pointsEarned, score) {
+      const activityList = document.getElementById('gameActivityList');
+      const emptyState = activityList.querySelector('.empty-activity');
+      
+      if (emptyState) {
+        activityList.innerHTML = '';
+      }
+      
+      const activityItem = document.createElement('div');
+      activityItem.className = 'game-activity-item';
+      activityItem.innerHTML = `
+        <div class="activity-icon">
+          <i class="fas fa-brain"></i>
+        </div>
+        <div class="activity-content">
+          <div class="activity-title">${gameName}</div>
+          <div class="activity-details">Score: ${score} • Points: +${pointsEarned}</div>
+          <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+        </div>
+      `;
+      
+      activityList.insertBefore(activityItem, activityList.firstChild);
+      
+      // Keep only last 5 activities
+      const activities = activityList.querySelectorAll('.game-activity-item');
+      if (activities.length > 5) {
+        activities[activities.length - 1].remove();
+      }
+    }
+
+    function closeMemoryGame() {
+      document.getElementById('memoryGameModal').style.display = 'none';
+      document.getElementById('gameCompletionNotice').style.display = 'none';
+    }
+
+    function goToRewards() {
+      closeMemoryGame();
+      showSection('rewards');
+    }
+
+    // Save game session to database
+    async function saveGameSession(gameName, pointsEarned, score) {
+      if (!currentStudent) return;
+      
+      try {
+        // Use the already initialized supabase client
+        if (!supabase) return;
+        
+        // First, ensure the Memory Game exists in games table
+        const { data: game, error: gameError } = await supabase
+          .from('games')
+          .select('id')
+          .eq('name', gameName)
+          .single();
+        
+        let gameId;
+        if (gameError || !game) {
+          // Create the Memory Game entry
+          const { data: newGame, error: createError } = await supabase
+            .from('games')
+            .insert({
+              name: gameName,
+              description: 'Memory card matching game',
+              points_per_win: 50,
+              max_daily_points: 200,
+              is_active: true
+            })
+            .select('id')
+            .single();
+          
+          if (createError) throw createError;
+          gameId = newGame.id;
+        } else {
+          gameId = game.id;
+        }
+        
+        // Save game session
+        const { error: sessionError } = await supabase
+          .from('game_sessions')
+          .insert({
+            student_id: currentStudent.id,
+            game_id: gameId,
+            score: score,
+            points_earned: pointsEarned,
+            completed: true,
+            session_data: { completed_at: new Date().toISOString() }
+          });
+        
+        if (sessionError) throw sessionError;
+        
+        console.log('Game session saved successfully');
+        
+      } catch (err) {
+        console.error('Error saving game session:', err);
+      }
+    }
+
+    // Load game activity from database
+    async function loadGameActivity() {
+      if (!currentStudent) return;
+      
+      try {
+        // Use the already initialized supabase client
+        if (!supabase) return;
+        
+        const { data: sessions, error } = await supabase
+          .from('game_sessions')
+          .select(`
+            *,
+            games(name)
+          `)
+          .eq('student_id', currentStudent.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) throw error;
+        
+        const activityList = document.getElementById('gameActivityList');
+        
+        if (!sessions || sessions.length === 0) {
+          activityList.innerHTML = `
+            <div class="empty-activity">
+              <i class="fas fa-gamepad"></i>
+              <p>No games played yet</p>
+              <small>Start playing games to see your activity here</small>
+            </div>
+          `;
+          return;
+        }
+        
+        activityList.innerHTML = '';
+        
+        sessions.forEach(session => {
+          const activityItem = document.createElement('div');
+          activityItem.className = 'game-activity-item';
+          
+          const timeAgo = getTimeAgo(new Date(session.created_at));
+          
+          activityItem.innerHTML = `
+            <div class="activity-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">${session.games.name}</div>
+              <div class="activity-details">Score: ${session.score || 'N/A'} • Points: +${session.points_earned}</div>
+              <div class="activity-time">${timeAgo}</div>
+            </div>
+          `;
+          
+          activityList.appendChild(activityItem);
+        });
+        
+      } catch (err) {
+        console.error('Error loading game activity:', err);
+      }
+    }
+
+    // Helper function to format time ago
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${diffDays}d ago`;
+    }
+
+    // Load game data when games section is shown
+    async function loadGamesData() {
+      if (!currentStudent) return;
+      
+      const today = new Date().toDateString();
+      const dailyPoints = parseInt(localStorage.getItem(`dailyGamePoints_${currentStudent.id}_${today}`)) || 0;
+      const gamesPlayed = parseInt(localStorage.getItem(`gamesPlayed_${currentStudent.id}_${today}`)) || 0;
+      const bestScore = parseInt(localStorage.getItem(`memoryBestScore_${currentStudent.id}`)) || 0;
+      
+      document.getElementById('dailyGamePoints').textContent = dailyPoints;
+      document.getElementById('gamesPlayedToday').textContent = gamesPlayed;
+      document.getElementById('memoryBestScore').textContent = bestScore;
+      
+      // Load game activity from database
+      await loadGameActivity();
+    }
+
+    // Load student data when page loads - use the existing DOMContentLoaded function instead
+
+    // Safety and violation checking functions
+    async function checkAccountLock(childId) {
+      try {
+        // Skip account lock check if safety tables don't exist yet
+        const { data: lockData, error } = await supabase
+          .from('account_locks')
+          .select('*')
+          .eq('child_id', childId)
+          .eq('is_locked', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (error) {
+          console.error('Error checking account lock (table may not exist):', error);
+          // Return false if table doesn't exist - don't block login
+          return false;
+        }
+        
+        return lockData && lockData.length > 0;
+      } catch (err) {
+        console.error('Error checking account lock:', err);
+        // Return false on any error - don't block login
+        return false;
+      }
+    }
+
+    async function checkTransactionViolation(childId, amount, merchant) {
+      try {
+        // Get parent's safety settings
+        const { data: settings, error: settingsError } = await supabase
+          .from('safety_settings')
+          .select('*')
+          .eq('child_id', childId)
+          .eq('is_active', true)
+          .single();
+        
+        if (settingsError || !settings) {
+          // No settings found, use defaults
+          return checkDefaultViolations(amount, merchant);
+        }
+        
+        const merchantLower = merchant.toLowerCase();
+        const currentHour = new Date().getHours();
+        
+        // Check restricted locations
+        if (settings.restricted_locations && 
+            settings.restricted_locations.some(location => merchantLower.includes(location))) {
+          return {
+            type: 'restricted_location',
+            message: `Transaction at restricted location: ${merchant}`,
+            severity: 'high',
+            amount: amount,
+            location: merchant
+          };
+        }
+        
+        // Check time restrictions
+        if (currentHour < settings.allowed_hours_start || currentHour > settings.allowed_hours_end) {
+          return {
+            type: 'time_violation',
+            message: `Transaction outside allowed hours (${settings.allowed_hours_start}:00 - ${settings.allowed_hours_end}:00)`,
+            severity: 'medium',
+            amount: amount,
+            location: merchant
+          };
+        }
+        
+        // Check amount limits
+        if (amount > settings.max_transaction_amount) {
+          return {
+            type: 'amount_violation',
+            message: `Transaction amount ($${amount}) exceeds limit ($${settings.max_transaction_amount})`,
+            severity: 'medium',
+            amount: amount,
+            location: merchant
+          };
+        }
+        
+        return null;
+      } catch (err) {
+        console.error('Error checking transaction violation:', err);
+        return null;
+      }
+    }
+
+    function checkDefaultViolations(amount, merchant) {
+      const restrictedKeywords = ['liquor', 'bar', 'pub', 'casino', 'gambling', 'nightclub', 'adult', 'tobacco', 'vape', 'alcohol'];
+      const merchantLower = merchant.toLowerCase();
+      const currentHour = new Date().getHours();
+      
+      // Check restricted locations
+      if (restrictedKeywords.some(keyword => merchantLower.includes(keyword))) {
+        return {
+          type: 'restricted_location',
+          message: `Transaction at inappropriate location: ${merchant}`,
+          severity: 'high',
+          amount: amount,
+          location: merchant
+        };
+      }
+      
+      // Check late night spending
+      if ((currentHour > 22 || currentHour < 6) && amount > 10) {
+        return {
+          type: 'time_violation',
+          message: `Late night transaction detected`,
+          severity: 'medium',
+          amount: amount,
+          location: merchant
+        };
+      }
+      
+      // Check large amounts
+      if (amount > 50) {
+        return {
+          type: 'amount_violation',
+          message: `Large transaction amount: $${amount}`,
+          severity: 'medium',
+          amount: amount,
+          location: merchant
+        };
+      }
+      
+      return null;
+    }
+
+    async function handleViolationWarning(childId, violation) {
+      try {
+        // Record the violation
+        const { error: violationError } = await supabase
+          .from('violations')
+          .insert({
+            child_id: childId,
+            parent_id: currentStudent.parent_id,
+            violation_type: violation.type,
+            description: violation.message,
+            severity: violation.severity,
+            amount: violation.amount || 0,
+            location: violation.location || 'Unknown'
+          });
+        
+        if (violationError) {
+          console.error('Error recording violation:', violationError);
+        }
+        
+        // Get current warning count
+        const { data: lockData, error: lockError } = await supabase
+          .from('account_locks')
+          .select('warning_count')
+          .eq('child_id', childId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        let currentWarnings = 0;
+        if (!lockError && lockData && lockData.length > 0) {
+          currentWarnings = lockData[0].warning_count || 0;
+        }
+        
+        const newWarningCount = currentWarnings + 1;
+        
+        // Update or create account lock record
+        const { error: updateError } = await supabase
+          .from('account_locks')
+          .upsert({
+            child_id: childId,
+            parent_id: currentStudent.parent_id,
+            warning_count: newWarningCount,
+            lock_reason: violation.message,
+            is_locked: false
+          });
+        
+        if (updateError) {
+          console.error('Error updating warning count:', updateError);
+        }
+        
+        return newWarningCount;
+      } catch (err) {
+        console.error('Error handling violation warning:', err);
+        return 0;
+      }
+    }
+
+    async function lockStudentAccount(childId, reason) {
+      try {
+        const { error } = await supabase
+          .from('account_locks')
+          .upsert({
+            child_id: childId,
+            parent_id: currentStudent.parent_id,
+            lock_reason: reason,
+            is_locked: true,
+            locked_at: new Date().toISOString(),
+            warning_count: 2
+          });
+        
+        if (error) {
+          console.error('Error locking account:', error);
+        }
+      } catch (err) {
+        console.error('Error locking account:', err);
+      }
+    }
+
+    function showViolationWarning(violation, warningCount) {
+      const warningsLeft = 2 - warningCount;
+      let message = `⚠️ SAFETY VIOLATION DETECTED ⚠️\n\n`;
+      message += `${violation.message}\n\n`;
+      message += `This is warning ${warningCount} of 2.\n`;
+      
+      if (warningsLeft > 0) {
+        message += `You have ${warningsLeft} warning(s) left before your account is locked.\n\n`;
+        message += `Please follow the safety rules set by your parent.`;
+      } else {
+        message += `Your account will be locked after this transaction.`;
+      }
+      
+      alert(message);
+    }
+
+    function showAccountLockedScreen() {
+      // Hide all content
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Create and show lock screen
+      const lockScreen = document.createElement('div');
+      lockScreen.id = 'accountLockScreen';
+      lockScreen.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        text-align: center;
+        padding: 2rem;
+      `;
+      
+      lockScreen.innerHTML = `
+        <div style="max-width: 500px;">
+          <i class="fas fa-lock" style="font-size: 4rem; margin-bottom: 2rem; opacity: 0.9;"></i>
+          <h1 style="font-size: 2.5rem; margin-bottom: 1rem; font-weight: bold;">Account Locked</h1>
+          <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">
+            Your account has been temporarily locked due to safety violations.
+          </p>
+          <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
+            <p style="font-size: 1rem; margin-bottom: 1rem;">
+              You received multiple warnings for violating safety rules set by your parent.
+            </p>
+            <p style="font-size: 0.9rem; opacity: 0.8;">
+              Contact your parent to unlock your account and discuss the safety rules.
+            </p>
+          </div>
+          <button onclick="logout()" style="
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+             onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+            Return to Login
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(lockScreen);
+    }
+
+    function logout() {
+      localStorage.removeItem('studentId');
+      window.location.href = 'studentLogin.html';
+    }
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hapo • Student Login</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="nav-header-new">
+    <div class="nav-container-new">
+      <div class="nav-brand-new">
+        <img src="src/lib/images/logo.jpg" alt="Hapo Logo" class="logo-new">
+        <div class="brand-content-new">
+          <span class="brand-name-new">Hapo Technology</span>
+          <span class="brand-tagline-new">Student Portal</span>
+        </div>
+      </div>
+      <div class="nav-actions-new">
+        <button class="student-login-btn-new" onclick="window.location.href='index.html'">Back to Home</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="auth-wrap">
+    <section class="auth-card">
+      <h1 class="auth-title">Student Login</h1>
+      <p class="auth-subtitle">Use the credentials provided by your parent</p>
+
+      <form class="auth-form" id="student-login-form">
+        <div class="field">
+          <label for="studentEmail">Email</label>
+          <input id="studentEmail" type="email" class="input" placeholder="student@hapo.com" required>
+        </div>
+        <div class="field">
+          <label for="studentPassword">Password</label>
+          <input id="studentPassword" type="password" class="input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="submit-btn">Sign In</button>
+      </form>
+
+      <p class="auth-footer">Need help? Ask your parent to reset your password.</p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const supabase = window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+
+    async function hashSHA256(text) {
+      const enc = new TextEncoder().encode(text);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      const arr = Array.from(new Uint8Array(buf));
+      return arr.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    document.getElementById('student-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('studentEmail').value.trim();
+      const password = document.getElementById('studentPassword').value;
+      try {
+        const password_hash = await hashSHA256(password);
+        const { data, error } = await supabase
+          .from('children')
+          .select('id, first_name, surname, parent_id')
+          .eq('email', email)
+          .eq('password_hash', password_hash);
+        
+        if (error) throw error;
+        if (!data || data.length === 0) { 
+          alert('Invalid credentials'); 
+          return; 
+        }
+        
+        // Take the first result if multiple exist
+        const student = Array.isArray(data) ? data[0] : data;
+        localStorage.setItem('studentId', student.id);
+        localStorage.setItem('student_user', JSON.stringify(student));
+        window.location.href = 'studentDashboard.html';
+      } catch (err) {
+        console.error('Login error:', err);
+        alert('Login failed. Please check your credentials.');
+      }
+    });
+  </script>
+</body>
+</html>
