@@ -4,6 +4,7 @@
 -- =============================================================================
 -- This file consolidates all SQL setup scripts into a single organized file
 -- Run this script to set up the complete database schema for the HapoPay system
+-- Includes: Core tables, Multi-currency support, Parent ID enhancements
 -- =============================================================================
 
 -- =============================================================================
@@ -758,18 +759,214 @@ GRANT EXECUTE ON FUNCTION award_achievement_points TO authenticated;
 -- Grant schema usage permissions
 GRANT USAGE ON SCHEMA public TO authenticated;
 
+-- Insert country to currency mappings
+INSERT INTO country_currency_mapping (country_code, country_name, phone_prefix, currency_code, is_default) VALUES
+('ZA', 'South Africa', '+27', 'ZAR', true),
+('US', 'United States', '+1', 'USD', true),
+('GB', 'United Kingdom', '+44', 'GBP', true),
+('NG', 'Nigeria', '+234', 'NGN', true),
+('KE', 'Kenya', '+254', 'KES', true),
+('IN', 'India', '+91', 'INR', true),
+('CA', 'Canada', '+1', 'CAD', false),
+('AU', 'Australia', '+61', 'AUD', true),
+('DE', 'Germany', '+49', 'EUR', true),
+('FR', 'France', '+33', 'EUR', true)
+ON CONFLICT (country_code) DO UPDATE SET
+    country_name = EXCLUDED.country_name,
+    phone_prefix = EXCLUDED.phone_prefix,
+    currency_code = EXCLUDED.currency_code,
+    is_default = EXCLUDED.is_default;
+
+-- Add currency columns to existing tables
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS default_currency VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone_country_code VARCHAR(2);
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);
+
+ALTER TABLE children ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE children ADD COLUMN IF NOT EXISTS currency_override BOOLEAN DEFAULT false;
+
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE money_requests ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE recurring_payments ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+
+-- Create multi_currency_wallets table for managing separate currency balances
+CREATE TABLE IF NOT EXISTS multi_currency_wallets (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    child_id UUID REFERENCES children(id) ON DELETE CASCADE,
+    currency_code VARCHAR(3) REFERENCES currencies(code),
+    balance DECIMAL(15,4) DEFAULT 0.0000,
+    is_primary BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(child_id, currency_code)
+);
+
+-- Create indexes for multi_currency_wallets
+CREATE INDEX IF NOT EXISTS idx_multi_currency_wallets_child_id ON multi_currency_wallets(child_id);
+CREATE INDEX IF NOT EXISTS idx_multi_currency_wallets_currency ON multi_currency_wallets(currency_code);
+CREATE INDEX IF NOT EXISTS idx_multi_currency_wallets_primary ON multi_currency_wallets(child_id, is_primary) WHERE is_primary = true;
+
+-- Enable RLS for new tables
+ALTER TABLE currencies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE country_currency_mapping ENABLE ROW LEVEL SECURITY;
+ALTER TABLE multi_currency_wallets ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for new tables
+CREATE POLICY "Anyone can view currencies" ON currencies FOR SELECT USING (true);
+CREATE POLICY "Anyone can view country currency mapping" ON country_currency_mapping FOR SELECT USING (true);
+
+CREATE POLICY "Parents can view their children's wallets" ON multi_currency_wallets
+    FOR SELECT USING (
+        child_id IN (
+            SELECT id FROM children WHERE parent_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Parents can manage their children's wallets" ON multi_currency_wallets
+    FOR ALL USING (
+        child_id IN (
+            SELECT id FROM children WHERE parent_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Students can view their own wallets" ON multi_currency_wallets
+    FOR SELECT USING (
+        child_id IN (
+            SELECT id FROM children 
+            WHERE email = auth.jwt() ->> 'email'
+        )
+    );
+
+-- Multi-currency functions
+CREATE OR REPLACE FUNCTION get_currency_from_phone(country_code_param VARCHAR(2))
+RETURNS VARCHAR(3) AS $$
+DECLARE
+    currency_result VARCHAR(3);
+BEGIN
+    SELECT currency_code INTO currency_result
+    FROM country_currency_mapping
+    WHERE country_code = country_code_param AND is_default = true
+    LIMIT 1;
+    
+    RETURN COALESCE(currency_result, 'USD');
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION create_default_wallet(
+    p_child_id UUID,
+    p_currency_code VARCHAR(3)
+)
+RETURNS UUID AS $$
+DECLARE
+    wallet_id UUID;
+BEGIN
+    INSERT INTO multi_currency_wallets (child_id, currency_code, balance, is_primary)
+    VALUES (p_child_id, p_currency_code, 0.0000, true)
+    ON CONFLICT (child_id, currency_code) 
+    DO UPDATE SET is_primary = true
+    RETURNING id INTO wallet_id;
+    
+    UPDATE children 
+    SET currency_code = p_currency_code
+    WHERE id = p_child_id;
+    
+    RETURN wallet_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_wallet_balance(
+    p_child_id UUID,
+    p_currency_code VARCHAR(3),
+    p_amount DECIMAL(15,4),
+    p_operation VARCHAR(10)
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    current_balance DECIMAL(15,4);
+    new_balance DECIMAL(15,4);
+BEGIN
+    SELECT balance INTO current_balance
+    FROM multi_currency_wallets
+    WHERE child_id = p_child_id AND currency_code = p_currency_code;
+    
+    IF current_balance IS NULL THEN
+        INSERT INTO multi_currency_wallets (child_id, currency_code, balance, is_primary)
+        VALUES (p_child_id, p_currency_code, 0.0000, false);
+        current_balance := 0.0000;
+    END IF;
+    
+    IF p_operation = 'add' THEN
+        new_balance := current_balance + p_amount;
+    ELSIF p_operation = 'subtract' THEN
+        new_balance := current_balance - p_amount;
+        IF new_balance < 0 THEN
+            RETURN false;
+        END IF;
+    ELSE
+        RETURN false;
+    END IF;
+    
+    UPDATE multi_currency_wallets
+    SET balance = new_balance, updated_at = NOW()
+    WHERE child_id = p_child_id AND currency_code = p_currency_code;
+    
+    RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to create wallet when child is inserted
+CREATE OR REPLACE FUNCTION create_child_default_wallet()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM create_default_wallet(NEW.id, NEW.currency_code);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_create_child_wallet ON children;
+CREATE TRIGGER trigger_create_child_wallet
+    AFTER INSERT ON children
+    FOR EACH ROW
+    EXECUTE FUNCTION create_child_default_wallet();
+
+-- Create trigger for wallet updated_at
+CREATE TRIGGER update_multi_currency_wallets_updated_at 
+    BEFORE UPDATE ON multi_currency_wallets 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Grant permissions for multi-currency system
+GRANT SELECT ON currencies TO authenticated;
+GRANT SELECT ON country_currency_mapping TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON multi_currency_wallets TO authenticated;
+GRANT EXECUTE ON FUNCTION get_currency_from_phone TO authenticated;
+GRANT EXECUTE ON FUNCTION create_default_wallet TO authenticated;
+GRANT EXECUTE ON FUNCTION update_wallet_balance TO authenticated;
+
+-- Migrate existing data
+UPDATE profiles SET default_currency = 'USD' WHERE default_currency IS NULL;
+UPDATE children SET currency_code = 'USD' WHERE currency_code IS NULL;
+
+-- Create wallets for existing children
+INSERT INTO multi_currency_wallets (child_id, currency_code, balance, is_primary)
+SELECT id, COALESCE(currency_code, 'USD'), COALESCE(balance, 0), true
+FROM children
+WHERE id NOT IN (SELECT DISTINCT child_id FROM multi_currency_wallets WHERE multi_currency_wallets.child_id IS NOT NULL)
+ON CONFLICT (child_id, currency_code) DO NOTHING;
+
 -- =============================================================================
 -- DATABASE SETUP COMPLETE
 -- =============================================================================
 -- All tables, functions, triggers, and policies have been created successfully.
--- The HapoPay system database is now ready for use.
+-- The HapoPay system database is now ready for use with multi-currency support.
 -- 
 -- Main Tables Created:
--- - children: Child account information
--- - transactions: Money transfer records
--- - money_requests: Student money requests
--- - emergency_requests: Emergency fund requests
--- - recurring_payments: Automated payment schedules
+-- - children: Child account information (with currency support)
+-- - transactions: Money transfer records (with currency tracking)
+-- - money_requests: Student money requests (with currency support)
+-- - emergency_requests: Emergency fund requests (with currency support)
+-- - recurring_payments: Automated payment schedules (with currency support)
 -- - parent_activities: Parent activity tracking
 -- - safety_settings: Security rules and settings
 -- - violations: Security violation records
@@ -780,4 +977,275 @@ GRANT USAGE ON SCHEMA public TO authenticated;
 -- - rewards_store: Available rewards catalog
 -- - reward_redemptions: Reward redemption requests
 -- - student_points: Point balance tracking
+-- - currencies: Supported currency definitions
+-- - country_currency_mapping: Phone prefix to currency mapping
+-- - multi_currency_wallets: Multi-currency wallet management
+-- 
+-- Multi-Currency Features:
+-- - Automatic currency assignment based on phone number country code
+-- - Currency override functionality for child accounts
+-- - Multi-currency wallet support for each child
+-- - Currency-aware transactions and transfers
+-- - Parent and child currency preferences
+--
+-- Parent ID Enhancements:
+-- - Added parent_id columns to money_requests and emergency_requests tables
+-- - Improved data relationships and query performance
+-- - Enhanced RLS policies for better security
+-- =============================================================================
+
+-- =============================================================================
+-- SECTION 15: MULTI-CURRENCY SYSTEM SETUP
+-- =============================================================================
+
+-- Create currencies table for supported currencies
+CREATE TABLE IF NOT EXISTS currencies (
+    code VARCHAR(3) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    symbol VARCHAR(10) NOT NULL,
+    decimal_places INTEGER DEFAULT 2,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Insert supported currencies (10 total - covers major international remittance needs)
+INSERT INTO currencies (code, name, symbol, decimal_places, is_active) VALUES
+('ZAR', 'South African Rand', 'R', 2, true),
+('USD', 'United States Dollar', '$', 2, true),
+('GBP', 'British Pound Sterling', '£', 2, true),
+('NGN', 'Nigerian Naira', '₦', 2, true),
+('KES', 'Kenyan Shilling', 'KSh', 2, true),
+('INR', 'Indian Rupee', '₹', 2, true),
+('CAD', 'Canadian Dollar', 'C$', 2, true),
+('AUD', 'Australian Dollar', 'A$', 2, true),
+('EUR', 'Euro', '€', 2, true),
+('KRW', 'South Korean Won', '₩', 0, true)
+ON CONFLICT (code) DO UPDATE SET
+    name = EXCLUDED.name,
+    symbol = EXCLUDED.symbol,
+    decimal_places = EXCLUDED.decimal_places,
+    is_active = EXCLUDED.is_active;
+
+-- Create country_currency_mapping table for phone prefix to currency mapping
+CREATE TABLE IF NOT EXISTS country_currency_mapping (
+    country_code VARCHAR(2) PRIMARY KEY,
+    country_name VARCHAR(100) NOT NULL,
+    phone_prefix VARCHAR(10) NOT NULL,
+    currency_code VARCHAR(3) REFERENCES currencies(code),
+    is_default BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Insert country to currency mappings
+INSERT INTO country_currency_mapping (country_code, country_name, phone_prefix, currency_code, is_default) VALUES
+('ZA', 'South Africa', '+27', 'ZAR', true),
+('US', 'United States', '+1', 'USD', true),
+('GB', 'United Kingdom', '+44', 'GBP', true),
+('NG', 'Nigeria', '+234', 'NGN', true),
+('KE', 'Kenya', '+254', 'KES', true),
+('IN', 'India', '+91', 'INR', true),
+('CA', 'Canada', '+1', 'CAD', false),
+('AU', 'Australia', '+61', 'AUD', true),
+('DE', 'Germany', '+49', 'EUR', true),
+('KR', 'South Korea', '+82', 'KRW', true)
+ON CONFLICT (country_code) DO UPDATE SET
+    country_name = EXCLUDED.country_name,
+    phone_prefix = EXCLUDED.phone_prefix,
+    currency_code = EXCLUDED.currency_code,
+    is_default = EXCLUDED.is_default;
+
+-- Add currency columns to profiles table (for parents)
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS default_currency VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone_country_code VARCHAR(2);
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);
+
+-- Add currency columns to children table
+ALTER TABLE children ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE children ADD COLUMN IF NOT EXISTS currency_override BOOLEAN DEFAULT false;
+
+-- Add currency columns to transaction tables
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE money_requests ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+ALTER TABLE recurring_payments ADD COLUMN IF NOT EXISTS currency_code VARCHAR(3) REFERENCES currencies(code) DEFAULT 'USD';
+
+-- Create multi_currency_wallets table for managing separate currency balances
+CREATE TABLE IF NOT EXISTS multi_currency_wallets (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    child_id UUID REFERENCES children(id) ON DELETE CASCADE,
+    currency_code VARCHAR(3) REFERENCES currencies(code),
+    balance DECIMAL(15,4) DEFAULT 0.0000,
+    is_primary BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(child_id, currency_code)
+);
+
+-- Create indexes for multi_currency_wallets
+CREATE INDEX IF NOT EXISTS idx_multi_currency_wallets_child_id ON multi_currency_wallets(child_id);
+CREATE INDEX IF NOT EXISTS idx_multi_currency_wallets_currency ON multi_currency_wallets(currency_code);
+CREATE INDEX IF NOT EXISTS idx_multi_currency_wallets_primary ON multi_currency_wallets(child_id, is_primary) WHERE is_primary = true;
+
+-- Enable RLS for multi_currency_wallets
+ALTER TABLE multi_currency_wallets ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for multi_currency_wallets
+CREATE POLICY "Parents can view their children's wallets" ON multi_currency_wallets
+    FOR SELECT USING (
+        child_id IN (
+            SELECT id FROM children WHERE parent_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Parents can manage their children's wallets" ON multi_currency_wallets
+    FOR ALL USING (
+        child_id IN (
+            SELECT id FROM children WHERE parent_id = auth.uid()
+        )
+    );
+
+-- Grant permissions
+GRANT SELECT, INSERT, UPDATE ON multi_currency_wallets TO authenticated;
+GRANT SELECT ON currencies TO authenticated;
+GRANT SELECT ON country_currency_mapping TO authenticated;
+
+-- Create trigger for updated_at
+CREATE TRIGGER update_multi_currency_wallets_updated_at 
+    BEFORE UPDATE ON multi_currency_wallets 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Currency utility functions
+CREATE OR REPLACE FUNCTION get_currency_from_phone(country_code_param VARCHAR(2))
+RETURNS VARCHAR(3) AS $$
+DECLARE
+    currency_result VARCHAR(3);
+BEGIN
+    SELECT currency_code INTO currency_result
+    FROM country_currency_mapping
+    WHERE country_code = country_code_param AND is_default = true
+    LIMIT 1;
+    
+    RETURN COALESCE(currency_result, 'USD');
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION create_default_wallet(
+    p_child_id UUID,
+    p_currency_code VARCHAR(3)
+)
+RETURNS UUID AS $$
+DECLARE
+    wallet_id UUID;
+BEGIN
+    INSERT INTO multi_currency_wallets (child_id, currency_code, balance, is_primary)
+    VALUES (p_child_id, p_currency_code, 0.0000, true)
+    ON CONFLICT (child_id, currency_code) 
+    DO UPDATE SET is_primary = true
+    RETURNING id INTO wallet_id;
+    
+    UPDATE children 
+    SET currency_code = p_currency_code
+    WHERE id = p_child_id;
+    
+    RETURN wallet_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_wallet_balance(
+    p_child_id UUID,
+    p_currency_code VARCHAR(3),
+    p_amount DECIMAL(15,4),
+    p_operation VARCHAR(10)
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    current_balance DECIMAL(15,4);
+    new_balance DECIMAL(15,4);
+BEGIN
+    SELECT balance INTO current_balance
+    FROM multi_currency_wallets
+    WHERE child_id = p_child_id AND currency_code = p_currency_code;
+    
+    IF current_balance IS NULL THEN
+        PERFORM create_default_wallet(p_child_id, p_currency_code);
+        current_balance := 0.0000;
+    END IF;
+    
+    IF p_operation = 'add' THEN
+        new_balance := current_balance + p_amount;
+    ELSIF p_operation = 'subtract' THEN
+        new_balance := current_balance - p_amount;
+        IF new_balance < 0 THEN
+            RETURN false;
+        END IF;
+    ELSE
+        RETURN false;
+    END IF;
+    
+    UPDATE multi_currency_wallets
+    SET balance = new_balance, updated_at = NOW()
+    WHERE child_id = p_child_id AND currency_code = p_currency_code;
+    
+    RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Grant function permissions
+GRANT EXECUTE ON FUNCTION get_currency_from_phone TO authenticated;
+GRANT EXECUTE ON FUNCTION create_default_wallet TO authenticated;
+GRANT EXECUTE ON FUNCTION update_wallet_balance TO authenticated;
+
+-- =============================================================================
+-- SECTION 16: PARENT ID ENHANCEMENTS
+-- =============================================================================
+
+-- Add parent_id columns to request tables for better data relationships
+ALTER TABLE money_requests ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES profiles(id);
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES profiles(id);
+
+-- Update existing records to set parent_id based on child relationships
+UPDATE money_requests 
+SET parent_id = (
+    SELECT parent_id 
+    FROM children 
+    WHERE children.id = money_requests.child_id
+)
+WHERE parent_id IS NULL;
+
+UPDATE emergency_requests 
+SET parent_id = (
+    SELECT parent_id 
+    FROM children 
+    WHERE children.id = emergency_requests.child_id
+)
+WHERE parent_id IS NULL;
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_money_requests_parent_id ON money_requests(parent_id);
+CREATE INDEX IF NOT EXISTS idx_emergency_requests_parent_id ON emergency_requests(parent_id);
+
+-- =============================================================================
+-- SECTION 17: DATA MIGRATION FOR MULTI-CURRENCY
+-- =============================================================================
+
+-- Set default currency for existing profiles
+UPDATE profiles 
+SET default_currency = 'USD' 
+WHERE default_currency IS NULL;
+
+-- Set default currency for existing children
+UPDATE children 
+SET currency_code = 'USD' 
+WHERE currency_code IS NULL;
+
+-- Create wallets for existing children
+INSERT INTO multi_currency_wallets (child_id, currency_code, balance, is_primary)
+SELECT id, COALESCE(currency_code, 'USD'), COALESCE(balance, 0), true
+FROM children
+WHERE id NOT IN (SELECT DISTINCT child_id FROM multi_currency_wallets WHERE child_id IS NOT NULL)
+ON CONFLICT (child_id, currency_code) DO NOTHING;
+
+-- =============================================================================
+-- CONSOLIDATED SETUP COMPLETE
 -- =============================================================================

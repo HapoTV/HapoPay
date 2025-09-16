@@ -45,6 +45,131 @@ body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica
 .cta-button-new { margin-top: 24px; background: var(--brand); color: #fff; border: 0; padding: 12px 22px; border-radius: 10px; font-size: 1.05rem; font-weight: 700; box-shadow: 0 10px 16px rgba(29,111,212,.15); cursor: pointer; }
 .cta-button-new:hover { background: var(--brand-dark); }
 
+/* Multi-Currency Styles */
+.currency-selection {
+  position: relative;
+}
+
+.currency-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.currency-note i {
+  color: #007bff;
+  font-size: 0.875rem;
+}
+
+.currency-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 12px;
+  z-index: 2;
+  font-weight: 600;
+  color: #495057;
+  pointer-events: none;
+}
+
+.currency-input .input {
+  padding-left: 32px;
+}
+
+.phone-row {
+  display: flex;
+  gap: 8px;
+}
+
+.code-select {
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.phone-input {
+  flex: 1;
+}
+
+/* Currency selection dropdown styling */
+.currency-selection select option {
+  padding: 8px 12px;
+}
+
+/* Currency symbol display fixes */
+.card-value {
+  position: relative;
+}
+
+.card-value span {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+#familyBalanceSymbol,
+#monthlySpendingSymbol {
+  font-weight: 600;
+  margin-right: 2px;
+  background: white;
+  position: relative;
+  z-index: 2;
+}
+
+/* Ensure clean currency symbol display */
+.currency-symbol {
+  background: transparent;
+  position: relative;
+  z-index: 2;
+  font-weight: 600;
+  margin-right: 1px;
+}
+
+/* Fix for input currency symbols */
+.currency-input .currency-symbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  font-weight: 600;
+  color: #495057;
+  pointer-events: none;
+  background: transparent;
+  padding-right: 2px;
+}
+
+/* Weekly and Daily limit currency symbols */
+#weeklyLimitSymbol,
+#dailyLimitSymbol {
+  position: absolute;
+  left: 20px;
+  top: 6px;
+  z-index: 3;
+  font-weight: 600;
+  color: #495057;
+  pointer-events: none;
+  background: transparent;
+  line-height: 1;
+}
+
+/* Input fields with currency symbols need padding */
+.currency-input input,
+input[id*="Limit"] {
+  padding-left: 24px !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
 /* Rewards Section Styles */
 .rewards-overview-grid {
   display: grid;

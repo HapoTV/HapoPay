@@ -1,7 +1,15 @@
 // Global Supabase client creation function
 const createClient = () => {
-  if (!window?.supabase || !window?.APP_CONFIG) return null;
-  return window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+  if (!window?.supabase || !window?.APP_CONFIG) {
+    console.error('Supabase or APP_CONFIG not available');
+    return null;
+  }
+  try {
+    return window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+  } catch (err) {
+    console.error('Failed to create Supabase client:', err);
+    return null;
+  }
 };
 
 // Parent signup -> send email confirmation via Supabase and redirect to login page
@@ -18,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const firstName = document.getElementById('firstName').value.trim();
       const surname = document.getElementById('surname').value.trim();
+      const countryCode = document.getElementById('countryCode').value;
+      const mobile = document.getElementById('mobile').value.trim();
+      const defaultCurrency = document.getElementById('defaultCurrency').value;
       const province = document.getElementById('province').value;
       const gender = document.getElementById('gender').value;
       const email = document.getElementById('email').value.trim();
@@ -43,28 +54,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating...'; }
+        
+        // Add debug logging
+        console.log('Attempting signup with:', { email, defaultCurrency });
 
         // Sign up and let Supabase send a confirmation email
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo: `${window.location.origin}/parentLogin.html`,
             data: {
               first_name: firstName,
               surname: surname,
               province: province,
-              gender: gender
-            },
-            emailRedirectTo: window.location.origin + '/parentLogin.html'
+              gender: gender,
+              phone_country_code: countryCode,
+              phone_number: mobile,
+              default_currency: defaultCurrency
+            }
           }
         });
 
         if (error) throw error;
 
-        alert('Account created! Check your email for a confirmation link. After confirming, please sign in.');
+        console.log('Signup response:', data);
+        
+        // Check if email confirmation is required
+        if (data.user && !data.user.email_confirmed_at) {
+          alert('Account created! Please check your email (including spam folder) for a confirmation link. After confirming, you can sign in.');
+        } else {
+          alert('Account created successfully! You can now sign in.');
+        }
+        
         window.location.href = 'parentLogin.html';
       } catch (err) {
-        alert(err.message || 'Could not create your account. Please try again.');
+        console.error('Signup error:', err);
+        if (err.message && err.message.includes('fetch')) {
+          alert('Network error: Please check your internet connection and try again.');
+        } else {
+          alert(err.message || 'Could not create your account. Please try again.');
+        }
       } finally {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create Account'; }
       }
@@ -100,14 +130,44 @@ document.addEventListener('DOMContentLoaded', () => {
           password
         });
 
+        console.log('Login attempt result:', { data, error });
+
         if (error) {
-          if (/Email not confirmed/i.test(error.message)) {
-            alert('Please confirm your email address. Check your inbox for the confirmation link.');
+          console.error('Login error details:', error);
+          
+          // Check if it's really an email confirmation issue
+          if (/Email not confirmed/i.test(error.message) || error.message.includes('email_not_confirmed')) {
+            // Try to resend confirmation with proper redirect
+            try {
+              const { error: resendError } = await supabase.auth.resend({
+                type: 'signup',
+                email: email,
+                options: {
+                  emailRedirectTo: `${window.location.origin}/parentLogin.html`
+                }
+              });
+              
+              if (resendError) {
+                console.error('Resend error:', resendError);
+                alert('Email confirmation issue detected. Please check your email and click the confirmation link. If you need help, contact support.');
+              } else {
+                alert('A fresh confirmation email has been sent. Please check your inbox and click the new confirmation link to activate your account.');
+              }
+            } catch (resendErr) {
+              console.error('Resend failed:', resendErr);
+              alert('Email confirmation required. Please check your inbox for the confirmation link.');
+            }
           } else if (/Invalid login credentials/i.test(error.message)) {
             alert('Invalid email or password. Please try again.');
           } else {
             alert('Login failed: ' + error.message);
           }
+          return;
+        }
+
+        // Additional check for email confirmation
+        if (data.user && !data.user.email_confirmed_at) {
+          alert('Your email address needs to be confirmed. Please check your inbox for the confirmation link.');
           return;
         }
 
@@ -163,6 +223,8 @@ async function handleUserProfile(user) {
   if (!supabase) return null;
 
   try {
+    console.log('handleUserProfile called with user metadata:', user.user_metadata);
+    
     const { data: existingProfile, error: fetchError } = await supabase
       .from('profiles')
       .select('*')
@@ -185,6 +247,7 @@ async function handleUserProfile(user) {
         email: user.email,
         first_name: firstName || fullName.split(' ')[0] || '',
         surname: surname || fullName.split(' ').slice(1).join(' ') || '',
+        default_currency: user.user_metadata?.default_currency || 'USD',
         updated_at: new Date().toISOString()
       };
     } else {
@@ -197,9 +260,20 @@ async function handleUserProfile(user) {
         surname: md.surname || md.last_name || md.lastName || '',
         province: md.province || null,
         gender: md.gender || null,
+        phone_country_code: md.phone_country_code || null,
+        phone_number: md.phone_number || null,
+        default_currency: md.default_currency || 'USD',
         updated_at: new Date().toISOString()
       };
     }
+
+    // Always ensure currency is saved to profile from user metadata
+    if (user.user_metadata?.default_currency) {
+      profileData.default_currency = user.user_metadata.default_currency;
+      console.log('Overriding currency with user metadata:', user.user_metadata.default_currency);
+    }
+
+    console.log('About to save profile with data:', profileData);
 
     const { error: upsertError } = await supabase
       .from('profiles')
@@ -207,6 +281,8 @@ async function handleUserProfile(user) {
 
     if (upsertError) {
       console.error('Error upserting profile:', upsertError);
+    } else {
+      console.log('Profile saved successfully with currency:', profileData.default_currency);
     }
 
     return profileData;
@@ -215,4 +291,29 @@ async function handleUserProfile(user) {
     return null;
   }
 }
+
+// Multi-currency functionality
+function updateCurrencyFromPhone() {
+  const countryCodeSelect = document.getElementById('countryCode');
+  const currencySelect = document.getElementById('defaultCurrency');
+  const currencyNote = document.getElementById('currencyNote');
+  
+  if (!countryCodeSelect || !currencySelect) return;
+  
+  const selectedOption = countryCodeSelect.options[countryCodeSelect.selectedIndex];
+  const suggestedCurrency = selectedOption.getAttribute('data-currency');
+  
+  if (suggestedCurrency) {
+    currencySelect.value = suggestedCurrency;
+    currencyNote.textContent = `Currency auto-selected as ${suggestedCurrency} based on your phone number. You can change this if needed.`;
+  }
+}
+
+// Initialize currency selection on page load
+document.addEventListener('DOMContentLoaded', () => {
+  // Set initial currency based on default country code
+  setTimeout(() => {
+    updateCurrencyFromPhone();
+  }, 100);
+});
 

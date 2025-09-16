@@ -6,9 +6,19 @@
   <title>Hapo Technology • Parent Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  <style>
+    .activity-icon.declined {
+      background-color: #ef4444;
+      color: white;
+    }
+    .activity-icon.declined i {
+      color: white;
+    }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="loadPendingRequestsFromStorage.js"></script>
 </head>
 <body>
   <!-- Navigation Header -->
@@ -51,7 +61,7 @@
               </div>
               <div>
                 <div class="card-label">Family Balance</div>
-                <div class="card-value" id="familyBalance">$365.00</div>
+                <div class="card-value" id="familyBalance"><span id="familyBalanceSymbol"></span><span id="familyBalanceAmount">365.00</span></div>
               </div>
             </div>
           </div>
@@ -64,7 +74,7 @@
               </div>
               <div>
                 <div class="card-label">This Month</div>
-                <div class="card-value" id="monthlySpending">$98.00</div>
+                <div class="card-value" id="monthlySpending"><span id="monthlySpendingSymbol"></span><span id="monthlySpendingAmount">98.00</span></div>
               </div>
             </div>
           </div>
@@ -209,7 +219,7 @@
               <i class="fas fa-chart-trending-up"></i>
             </div>
             <div class="stat-info">
-              <div class="stat-value" id="monthlyTransactions">$0.00</div>
+              <div class="stat-value" id="monthlyTransactions"><span class="currency-symbol"></span>0.00</div>
               <div class="stat-label">This Month</div>
             </div>
           </div>
@@ -218,7 +228,7 @@
               <i class="fas fa-calendar-week"></i>
             </div>
             <div class="stat-info">
-              <div class="stat-value" id="weeklyTransactions">$0.00</div>
+              <div class="stat-value" id="weeklyTransactions"><span class="currency-symbol"></span>0.00</div>
               <div class="stat-label">This Week</div>
             </div>
           </div>
@@ -313,8 +323,8 @@
                 <div class="reward-status active">Active</div>
               </div>
               <div class="reward-card-body">
-                <h4 class="reward-title">Extra $5 Allowance</h4>
-                <p class="reward-description">Get an additional $5 added to your allowance</p>
+                <h4 class="reward-title">Extra <span class="reward-currency-symbol"></span>5 Allowance</h4>
+                <p class="reward-description">Get an additional <span class="reward-currency-symbol"></span>5 added to your allowance</p>
                 <div class="reward-cost">
                   <span class="cost-label">Cost:</span>
                   <span class="cost-value">500 points</span>
@@ -395,68 +405,13 @@
             </div>
           </div>
           <div id="redeemedRewardsList" class="redeemed-rewards-list">
-            <!-- Sample Redeemed Reward -->
-            <div class="redeemed-reward-card">
-              <div class="redeemed-header">
-                <div class="child-info">
-                  <div class="child-avatar">
-                    <i class="fas fa-user"></i>
-                  </div>
-                  <div class="child-details">
-                    <h4 class="child-name">Emma Johnson</h4>
-                    <span class="redeemed-date">Redeemed 2 hours ago</span>
-                  </div>
-                </div>
-                <div class="redeemed-status completed">Completed</div>
+            <!-- Redeemed rewards will be loaded dynamically from database -->
+            <div class="empty-state">
+              <div class="empty-icon">
+                <i class="fas fa-gift"></i>
               </div>
-              <div class="redeemed-body">
-                <div class="reward-info">
-                  <div class="reward-icon-small">
-                    <i class="fas fa-gamepad"></i>
-                  </div>
-                  <div class="reward-details">
-                    <h5 class="reward-name">Extra Gaming Time</h5>
-                    <p class="reward-cost">300 points spent</p>
-                  </div>
-                </div>
-                <div class="redeemed-actions">
-                  <button class="btn btn-success btn-sm" disabled>
-                    <i class="fas fa-check"></i> Fulfilled
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Sample Redeemed Reward 2 -->
-            <div class="redeemed-reward-card">
-              <div class="redeemed-header">
-                <div class="child-info">
-                  <div class="child-avatar">
-                    <i class="fas fa-user"></i>
-                  </div>
-                  <div class="child-details">
-                    <h4 class="child-name">Alex Johnson</h4>
-                    <span class="redeemed-date">Redeemed yesterday</span>
-                  </div>
-                </div>
-                <div class="redeemed-status completed">Completed</div>
-              </div>
-              <div class="redeemed-body">
-                <div class="reward-info">
-                  <div class="reward-icon-small">
-                    <i class="fas fa-ice-cream"></i>
-                  </div>
-                  <div class="reward-details">
-                    <h5 class="reward-name">Ice Cream Treat</h5>
-                    <p class="reward-cost">200 points spent</p>
-                  </div>
-                </div>
-                <div class="redeemed-actions">
-                  <button class="btn btn-success btn-sm" disabled>
-                    <i class="fas fa-check"></i> Fulfilled
-                  </button>
-                </div>
-              </div>
+              <h4>No Redeemed Rewards Yet</h4>
+              <p>When your children redeem rewards, they will appear here.</p>
             </div>
           </div>
         </div>
@@ -492,14 +447,41 @@
             <input id="childPassword" type="password" class="input" placeholder="••••••••" required>
           </form>
         </div>
+        <div class="field">
+          <label for="childCurrency">Child's Currency</label>
+          <div class="currency-selection">
+            <select id="childCurrency" name="childCurrency" class="select" required>
+              <option value="" disabled>Select currency for this child</option>
+              <option value="ZAR" data-symbol="R">🇿🇦 South African Rand (R)</option>
+              <option value="USD" data-symbol="$">🇺🇸 US Dollar ($)</option>
+              <option value="GBP" data-symbol="£">🇬🇧 British Pound (£)</option>
+              <option value="EUR" data-symbol="€">🇪🇺 Euro (€)</option>
+              <option value="NGN" data-symbol="₦">🇳🇬 Nigerian Naira (₦)</option>
+              <option value="KES" data-symbol="KSh">🇰🇪 Kenyan Shilling (KSh)</option>
+              <option value="INR" data-symbol="₹">🇮🇳 Indian Rupee (₹)</option>
+              <option value="CAD" data-symbol="C$">🇨🇦 Canadian Dollar (C$)</option>
+              <option value="AUD" data-symbol="A$">🇦🇺 Australian Dollar (A$)</option>
+            </select>
+            <div class="currency-note">
+              <i class="fas fa-info-circle"></i>
+              <span id="childCurrencyNote">Defaults to your currency. Change if child needs different currency (e.g., studying abroad).</span>
+            </div>
+          </div>
+        </div>
         <div class="form-row">
           <div class="field">
-            <label for="childWeeklyLimit">Weekly Limit ($)</label>
-            <input id="childWeeklyLimit" type="number" class="input" placeholder="50" min="0" step="1">
+            <label for="childWeeklyLimit">Weekly Limit</label>
+            <div class="currency-input">
+              <span id="weeklyLimitSymbol" class="currency-symbol">$</span>
+              <input id="childWeeklyLimit" type="number" class="input" placeholder="50" min="0" step="0.01">
+            </div>
           </div>
           <div class="field">
-            <label for="childDailyLimit">Daily Limit ($)</label>
-            <input id="childDailyLimit" type="number" class="input" placeholder="10" min="0" step="1">
+            <label for="childDailyLimit">Daily Limit</label>
+            <div class="currency-input">
+              <span id="dailyLimitSymbol" class="currency-symbol">$</span>
+              <input id="childDailyLimit" type="number" class="input" placeholder="10" min="0" step="0.01">
+            </div>
           </div>
         </div>
       </div>
@@ -721,7 +703,7 @@
           </select>
         </div>
         <div class="field">
-          <label for="recurringAmount">Amount ($)</label>
+          <label for="recurringAmount" id="recurringAmountLabel">Amount <span class="currency-symbol">$</span></label>
           <input id="recurringAmount" type="number" class="input" placeholder="0.00" min="0" step="0.01" required>
         </div>
         <div class="field">
@@ -786,11 +768,11 @@
         </div>
         <div class="form-row">
           <div class="field">
-            <label for="dailyLimit">Daily Limit ($)</label>
+            <label for="dailyLimit" id="dailyLimitLabel">Daily Limit <span class="currency-symbol">R</span></label>
             <input id="dailyLimit" type="number" class="input" placeholder="0.00" min="0" step="0.01">
           </div>
           <div class="field">
-            <label for="weeklyLimit">Weekly Limit ($)</label>
+            <label for="weeklyLimit" id="weeklyLimitLabel">Weekly Limit <span class="currency-symbol">R</span></label>
             <input id="weeklyLimit" type="number" class="input" placeholder="0.00" min="0" step="0.01">
           </div>
         </div>
@@ -832,7 +814,7 @@
             </div>
             <div class="payment-field">
               <label>Amount:</label>
-              <span id="parentPaymentAmount">$0.00</span>
+              <span id="parentPaymentAmount"><span class="currency-symbol"></span>0.00</span>
             </div>
             <div class="payment-field">
               <label>Description:</label>
@@ -1171,7 +1153,7 @@
                 <i class="fas fa-wallet"></i>
               </div>
               <div class="stat-info">
-                <div class="stat-value" id="totalSpending">$0.00</div>
+                <div class="stat-value" id="totalSpending"><span class="currency-symbol"></span>0.00</div>
                 <div class="stat-label">Total Spending</div>
                 <div class="stat-change" id="spendingChange">+0% from last month</div>
               </div>
@@ -1191,7 +1173,7 @@
                 <i class="fas fa-calculator"></i>
               </div>
               <div class="stat-info">
-                <div class="stat-value" id="averageTransaction">$0.00</div>
+                <div class="stat-value" id="averageTransaction"><span class="currency-symbol"></span>0.00</div>
                 <div class="stat-label">Average Transaction</div>
                 <div class="stat-change" id="averageChange">+0% from last month</div>
               </div>
@@ -1503,6 +1485,34 @@
           console.log('Parent activities table not yet created - this is normal for new setups');
         }
         
+        // Load money and emergency requests to include in activities
+        // First get children IDs, then fetch requests by child_id
+        const childIds = children ? children.map(child => child.id) : [];
+        
+        let moneyRequests = [];
+        let emergencyRequests = [];
+        
+        if (childIds.length > 0) {
+          const { data: moneyReqData, error: moneyError } = await supabase
+            .from('money_requests')
+            .select('*')
+            .in('child_id', childIds)
+            .order('created_at', { ascending: false });
+            
+          const { data: emergencyReqData, error: emergencyError } = await supabase
+            .from('emergency_requests')
+            .select('*')
+            .in('child_id', childIds)
+            .order('created_at', { ascending: false });
+          
+          if (moneyError) console.error('Error loading money requests:', moneyError);
+          else moneyRequests = moneyReqData || [];
+          
+          if (emergencyError) console.error('Error loading emergency requests:', emergencyError);
+          else emergencyRequests = emergencyReqData || [];
+        }
+        
+        
         // Combine transactions and activities for comprehensive view
         const allActivities = [];
         
@@ -1526,6 +1536,48 @@
           });
         }
         
+        // Add money requests (approved and declined)
+        if (moneyRequests && moneyRequests.length > 0) {
+          moneyRequests.forEach(request => {
+            let childName = 'Unknown Child';
+            if (request.child_id && children) {
+              const child = children.find(c => c.id === request.child_id);
+              if (child) {
+                childName = `${child.first_name} ${child.surname}`;
+              }
+            }
+            
+            allActivities.push({
+              ...request,
+              source: 'money_request',
+              child_name: childName,
+              activity_type: request.status === 'approved' ? 'money_request_approved' : 
+                           request.status === 'declined' ? 'money_request_declined' : 'money_request_pending'
+            });
+          });
+        }
+        
+        // Add emergency requests (approved and declined)
+        if (emergencyRequests && emergencyRequests.length > 0) {
+          emergencyRequests.forEach(request => {
+            let childName = 'Unknown Child';
+            if (request.child_id && children) {
+              const child = children.find(c => c.id === request.child_id);
+              if (child) {
+                childName = `${child.first_name} ${child.surname}`;
+              }
+            }
+            
+            allActivities.push({
+              ...request,
+              source: 'emergency_request',
+              child_name: childName,
+              activity_type: request.status === 'approved' ? 'emergency_request_approved' : 
+                           request.status === 'declined' ? 'emergency_request_declined' : 'emergency_request_pending'
+            });
+          });
+        }
+        
         // Add parent activities if available
         if (activities && activities.length > 0) {
           activities.forEach(activity => {
@@ -1536,11 +1588,26 @@
           });
         }
         
+        // Remove duplicates based on amount, child_id, type, and timestamp (within 1 minute)
+        const uniqueActivities = [];
+        const seen = new Set();
+        
+        allActivities.forEach(activity => {
+          const timestamp = new Date(activity.created_at).getTime();
+          const roundedTimestamp = Math.floor(timestamp / 60000) * 60000; // Round to nearest minute
+          const key = `${activity.amount}-${activity.child_id}-${activity.type || activity.activity_type}-${roundedTimestamp}`;
+          
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueActivities.push(activity);
+          }
+        });
+        
         // Sort by date (newest first)
-        allActivities.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        uniqueActivities.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         
         // Store activities for filtering
-        currentActivities = allActivities;
+        currentActivities = uniqueActivities;
         
         // Calculate statistics from combined data
         const totalCount = allActivities.length;
@@ -1550,21 +1617,23 @@
         weekStart.setDate(now.getDate() - now.getDay());
         weekStart.setHours(0, 0, 0, 0);
         
-        const monthlyTotal = allActivities
+        const monthlyTotal = uniqueActivities
           .filter(item => new Date(item.created_at) >= monthStart)
           .reduce((sum, item) => sum + Math.abs(item.amount || 0), 0);
         
-        const weeklyTotal = allActivities
+        const weeklyTotal = uniqueActivities
           .filter(item => new Date(item.created_at) >= weekStart)
           .reduce((sum, item) => sum + Math.abs(item.amount || 0), 0);
         
         // Update display
         document.getElementById('totalTransactions').textContent = totalCount;
-        document.getElementById('monthlyTransactions').textContent = `$${monthlyTotal.toFixed(2)}`;
-        document.getElementById('weeklyTransactions').textContent = `$${weeklyTotal.toFixed(2)}`;
+        const currency = window.parentDefaultCurrency || 'USD';
+        const symbol = getCurrencySymbol(currency);
+        document.getElementById('monthlyTransactions').textContent = `${symbol}${monthlyTotal.toFixed(2)}`;
+        document.getElementById('weeklyTransactions').textContent = `${symbol}${weeklyTotal.toFixed(2)}`;
         
         // Load detailed activities
-        loadDetailedActivities(allActivities);
+        loadDetailedActivities(uniqueActivities);
         
       } catch (err) {
         console.error('Error loading activity data:', err);
@@ -1607,8 +1676,20 @@
         item.className = 'detailed-activity-item';
         
         const iconClass = getActivityIconClass(activity.activity_type || activity.type);
-        const amountClass = activity.amount > 0 ? 'positive' : 'negative';
-        const amountPrefix = activity.amount > 0 ? '+' : '';
+        
+        // Handle amount display based on activity type
+        let amountClass, amountPrefix;
+        const activityType = activity.activity_type || activity.type;
+        
+        if (activityType === 'money_request_declined' || activityType === 'emergency_request_declined') {
+          // Declined requests - no money was sent, so no + prefix and neutral styling
+          amountClass = 'neutral';
+          amountPrefix = '';
+        } else {
+          // Regular activities - use positive/negative logic
+          amountClass = activity.amount > 0 ? 'positive' : 'negative';
+          amountPrefix = activity.amount > 0 ? '+' : '';
+        }
         
         const childName = activity.child_name || 'System';
         const description = activity.description || getActivityDescription(activity.activity_type || activity.type);
@@ -1622,7 +1703,7 @@
             <div class="activity-subtitle">${childName}</div>
             <div class="activity-date">${formatActivityDate(activity.created_at)}</div>
           </div>
-          <div class="activity-amount ${amountClass}">${amountPrefix}$${Math.abs(activity.amount || 0).toFixed(2)}</div>
+          <div class="activity-amount ${amountClass}">${amountPrefix}${getCurrencySymbol(window.parentDefaultCurrency || 'USD')}${Math.abs(activity.amount || 0).toFixed(2)}</div>
         `;
         
         list.appendChild(item);
@@ -1635,11 +1716,14 @@
         'wallet_topup': 'wallet',
         'emergency_fund': 'emergency',
         'emergency_fund_approved': 'emergency',
+        'emergency_request_approved': 'emergency',
+        'emergency_request_declined': 'declined',
+        'money_request_approved': 'positive',
+        'money_request_declined': 'declined',
         'recurring_payment': 'recurring',
         'recurring_payment_setup': 'recurring',
         'qr_payment': 'qr',
         'money_sent': 'positive',
-        'money_request_approved': 'positive',
         'spending_limit_update': 'settings',
         'child_account_created': 'user'
       };
@@ -1651,11 +1735,14 @@
         'wallet_topup': 'fa-plus-circle',
         'emergency_fund': 'fa-exclamation-triangle',
         'emergency_fund_approved': 'fa-check-circle',
+        'emergency_request_approved': 'fa-check-circle',
+        'emergency_request_declined': 'fa-times',
+        'money_request_approved': 'fa-thumbs-up',
+        'money_request_declined': 'fa-times',
         'recurring_payment': 'fa-sync-alt',
         'recurring_payment_setup': 'fa-cog',
         'qr_payment': 'fa-qrcode',
         'money_sent': 'fa-hand-holding-usd',
-        'money_request_approved': 'fa-thumbs-up',
         'spending_limit_update': 'fa-sliders-h',
         'child_account_created': 'fa-user-plus'
       };
@@ -1667,11 +1754,14 @@
         'wallet_topup': 'Wallet Top-up',
         'emergency_fund': 'Emergency Fund Transfer',
         'emergency_fund_approved': 'Emergency Request Approved',
+        'emergency_request_approved': 'Emergency Request Approved',
+        'emergency_request_declined': 'Emergency Request Declined',
+        'money_request_approved': 'Money Request Approved',
+        'money_request_declined': 'Money Request Declined',
         'recurring_payment': 'Recurring Payment',
         'recurring_payment_setup': 'Recurring Payment Setup',
         'qr_payment': 'QR Payment',
         'money_sent': 'Money Transfer',
-        'money_request_approved': 'Money Request Approved',
         'spending_limit_update': 'Spending Limits Updated',
         'child_account_created': 'Child Account Created'
       };
@@ -1692,8 +1782,113 @@
              date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     }
 
+    // Get currency symbol helper function
+    function getCurrencySymbol(currency) {
+      const symbols = {
+        'USD': '$',
+        'ZAR': 'R',
+        'GBP': '£',
+        'EUR': '€',
+        'NGN': '₦',
+        'KES': 'KSh',
+        'INR': '₹',
+        'CAD': 'C$',
+        'AUD': 'A$',
+        'JPY': '¥',
+        'CNY': '¥',
+        'BRL': 'R$'
+      };
+      return symbols[currency] || '$';
+    }
+
+    // Update all currency symbols throughout the dashboard
+    function updateAllCurrencySymbols() {
+      const currency = window.parentDefaultCurrency || 'USD';
+      const currencySymbol = getCurrencySymbol(currency);
+      
+      console.log('Updating currency symbols:', currency, currencySymbol);
+      
+      // Update ALL elements that show currency symbols
+      const currencyElements = [
+        'familyBalanceSymbol',
+        'monthlySpendingSymbol',
+        'emergencyFundSymbol',
+        'totalSpentSymbol',
+        'monthlyTransactions',
+        'weeklyTransactions',
+        'parentPaymentAmount',
+        'totalSpending',
+        'averageTransaction'
+      ];
+      
+      currencyElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          // For elements that contain currency symbols, update the symbol part
+          const symbolSpan = element.querySelector('.currency-symbol');
+          if (symbolSpan) {
+            symbolSpan.textContent = currencySymbol;
+          } else {
+            element.textContent = currencySymbol;
+          }
+          console.log(`Updated ${elementId} to:`, currencySymbol);
+        }
+      });
+      
+      // Update all elements with currency symbol classes
+      const symbolElements = document.querySelectorAll('.currency-symbol, .reward-currency-symbol, .balance-symbol');
+      symbolElements.forEach(element => {
+        element.textContent = currencySymbol;
+        // Add styling for better visual appearance
+        element.style.fontWeight = 'bold';
+        element.style.marginLeft = '4px';
+      });
+      
+      // Only update currency symbols in money display elements, not text labels
+      const moneyElements = document.querySelectorAll('.stat-value, .card-value, .balance-amount, .payment-amount');
+      moneyElements.forEach(element => {
+        if (element.children.length === 0) { // Only text nodes
+          const text = element.textContent;
+          if (text && /[₹€£\$R¥C\$A\$]/.test(text)) {
+            element.textContent = text.replace(/[₹€£\$R¥C\$A\$]/g, currencySymbol);
+          }
+        }
+      });
+    }
+
+    // Update rewards currency symbols
+    function updateRewardsCurrency() {
+      updateAllCurrencySymbols();
+    }
+
+    // Pre-load currency before DOM content loads
+    async function preLoadCurrency() {
+      try {
+        const supabase = createClient();
+        if (!supabase) return;
+        
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) return;
+        
+        // Set currency from user metadata immediately
+        const userCurrency = user.user_metadata?.default_currency;
+        if (userCurrency) {
+          window.parentDefaultCurrency = userCurrency;
+          console.log('Pre-loaded currency:', userCurrency);
+        }
+      } catch (err) {
+        console.error('Pre-load currency error:', err);
+      }
+    }
+
+    // Initialize dashboard when page loads
+    document.addEventListener('DOMContentLoaded', async function() {
+      await preLoadCurrency();
+      initializeDashboard();
+    });
+
     // Check authentication status when page loads
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function initializeDashboard() {
       if (!supabase) {
         alert('Supabase client not available. Please refresh the page.');
         return;
@@ -1711,45 +1906,101 @@
       currentUserId = user.id;
 
       // Handle user profile creation/update (especially for Google OAuth users)
-      try { await handleUserProfile(user); } catch (_) {}
+      try { 
+        const profileResult = await handleUserProfile(user); 
+        console.log('Profile handling completed, result:', profileResult);
+        
+        // If profile was just created/updated, use its currency immediately
+        if (profileResult?.default_currency) {
+          window.parentDefaultCurrency = profileResult.default_currency;
+          console.log('Using currency from profile creation:', profileResult.default_currency);
+        }
+      } catch (err) {
+        console.error('Profile handling error:', err);
+      }
 
-      // Display name
+      // Display name and load parent currency from database FIRST
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('first_name, surname')
-          .eq('id', user.id);
+          .select('first_name, surname, default_currency')
+          .eq('id', user.id)
+          .single();
         
-        if (!profileError && profile && profile.length > 0) {
-          const profileData = Array.isArray(profile) ? profile[0] : profile;
+        if (!profileError && profile) {
+          const profileData = profile;
+          
+          console.log('Profile data retrieved:', profileData);
+          console.log('User metadata:', user.user_metadata);
+          
+          // FORCE currency from user metadata to override database
+          const userCurrency = user.user_metadata?.default_currency;
+          if (userCurrency) {
+            window.parentDefaultCurrency = userCurrency;
+            console.log('FORCING currency from user metadata:', userCurrency);
+            
+            // Update database with correct currency
+            try {
+              await supabase
+                .from('profiles')
+                .update({ default_currency: userCurrency })
+                .eq('id', user.id);
+              console.log('Updated database with correct currency:', userCurrency);
+            } catch (updateError) {
+              console.error('Failed to update database currency:', updateError);
+            }
+          } else if (profileData?.default_currency) {
+            window.parentDefaultCurrency = profileData.default_currency;
+            console.log('Using currency from database:', profileData.default_currency);
+          } else {
+            window.parentDefaultCurrency = 'USD';
+            console.log('No currency found anywhere, defaulting to USD');
+          }
+          
+          console.log('Final currency set to:', window.parentDefaultCurrency);
+          
           const fullName = `${profileData?.first_name || ''} ${profileData?.surname || ''}`.trim();
           if (fullName) {
             document.getElementById('userName').textContent = `Welcome, ${fullName}`;
           } else {
             // If no name in profile, try user metadata directly
             const md = user.user_metadata || {};
-            const firstName = md.first_name || md.firstName || '';
-            const surname = md.surname || md.last_name || md.lastName || '';
-            const metadataFullName = `${firstName} ${surname}`.trim();
+            const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
             document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
           }
         } else {
-          // If no profile found, try user metadata directly
+          // If profile query fails, use user metadata
           const md = user.user_metadata || {};
-          const firstName = md.first_name || md.firstName || '';
-          const surname = md.surname || md.last_name || md.lastName || '';
-          const metadataFullName = `${firstName} ${surname}`.trim();
+          const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
           document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          
+          // Try to get currency from user metadata
+          const userCurrency = md.default_currency;
+          if (userCurrency) {
+            window.parentDefaultCurrency = userCurrency;
+            console.log('Profile query failed, using currency from user metadata:', userCurrency);
+          } else {
+            window.parentDefaultCurrency = 'USD';
+            console.log('Profile query failed and no currency in metadata, defaulting to USD');
+          }
         }
       } catch (err) {
         console.error('Profile loading error:', err);
         document.getElementById('userName').textContent = `Welcome, ${user.user_metadata?.full_name || 'Parent'}`;
+        window.parentDefaultCurrency = 'USD';
       }
 
+      // Update currency symbols IMMEDIATELY after setting currency
+      console.log('About to update currency symbols with:', window.parentDefaultCurrency);
+      updateAllCurrencySymbols();
+      
       // Load children
       await fetchAndRenderChildren();
       await loadSafetyAlerts();
-    });
+      
+      // Update rewards currency after initialization
+      updateRewardsCurrency();
+    }
 
     // Add Child modal controls
     function openAddChildModal() { document.getElementById('addChildModal').style.display = 'block'; }
@@ -1894,7 +2145,7 @@
           type: 'spending_limit_update',
           amount: 0,
           child_id: childId,
-          description: `Updated spending limits: Daily $${dailyLimit.toFixed(2)}, Weekly $${weeklyLimit.toFixed(2)}`,
+          description: `Updated spending limits: Daily R${dailyLimit.toFixed(2)}, Weekly R${weeklyLimit.toFixed(2)}`,
           category: 'account_management'
         });
         
@@ -2000,7 +2251,7 @@
       item.innerHTML = `
         <div class="recurring-payment-info">
           <div class="recurring-payment-title">${paymentType}</div>
-          <div class="recurring-payment-details">${childName} • ${frequency} • $${payment.amount.toFixed(2)}</div>
+          <div class="recurring-payment-details">${childName} • ${frequency} • ${getCurrencySymbol(window.parentDefaultCurrency || 'USD')}${payment.amount.toFixed(2)}</div>
         </div>
         <div class="recurring-payment-status active">Active</div>
       `;
@@ -2173,14 +2424,8 @@
             status: 'completed'
           });
         
-        // Track this activity for the parent
-        await trackParentActivity({
-          type: transactionType,
-          amount: amount,
-          child_id: childId,
-          description: transactionDescription,
-          category: 'emergency_transfer'
-        });
+        // Note: Transaction record above already tracks this activity
+        // No need for separate parent activity tracking to avoid duplicates
         
         if (transactionError) {
           console.error('Error creating transaction record:', transactionError);
@@ -2201,13 +2446,26 @@
             
             if (requestUpdateError) {
               console.error('Error updating emergency request status:', requestUpdateError);
+            } else {
+              // Remove from pending requests in localStorage
+              const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+              const updatedRequests = pendingRequests.filter(req => 
+                req.id !== selectedChildForEmergency.requestId && 
+                !(req.child_id === selectedChildForEmergency.id && 
+                  req.amount === selectedChildForEmergency.requestedAmount &&
+                  req.reason === (selectedChildForEmergency.reason || req.reason))
+              );
+              localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
+              console.log('Removed emergency request from localStorage. Before:', pendingRequests.length, 'After:', updatedRequests.length);
             }
           } catch (err) {
             console.error('Error updating emergency request:', err);
           }
         }
         
-        alert(`Emergency funds sent successfully! $${amount.toFixed(2)} added to child's wallet.`);
+        const currency = window.parentDefaultCurrency || 'USD';
+        const symbol = getCurrencySymbol(currency);
+        alert(`Emergency funds sent successfully! ${symbol}${amount.toFixed(2)} added to child's wallet.`);
         closeEmergencyFundModal();
         
         // Refresh children list, notifications, and activity data
@@ -2225,6 +2483,13 @@
      async function sendMoneyToChild() {
        if (!selectedChildForMoney) {
          alert('No child selected');
+         return;
+       }
+       
+       console.log('selectedChildForMoney object:', selectedChildForMoney);
+       
+       if (!selectedChildForMoney.id) {
+         alert('Error: Child ID is missing');
          return;
        }
        
@@ -2290,14 +2555,8 @@
             status: 'completed'
           });
         
-        // Track this activity for the parent
-        await trackParentActivity({
-          type: transactionType,
-          amount: amount,
-          child_id: selectedChildForMoney.id,
-          description: transactionDescription,
-          category: selectedChildForMoney.isFromRequest ? 'money_request' : 'direct_transfer'
-        });
+        // Note: Transaction record above already tracks this activity
+        // No need for separate parent activity tracking to avoid duplicates
          
          if (transactionError) {
            console.error('Error creating transaction record:', transactionError);
@@ -2318,13 +2577,26 @@
              
              if (requestUpdateError) {
                console.error('Error updating request status:', requestUpdateError);
-             }
+             } else {
+              // Remove from pending requests in localStorage
+              const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
+              const updatedRequests = pendingRequests.filter(req => 
+                req.id !== selectedChildForMoney.requestId && 
+                !(req.child_id === selectedChildForMoney.id && 
+                  req.amount === selectedChildForMoney.requestedAmount &&
+                  req.reason === (selectedChildForMoney.reason || req.reason))
+              );
+              localStorage.setItem('pendingMoneyRequests', JSON.stringify(updatedRequests));
+              console.log('Removed money request from localStorage. Before:', pendingRequests.length, 'After:', updatedRequests.length);
+            }
            } catch (err) {
              console.error('Error updating money request:', err);
            }
          }
          
-         alert(`Money sent successfully! $${amount.toFixed(2)} added to ${selectedChildForMoney.firstName}'s wallet.`);
+         const currency = window.parentDefaultCurrency || 'USD';
+         const symbol = getCurrencySymbol(currency);
+         alert(`Money sent successfully! ${symbol}${amount.toFixed(2)} added to ${selectedChildForMoney.firstName}'s wallet.`);
          closeSendMoneyModal();
          
          // Refresh children list and notifications
@@ -2389,16 +2661,12 @@
           console.error('Error creating transaction record:', transactionError);
         }
         
-        // Track this activity for the parent
-        await trackParentActivity({
-          type: 'wallet_topup',
-          amount: amount,
-          child_id: childId,
-          description: 'Wallet top-up',
-          category: 'wallet_management'
-        });
+        // Note: Transaction record above already tracks this activity
+        // No need for separate parent activity tracking to avoid duplicates
         
-        alert(`Wallet top-up successful! $${amount.toFixed(2)} added to child's wallet.`);
+        const currency = window.parentDefaultCurrency || 'USD';
+        const symbol = getCurrencySymbol(currency);
+        alert(`Wallet top-up successful! ${symbol}${amount.toFixed(2)} added to child's wallet.`);
         closeWalletTopUpModal();
         
         // Refresh children list to show updated balance and activity data
@@ -2519,7 +2787,10 @@
       // Show limits and spending progress
       const dailyLimit = child.daily_limit || 0;
       const weeklyLimit = child.weekly_limit || 0;
-      sub.textContent = `Daily: $${dailyLimit.toFixed(2)} • Weekly: $${weeklyLimit.toFixed(2)}`;
+      // Use parent's currency for child limits display
+      const parentCurrency = window.parentDefaultCurrency || 'USD';
+      const parentSymbol = getCurrencySymbol(parentCurrency);
+      sub.textContent = `Daily: ${parentSymbol}${dailyLimit.toFixed(2)} • Weekly: ${parentSymbol}${weeklyLimit.toFixed(2)}`;
       
       infoWrap.appendChild(name); infoWrap.appendChild(sub);
       left.appendChild(avatar); left.appendChild(infoWrap);
@@ -2530,7 +2801,10 @@
       bal.className = 'child-balance';
       const amt = document.createElement('div');
       amt.className = 'amount';
-      amt.textContent = `$${(child.balance || 0).toFixed(2)}`;
+      // Use parent's currency for child balance display
+      const currency = window.parentDefaultCurrency || 'USD';
+      const symbol = getCurrencySymbol(currency);
+      amt.textContent = `${symbol}${(child.balance || 0).toFixed(2)}`;
       const cap = document.createElement('div');
       cap.className = 'caption';
       cap.textContent = 'Available';
@@ -2541,16 +2815,39 @@
       const sendBtn = document.createElement('button');
       sendBtn.className = 'btn btn-primary btn-xs';
       sendBtn.textContent = 'Send Money';
-      sendBtn.onclick = () => showSendMoneyModal(child.id, child.first_name, child.surname);
-      const viewBtn = document.createElement('button');
-      viewBtn.className = 'btn btn-secondary btn-xs';
-      viewBtn.textContent = 'View Activity';
-      viewBtn.onclick = () => alert('Activity coming soon');
-      actions.appendChild(sendBtn); actions.appendChild(viewBtn);
+      sendBtn.onclick = () => {
+        console.log('Send Money button clicked for child:', child.id, child.first_name, child.surname);
+        showSendMoneyModal(child.id, child.first_name, child.surname);
+      };
+      actions.appendChild(sendBtn);
 
       right.appendChild(bal); right.appendChild(actions);
       card.appendChild(left); card.appendChild(right);
       list.appendChild(card);
+    }
+
+    // Get currency symbol helper function
+    function getCurrencySymbol(currency) {
+      const symbols = {
+        'USD': '$',
+        'ZAR': 'R',
+        'GBP': '£',
+        'EUR': '€',
+        'NGN': '₦',
+        'KES': 'KSh',
+        'INR': '₹',
+        'CAD': 'C$',
+        'AUD': 'A$',
+        'JPY': '¥',
+        'CNY': '¥',
+        'BRL': 'R$',
+        'MXN': '$',
+        'ARS': '$',
+        'CLP': '$',
+        'COP': '$',
+        'PEN': 'S/'
+      };
+      return symbols[currency] || '$';
     }
 
     // User menu toggle
@@ -2749,7 +3046,9 @@
       // Get current user to ensure we have the correct ID
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
-        console.log('User authentication error');
+        console.log('User authentication error, checking for pending requests in localStorage');
+        // Check for pending requests in localStorage when parent is logged out
+        loadPendingRequestsFromStorage();
         return;
       }
       
@@ -2839,6 +3138,42 @@
           });
         }
         
+        // Combine pending requests from localStorage - but only if they're still pending
+        const pendingEmergencyRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]')
+          .filter(req => req.status !== 'approved' && req.status !== 'declined');
+        const pendingMoneyRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]')
+          .filter(req => req.status !== 'approved' && req.status !== 'declined');
+        
+        console.log('Pending emergency requests from localStorage:', pendingEmergencyRequests);
+        console.log('Pending money requests from localStorage:', pendingMoneyRequests);
+        
+        // Add type field to localStorage requests and ensure they have pending status
+        const emergencyRequestsWithType = pendingEmergencyRequests.map(req => {
+          // Find child info for localStorage requests
+          const child = children.find(c => c.id === req.child_id);
+          return {
+            ...req,
+            type: 'emergency',
+            status: 'pending', // Force pending status for localStorage requests
+            child_name: child ? `${child.first_name} ${child.surname}` : (req.child_name || 'Unknown Child')
+          };
+        });
+        
+        const moneyRequestsWithType = pendingMoneyRequests.map(req => {
+          // Find child info for localStorage requests
+          const child = children.find(c => c.id === req.child_id);
+          return {
+            ...req,
+            type: 'money',
+            status: 'pending', // Force pending status for localStorage requests
+            child_name: child ? `${child.first_name} ${child.surname}` : (req.child_name || 'Unknown Child')
+          };
+        });
+        
+        // Add localStorage requests to the main array
+        allRequests.push(...emergencyRequestsWithType);
+        allRequests.push(...moneyRequestsWithType);
+        
         // Sort by creation date (newest first)
         allRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         
@@ -2856,8 +3191,27 @@
           return;
         }
         
-        console.log('Rendering', allRequests.length, 'notification items');
-        allRequests.forEach(request => {
+        // Debug: Log all request statuses
+        console.log('All requests with statuses:', allRequests.map(r => ({id: r.id, status: r.status, type: r.type})));
+        
+        // Filter out approved/declined requests - only show pending ones
+        const pendingRequests = allRequests.filter(request => request.status === 'pending');
+        console.log('Total requests:', allRequests.length, 'Pending requests:', pendingRequests.length);
+        
+        if (pendingRequests.length === 0) {
+          list.innerHTML = `
+            <div class="empty-notifications">
+              <div class="empty-icon">
+                <i class="fas fa-bell"></i>
+              </div>
+              <p class="empty-text">No pending notifications</p>
+              <p class="empty-subtext">All requests have been processed</p>
+            </div>
+          `;
+          return;
+        }
+        
+        pendingRequests.forEach(request => {
           renderNotificationItem(request);
         });
         
@@ -2985,7 +3339,7 @@
             <div class="notification-title">${title}</div>
             <div class="notification-subtitle">${subtitle}</div>
           </div>
-          <div class="notification-amount">$${request.amount.toFixed(2)}</div>
+          <div class="notification-amount">${getCurrencySymbol(window.parentDefaultCurrency || 'USD')}${request.amount.toFixed(2)}</div>
           ${actionsHtml}
         `;
       } else {
@@ -2997,7 +3351,7 @@
             <div class="notification-title">${title}</div>
             <div class="notification-subtitle">${reason} • ${date}</div>
           </div>
-          <div class="notification-amount">$${request.amount.toFixed(2)}</div>
+          <div class="notification-amount">${getCurrencySymbol(window.parentDefaultCurrency || 'USD')}${request.amount.toFixed(2)}</div>
           ${actionsHtml}
         `;
       }
@@ -3078,9 +3432,11 @@
       const totalTransactions = allFinancialData.length;
       const averageTransaction = totalTransactions > 0 ? totalSpending / totalTransactions : 0;
 
-      document.getElementById('totalSpending').textContent = `$${totalSpending.toFixed(2)}`;
+      const currency = window.parentDefaultCurrency || 'USD';
+      const symbol = getCurrencySymbol(currency);
+      document.getElementById('totalSpending').textContent = `${symbol}${totalSpending.toFixed(2)}`;
       document.getElementById('totalTransactions').textContent = totalTransactions;
-      document.getElementById('averageTransaction').textContent = `$${averageTransaction.toFixed(2)}`;
+      document.getElementById('averageTransaction').textContent = `${symbol}${averageTransaction.toFixed(2)}`;
 
       // Sample percentage changes
       document.getElementById('spendingChange').textContent = '+12% from last month';
@@ -3182,7 +3538,7 @@
             </div>
           </div>
           <div class="category-amount">
-            <span class="amount">$${data.amount.toFixed(2)}</span>
+            <span class="amount">${getCurrencySymbol(window.parentDefaultCurrency || 'USD')}${data.amount.toFixed(2)}</span>
             <span class="percentage">${percentage}%</span>
           </div>
           <div class="category-progress">
@@ -3219,31 +3575,71 @@
       });
     }
 
-    function updateSafetyAlerts(transactions) {
-      const safetyEvents = [
-        {
-          time: '2 hours ago',
-          type: 'success',
-          title: 'Normal spending pattern detected',
-          description: 'Lunch payment at school cafeteria - $8.50'
-        },
-        {
-          time: '1 day ago',
-          type: 'warning',
-          title: 'Higher than usual weekend spending',
-          description: 'Total weekend spending: $28.50 (avg: $15.00)'
-        },
-        {
-          time: '3 days ago',
-          type: 'success',
-          title: 'Emergency fund usage approved',
-          description: 'Emergency transport payment - $20.00'
-        }
-      ];
-
+    function updateSafetyAlerts(data) {
+      const currency = window.parentDefaultCurrency || 'USD';
+      const symbol = getCurrencySymbol(currency);
+      
+      // Handle both old format (array) and new format (object with transactions and activities)
+      const transactions = Array.isArray(data) ? data : (data.transactions || []);
+      const activities = Array.isArray(data) ? [] : (data.activities || []);
+      
+      // Combine all financial activities for analysis
+      const allFinancialData = [...transactions, ...activities.filter(a => a.amount > 0)];
+      
       const eventsList = document.getElementById('recentSafetyEventsList');
       eventsList.innerHTML = '';
-
+      
+      if (allFinancialData.length === 0) {
+        // Show empty state when no transactions exist
+        eventsList.innerHTML = `
+          <div class="empty-safety-alerts">
+            <div class="empty-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <p class="empty-text">No spending activity yet</p>
+            <p class="empty-subtext">Safety alerts will appear here when your children start making transactions</p>
+          </div>
+        `;
+        
+        // Update status message
+        const statusMessage = document.querySelector('.safety-status-message');
+        if (statusMessage) {
+          statusMessage.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>Monitoring will begin once transactions are made</span>
+          `;
+          statusMessage.className = 'safety-status-message info';
+        }
+        return;
+      }
+      
+      // Generate real safety alerts based on actual transaction data
+      const safetyEvents = generateSafetyEvents(allFinancialData, symbol);
+      
+      if (safetyEvents.length === 0) {
+        // Show positive message when all patterns are normal
+        const statusMessage = document.querySelector('.safety-status-message');
+        if (statusMessage) {
+          statusMessage.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <span>All spending patterns are normal</span>
+          `;
+          statusMessage.className = 'safety-status-message success';
+        }
+        
+        eventsList.innerHTML = `
+          <div class="no-alerts">
+            <div class="no-alerts-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <p>No unusual activity detected</p>
+            <p class="subtext">All recent transactions appear normal</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Display actual safety events
       safetyEvents.forEach(event => {
         const eventItem = document.createElement('div');
         eventItem.className = `safety-event-item ${event.type}`;
@@ -3256,6 +3652,102 @@
         `;
         eventsList.appendChild(eventItem);
       });
+    }
+    
+    function generateSafetyEvents(transactions, symbol) {
+      const events = [];
+      const now = new Date();
+      
+      // Analyze recent transactions for patterns
+      const recentTransactions = transactions.filter(t => {
+        const transactionDate = new Date(t.created_at);
+        const daysDiff = (now - transactionDate) / (1000 * 60 * 60 * 24);
+        return daysDiff <= 7; // Last 7 days
+      });
+      
+      if (recentTransactions.length === 0) return events;
+      
+      // Check for high-value transactions
+      const highValueThreshold = 50; // Adjust based on your needs
+      const highValueTransactions = recentTransactions.filter(t => Math.abs(t.amount) > highValueThreshold);
+      
+      highValueTransactions.forEach(transaction => {
+        const timeAgo = getTimeAgo(new Date(transaction.created_at));
+        events.push({
+          time: timeAgo,
+          type: 'warning',
+          title: 'High-value transaction detected',
+          description: `${transaction.description || 'Transaction'} - ${symbol}${Math.abs(transaction.amount).toFixed(2)}`
+        });
+      });
+      
+      // Check for emergency fund usage
+      const emergencyTransactions = recentTransactions.filter(t => 
+        t.type === 'emergency_funds' || t.description?.toLowerCase().includes('emergency')
+      );
+      
+      emergencyTransactions.forEach(transaction => {
+        const timeAgo = getTimeAgo(new Date(transaction.created_at));
+        events.push({
+          time: timeAgo,
+          type: 'info',
+          title: 'Emergency fund usage',
+          description: `${transaction.description || 'Emergency payment'} - ${symbol}${Math.abs(transaction.amount).toFixed(2)}`
+        });
+      });
+      
+      // Check for normal patterns (recent small transactions)
+      const normalTransactions = recentTransactions.filter(t => 
+        Math.abs(t.amount) <= 20 && !t.description?.toLowerCase().includes('emergency')
+      );
+      
+      if (normalTransactions.length > 0) {
+        const latestNormal = normalTransactions[0];
+        const timeAgo = getTimeAgo(new Date(latestNormal.created_at));
+        events.push({
+          time: timeAgo,
+          type: 'success',
+          title: 'Normal spending pattern detected',
+          description: `${latestNormal.description || 'Regular transaction'} - ${symbol}${Math.abs(latestNormal.amount).toFixed(2)}`
+        });
+      }
+      
+      // Sort by most recent first and limit to 5 events
+      return events.sort((a, b) => {
+        const timeA = parseTimeAgo(a.time);
+        const timeB = parseTimeAgo(b.time);
+        return timeA - timeB;
+      }).slice(0, 5);
+    }
+    
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+      
+      if (diffInMinutes < 60) {
+        return `${diffInMinutes} minutes ago`;
+      } else if (diffInMinutes < 1440) {
+        const hours = Math.floor(diffInMinutes / 60);
+        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      } else {
+        const days = Math.floor(diffInMinutes / 1440);
+        return `${days} day${days > 1 ? 's' : ''} ago`;
+      }
+    }
+    
+    function parseTimeAgo(timeString) {
+      const match = timeString.match(/(\d+)\s+(minute|hour|day)s?\s+ago/);
+      if (!match) return 0;
+      
+      const value = parseInt(match[1]);
+      const unit = match[2];
+      
+      switch (unit) {
+        case 'minute': return value;
+        case 'hour': return value * 60;
+        case 'day': return value * 1440;
+        default: return 0;
+      }
     }
 
     function createMonthlyTrendChart() {
@@ -4478,6 +4970,18 @@
         isFromRequest: true
       };
       
+      // Also remove from localStorage immediately when approving
+      const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
+      const updatedRequests = pendingRequests.filter(req => 
+        req.id !== requestId && 
+        !(req.child_id === childId && req.amount === amount)
+      );
+      localStorage.setItem('pendingMoneyRequests', JSON.stringify(updatedRequests));
+      console.log('Removed money request from localStorage on approval. Before:', pendingRequests.length, 'After:', updatedRequests.length);
+      
+      // Immediately refresh notifications to remove from UI
+      loadNotifications();
+      
       // Get child name for the modal title
       try {
         if (supabase) {
@@ -4497,6 +5001,8 @@
       }
       
       // Show the send money modal with the requested amount pre-filled
+      await populateChildDropdown('sendMoneyChild');
+      document.getElementById('sendMoneyChild').value = childId;
       document.getElementById('sendMoneyModalTitle').textContent = `Send Money to ${selectedChildForMoney.firstName} ${selectedChildForMoney.surname}`;
       document.getElementById('sendMoneyAmount').value = amount;
       document.getElementById('sendMoneyNote').value = 'Money request approved';
@@ -4508,16 +5014,25 @@
       if (!supabase || !currentUserId) return;
       
       try {
-        const { error } = await supabase
-          .from('money_requests')
-          .update({ 
-            status: 'declined',
-            parent_response: 'Request declined',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', requestId);
+        // First remove from localStorage immediately
+        const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
+        const updatedRequests = pendingRequests.filter(req => req.id !== requestId);
+        localStorage.setItem('pendingMoneyRequests', JSON.stringify(updatedRequests));
+        console.log('Removed money request from localStorage on decline. Before:', pendingRequests.length, 'After:', updatedRequests.length);
         
-        if (error) throw error;
+        // Only update database if requestId is a valid UUID (not a temp ID)
+        if (requestId && !requestId.startsWith('temp-')) {
+          const { error } = await supabase
+            .from('money_requests')
+            .update({ 
+              status: 'declined',
+              parent_response: 'Request declined',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', requestId);
+          
+          if (error) throw error;
+        }
         
         alert('Money request declined.');
         
@@ -4542,6 +5057,18 @@
         isFromEmergencyRequest: true
       };
       
+      // Also remove from localStorage immediately when approving
+      const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+      const updatedRequests = pendingRequests.filter(req => 
+        req.id !== requestId && 
+        !(req.child_id === childId && req.amount === amount)
+      );
+      localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
+      console.log('Removed emergency request from localStorage on approval. Before:', pendingRequests.length, 'After:', updatedRequests.length);
+      
+      // Immediately refresh notifications to remove from UI
+      loadNotifications();
+      
       // Get child name for the modal title
       try {
         if (supabase) {
@@ -4561,6 +5088,7 @@
       }
       
       // Show the emergency fund modal with the requested amount pre-filled
+      await populateChildDropdown('emergencyChild');
       document.getElementById('emergencyChild').value = childId;
       document.getElementById('emergencyAmount').value = amount;
       document.getElementById('emergencyFundModal').style.display = 'block';
@@ -4571,16 +5099,25 @@
       if (!supabase || !currentUserId) return;
       
       try {
-        const { error } = await supabase
-          .from('emergency_requests')
-          .update({ 
-            status: 'declined',
-            parent_response: 'Emergency request declined',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', requestId);
+        // First remove from localStorage immediately
+        const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+        const updatedRequests = pendingRequests.filter(req => req.id !== requestId);
+        localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
+        console.log('Removed emergency request from localStorage on decline. Before:', pendingRequests.length, 'After:', updatedRequests.length);
         
-        if (error) throw error;
+        // Only update database if requestId is a valid UUID (not a temp ID)
+        if (requestId && !requestId.startsWith('temp-')) {
+          const { error } = await supabase
+            .from('emergency_requests')
+            .update({ 
+              status: 'declined',
+              parent_response: 'Emergency request declined',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', requestId);
+          
+          if (error) throw error;
+        }
         
         alert('Emergency request declined.');
         
@@ -4641,7 +5178,7 @@
         
         // Update UI with payment details
         document.getElementById('parentMerchantName').textContent = paymentData.merchant || 'Unknown Merchant';
-        document.getElementById('parentPaymentAmount').textContent = `$${(paymentData.amount || 0).toFixed(2)}`;
+        document.getElementById('parentPaymentAmount').textContent = `${getCurrencySymbol(window.parentDefaultCurrency || 'USD')}${(paymentData.amount || 0).toFixed(2)}`;
         document.getElementById('parentPaymentDescription').textContent = paymentData.description || 'Payment';
         
         // Show payment details and hide scanner
@@ -4682,7 +5219,17 @@
         if (balanceError) throw balanceError;
         
         if (childData.balance < amount) {
-          alert(`Insufficient balance in ${childData.first_name}'s account. Current balance: $${childData.balance.toFixed(2)}`);
+          // Get child's currency for proper display
+          const { data: childWallet } = await supabase
+            .from('multi_currency_wallets')
+            .select('currency_code')
+            .eq('child_id', childId)
+            .eq('is_primary', true)
+            .single();
+          
+          const currency = childWallet?.currency_code || window.parentDefaultCurrency || 'USD';
+          const symbol = getCurrencySymbol(currency);
+          alert(`Insufficient balance in ${childData.first_name}'s account. Current balance: ${symbol}${childData.balance.toFixed(2)}`);
           return;
         }
         
@@ -4711,7 +5258,9 @@
           console.error('Error creating transaction record:', transactionError);
         }
         
-        alert(`Payment successful! $${amount.toFixed(2)} paid to ${parentQrScannedData.merchant} from ${childData.first_name}'s account`);
+        const currency = window.parentDefaultCurrency || 'USD';
+        const symbol = getCurrencySymbol(currency);
+        alert(`Payment successful! ${symbol}${amount.toFixed(2)} paid to ${parentQrScannedData.merchant} from ${childData.first_name}'s account`);
         closeParentQRScanner();
         
         // Refresh children list to show updated balance

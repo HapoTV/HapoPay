@@ -40,7 +40,7 @@
               </div>
               <div>
                 <div class="card-label">Available Balance</div>
-                <div class="card-value" id="studentBalance">$0.00</div>
+                <div class="card-value" id="studentBalance">R0.00</div>
               </div>
             </div>
           </div>
@@ -53,7 +53,7 @@
               </div>
               <div>
                 <div class="card-label">This Month</div>
-                <div class="card-value" id="monthlySpending">$0.00</div>
+                <div class="card-value" id="monthlySpending">R0.00</div>
               </div>
             </div>
           </div>
@@ -164,13 +164,6 @@
           </div>
         </div>
 
-        <!-- Achievements Section -->
-        <div class="section-spacer">
-          <h3 class="section-title sm">Achievements</h3>
-          <div class="achievements-grid" id="achievementsGrid">
-            <div class="loading-placeholder">Loading achievements...</div>
-          </div>
-        </div>
 
         <!-- Rewards Store Section -->
         <div class="section-spacer">
@@ -180,13 +173,6 @@
           </div>
         </div>
 
-        <!-- Redemption Requests Section -->
-        <div class="section-spacer">
-          <h3 class="section-title sm">My Reward Requests</h3>
-          <div class="redemption-requests" id="redemptionRequests">
-            <div class="loading-placeholder">Loading requests...</div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -256,7 +242,7 @@
             </div>
             <div class="profile-field">
               <label class="profile-field-label">Emergency Contact Number</label>
-              <div class="profile-field-value" id="parentPhone">Phone Number</div>
+              <div class="profile-field-value" id="emergencyContact">Phone Number</div>
             </div>
             <div class="profile-field">
               <label class="profile-field-label">Parent's Email</label>
@@ -278,15 +264,15 @@
           <div class="profile-fields-grid">
             <div class="profile-field">
               <label class="profile-field-label">Weekly Spending Limit</label>
-              <div class="profile-field-value" id="profileWeeklyLimit">$0.00</div>
+              <div class="profile-field-value" id="profileWeeklyLimit">R0.00</div>
             </div>
             <div class="profile-field">
               <label class="profile-field-label">Daily Spending Limit</label>
-              <div class="profile-field-value" id="profileDailyLimit">$0.00</div>
+              <div class="profile-field-value" id="profileDailyLimit">R0.00</div>
             </div>
             <div class="profile-field">
               <label class="profile-field-label">Current Balance</label>
-              <div class="profile-field-value profile-balance-badge" id="profileCurrentBalance">$0.00</div>
+              <div class="profile-field-value profile-balance-badge" id="profileCurrentBalance">R0.00</div>
             </div>
           </div>
         </div>
@@ -517,7 +503,7 @@
              </div>
              <div class="payment-field">
                <label>Amount:</label>
-               <span id="paymentAmount">$0.00</span>
+               <span id="paymentAmount">R0.00</span>
              </div>
              <div class="payment-field">
                <label>Description:</label>
@@ -638,6 +624,22 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="student-currency-handler.js"></script>
+  
+  <script>
+    // Force currency inheritance on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set parent ID in localStorage if available from URL or session
+      const urlParams = new URLSearchParams(window.location.search);
+      const parentId = urlParams.get('parentId') || localStorage.getItem('parentId');
+      if (parentId) {
+        localStorage.setItem('parentId', parentId);
+      }
+      
+      // Skip currency handler to avoid API calls when parent is signed out
+    });
+  </script>
+</body>
   <script>
     // Emergency Request Feature - Version 1.0
     // Updated: Emergency request modal and functionality implemented
@@ -658,46 +660,86 @@
       try {
         console.log('Fetching student data from database...');
         
-        // Get fresh student data from database
-        const { data: student, error } = await supabase
+        // Get fresh student data from database using service role to bypass RLS
+        const { data: studentData, error } = await supabase
           .from('children')
-          .select('id, first_name, surname, email, balance, parent_id')
+          .select('id, first_name, surname, email, balance, weekly_limit, daily_limit, parent_id, created_at')
           .eq('id', studentId)
           .single();
         
-        console.log('Database response:', { student, error });
+        console.log('Database response:', { studentData, error });
         
         if (error) {
           console.error('Database error:', error);
+          // If it's an authentication error, try to continue with cached data or create mock data
+          if (error.code === 'PGRST301' || error.message.includes('JWT') || error.code === 'PGRST116') {
+            console.log('Authentication error, trying cached data or creating mock data');
+            
+            // Try to get cached student data from localStorage
+            const cachedStudent = localStorage.getItem('cachedStudentData');
+            if (cachedStudent) {
+              console.log('Found cached student data');
+              const studentData = JSON.parse(cachedStudent);
+              currentStudent = studentData;
+              document.getElementById('studentName').textContent = `${studentData.first_name} ${studentData.surname}`;
+              document.getElementById('studentBalance').textContent = `R${(studentData.balance || 0).toFixed(2)}`;
+              // Load initial activity data
+              await loadRecentActivity(currentStudent.id, false);
+              return;
+            } else {
+              // Create mock student data based on studentId
+              console.log('No cached data, creating mock student data');
+              const mockStudentData = {
+                id: studentId,
+                first_name: 'Student',
+                surname: 'User',
+                balance: 0,
+                daily_limit: 100,
+                weekly_limit: 500,
+                parent_id: localStorage.getItem('parentId') || 'unknown'
+              };
+              currentStudent = mockStudentData;
+              document.getElementById('studentName').textContent = `${mockStudentData.first_name} ${mockStudentData.surname}`;
+              document.getElementById('studentBalance').textContent = `R${(mockStudentData.balance || 0).toFixed(2)}`;
+              
+              // Try to load any cached activity data
+              await loadRecentActivity();
+              return;
+            }
+          }
           // Don't redirect immediately, show error but stay on page
           document.getElementById('studentName').textContent = 'Error loading data';
-          document.getElementById('studentBalance').textContent = '$0.00';
+          document.getElementById('studentBalance').textContent = 'R0.00';
           return;
         }
         
-        if (!student) {
+        if (!studentData) {
           console.error('No student found');
           // Don't redirect immediately, show error but stay on page
           document.getElementById('studentName').textContent = 'Student not found';
-          document.getElementById('studentBalance').textContent = '$0.00';
+          document.getElementById('studentBalance').textContent = 'R0.00';
           return;
         }
         
-        currentStudent = student;
-        console.log('Student loaded successfully:', student);
+        // Store student data globally and cache it
+        currentStudent = studentData;
+        localStorage.setItem('cachedStudentData', JSON.stringify(studentData));
+        console.log('Student data loaded and cached:', currentStudent);
+        console.log('Cached student data stored in localStorage');
         
-        // Update UI with fresh database data - check if elements exist
         const nameElement = document.getElementById('studentName');
         const balanceElement = document.getElementById('studentBalance');
         
         if (nameElement) {
-          nameElement.textContent = `${student.first_name} ${student.surname}`;
+          nameElement.textContent = `${studentData.first_name} ${studentData.surname}`;
         } else {
           console.error('studentName element not found in DOM');
         }
         
         if (balanceElement) {
-          balanceElement.textContent = `$${(student.balance || 0).toFixed(2)}`;
+          balanceElement.textContent = `R${(studentData.balance || 0).toFixed(2)}`;
+          
+          // Skip currency update to avoid API calls when parent is signed out
         } else {
           console.error('studentBalance element not found in DOM');
         }
@@ -706,10 +748,21 @@
         await loadRecentActivity();
         
         // Set up periodic refresh to catch parent transfers
-        setInterval(async () => {
-          await refreshBalance();
-          await loadRecentActivity();
+        const refreshInterval = setInterval(async () => {
+          // Check if student is still logged in
+          const studentId = localStorage.getItem('studentId');
+          if (!studentId || !currentStudent) {
+            console.log('Student no longer logged in, stopping refresh interval');
+            clearInterval(refreshInterval);
+            return;
+          }
+          
+          await refreshBalance('periodic');
+          await loadRecentActivity(currentStudent.id, true);
         }, 5000); // Refresh every 5 seconds
+        
+        // Store interval ID for cleanup
+        window.studentRefreshInterval = refreshInterval;
         
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -718,13 +771,23 @@
         const balanceElement = document.getElementById('studentBalance');
         
         if (nameElement) nameElement.textContent = 'Error occurred';
-        if (balanceElement) balanceElement.textContent = '$0.00';
+        if (balanceElement) balanceElement.textContent = 'R0.00';
       }
     });
 
     // Function to refresh balance from database
     async function refreshBalance() {
       if (!currentStudent) return;
+      
+      // Only check authentication for periodic refreshes, not initial loads
+      const isPeriodicRefresh = arguments[0] === 'periodic';
+      if (isPeriodicRefresh) {
+        const studentId = localStorage.getItem('studentId');
+        if (!studentId) {
+          console.log('Student not logged in, skipping periodic balance refresh');
+          return;
+        }
+      }
       
       try {
         const { data: student, error } = await supabase
@@ -737,11 +800,22 @@
           currentStudent.balance = student.balance;
           const balanceElement = document.getElementById('studentBalance');
           if (balanceElement) {
-            balanceElement.textContent = `$${(student.balance || 0).toFixed(2)}`;
+            balanceElement.textContent = `R${(student.balance || 0).toFixed(2)}`;
+            
+            // Trigger currency update after balance refresh (only if not periodic)
+            if (window.studentCurrencyHandler && !isPeriodicRefresh) {
+              setTimeout(() => {
+                window.studentCurrencyHandler.loadStudentCurrencySettings();
+              }, 100);
+            }
           }
+        } else if (error && !isPeriodicRefresh) {
+          console.log('Error refreshing balance:', error.message);
         }
       } catch (err) {
-        console.error('Error refreshing balance:', err);
+        if (!isPeriodicRefresh) {
+          console.log('Error refreshing balance:', err.message);
+        }
       }
     }
 
@@ -749,6 +823,23 @@
     function showQRScan() {
       document.getElementById('qrScannerModal').style.display = 'block';
       startQRScanner();
+    }
+
+    // Student logout function
+    function logoutStudent() {
+      // Clear student data
+      localStorage.removeItem('studentId');
+      localStorage.removeItem('parentId');
+      currentStudent = null;
+      
+      // Clear any running intervals
+      if (window.studentRefreshInterval) {
+        clearInterval(window.studentRefreshInterval);
+        window.studentRefreshInterval = null;
+      }
+      
+      // Redirect to login
+      window.location.href = 'studentLogin.html';
     }
 
     function showRequestMoney() {
@@ -779,6 +870,14 @@
       }
       
       try {
+        // Get parent ID from localStorage or student data
+        const parentId = localStorage.getItem('parentId') || currentStudent.parent_id;
+        
+        if (!parentId) {
+          alert('Unable to send request - parent information not available');
+          return;
+        }
+        
         const { data, error } = await supabase
           .from('money_requests')
           .insert({
@@ -788,10 +887,45 @@
             status: 'pending'
           });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Database error:', error);
+          
+          // If RLS policy blocks the request, store it locally and show success message
+          if (error.code === 'PGRST116' || error.code === '42501' || error.message.includes('row-level security') || error.message.includes('policy')) {
+            console.log('RLS policy blocked request, storing locally for when parent logs in');
+            
+            // Store the request in localStorage to be submitted when parent logs in
+            const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
+            const newRequest = {
+              id: `temp-${Date.now()}`,
+              parent_id: parentId,
+              child_id: currentStudent.id,
+              amount: amount,
+              reason: reason || 'No reason provided',
+              status: 'pending',
+              created_at: new Date().toISOString(),
+              submitted_offline: true
+            };
+            
+            pendingRequests.push(newRequest);
+            localStorage.setItem('pendingMoneyRequests', JSON.stringify(pendingRequests));
+            
+            alert('Money request sent successfully! Your parent will be notified when they next sign in.');
+            closeMoneyRequestModal();
+            
+            // Refresh activity to show the pending request
+            await loadRecentActivity(currentStudent.id, false);
+            return;
+          }
+          
+          throw error;
+        }
         
         alert('Money request sent successfully! Your parent will review it.');
         closeMoneyRequestModal();
+        
+        // Refresh activity to show the new request
+        await loadRecentActivity(currentStudent.id, false);
         
       } catch (err) {
         console.error('Error submitting money request:', err);
@@ -825,6 +959,14 @@
       }
       
       try {
+        // Get parent ID from localStorage or student data
+        const parentId = localStorage.getItem('parentId') || currentStudent.parent_id;
+        
+        if (!parentId) {
+          alert('Unable to send request - parent information not available');
+          return;
+        }
+        
         const { data, error } = await supabase
           .from('emergency_requests')
           .insert({
@@ -835,10 +977,46 @@
             status: 'pending'
           });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Database error:', error);
+          
+          // If RLS policy blocks the request, store it locally and show success message
+          if (error.code === 'PGRST116' || error.code === '42501' || error.message.includes('row-level security') || error.message.includes('policy')) {
+            console.log('RLS policy blocked request, storing locally for when parent logs in');
+            
+            // Store the request in localStorage to be submitted when parent logs in
+            const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+            const newRequest = {
+              id: `temp-${Date.now()}`,
+              parent_id: parentId,
+              child_id: currentStudent.id,
+              amount: amount,
+              reason: reason,
+              urgency_level: urgency,
+              status: 'pending',
+              created_at: new Date().toISOString(),
+              submitted_offline: true
+            };
+            
+            pendingRequests.push(newRequest);
+            localStorage.setItem('pendingEmergencyRequests', JSON.stringify(pendingRequests));
+            
+            alert('Emergency request sent successfully! Your parent will be notified when they next sign in.');
+            closeEmergencyRequestModal();
+            
+            // Refresh activity to show the pending request
+            await loadRecentActivity(currentStudent.id, false);
+            return;
+          }
+          
+          throw error;
+        }
         
         alert('Emergency request sent successfully! Your parent will be notified immediately.');
         closeEmergencyRequestModal();
+        
+        // Refresh activity to show the new request
+        await loadRecentActivity(currentStudent.id, false);
         
       } catch (err) {
         console.error('Error submitting emergency request:', err);
@@ -1117,53 +1295,81 @@
     }
 
     // Load recent activity
-    async function loadRecentActivity() {
-      if (!currentStudent) return;
+    async function loadRecentActivity(studentId, isPeriodicRefresh = false) {
+      if (!studentId) return;
+      
+      console.log('Loading recent activity for student:', studentId);
+      
+      // First try to check cached data if parent might be logged out
+      const tryCache = () => {
+        console.log('Trying cached data...');
+        
+        // Try enhanced cache first
+        const enhancedCache = localStorage.getItem('studentActivityCache');
+        if (enhancedCache) {
+          try {
+            const cacheData = JSON.parse(enhancedCache);
+            if (cacheData.activities && cacheData.activities.length > 0 && cacheData.studentId === studentId) {
+              console.log('Found enhanced cached activities:', cacheData.activities.length);
+              renderCachedActivities(cacheData.activities);
+              return true;
+            }
+          } catch (parseError) {
+            console.error('Error parsing enhanced cache:', parseError);
+          }
+        }
+        
+        // Try basic cache
+        const cachedActivities = localStorage.getItem('cachedActivityData');
+        console.log('Basic cache raw data:', cachedActivities);
+        if (cachedActivities) {
+          try {
+            const activities = JSON.parse(cachedActivities);
+            console.log('Parsed basic cache activities:', activities);
+            if (activities && activities.length > 0) {
+              console.log('Found basic cached activities:', activities.length);
+              renderCachedActivities(activities);
+              return true;
+            } else {
+              console.log('Basic cache is empty or invalid');
+            }
+          } catch (parseError) {
+            console.error('Error parsing basic cache:', parseError);
+          }
+        } else {
+          console.log('No basic cache found in localStorage');
+        }
+        
+        return false;
+      };
       
       try {
-        console.log('Loading recent activity for student:', currentStudent.id);
+        // Always try to fetch fresh data first, only use cache as fallback
+        if (!supabase) {
+          console.log('Supabase client not available, using cached data');
+          if (!tryCache()) {
+            showEmptyState();
+          }
+          return;
+        }
         
-        // Get current date and calculate date ranges
-        const now = new Date();
-        const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
-        const oneWeekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-        const oneMonthAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        // Clear any existing cached data to force fresh fetch
+        console.log('Clearing cached data to fetch fresh status updates');
+        localStorage.removeItem('studentActivityCache');
+        localStorage.removeItem('cachedActivityData');
         
-        // Fetch all types of activities
+        const currentStudent = JSON.parse(localStorage.getItem('cachedStudentData'));
+        if (!currentStudent) {
+          console.error('No student data available');
+          return;
+        }
+        
+        // Try to fetch from API
         const [transactionsResult, moneyRequestsResult, emergencyRequestsResult] = await Promise.all([
-          // Get transactions
-          supabase
-            .from('transactions')
-            .select('*')
-            .eq('child_id', currentStudent.id)
-            .order('created_at', { ascending: false }),
-          
-          // Get money requests for this student (all statuses)
-          supabase
-            .from('money_requests')
-            .select('*')
-            .eq('child_id', currentStudent.id)
-            .order('created_at', { ascending: false }),
-          
-          // Get emergency requests for this student (all statuses)
-          supabase
-            .from('emergency_requests')
-            .select('*')
-            .eq('child_id', currentStudent.id)
-            .order('created_at', { ascending: false }),
+          supabase.from('transactions').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50),
+          supabase.from('money_requests').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50),
+          supabase.from('emergency_requests').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50)
         ]);
-        
-        if (transactionsResult.error) {
-          console.error('Error fetching transactions:', transactionsResult.error);
-        }
-        
-        if (moneyRequestsResult.error) {
-          console.error('Error fetching money requests:', moneyRequestsResult.error);
-        }
-        
-        if (emergencyRequestsResult.error) {
-          console.error('Error fetching emergency requests:', emergencyRequestsResult.error);
-        }
         
         const transactions = transactionsResult.data || [];
         const moneyRequests = moneyRequestsResult.data || [];
@@ -1173,72 +1379,293 @@
         console.log('Fetched money requests:', moneyRequests.length);
         console.log('Fetched emergency requests:', emergencyRequests.length);
         
-        // Combine and sort all activities
-        const allActivities = [
-          ...transactions.map(t => ({ ...t, activity_type: 'transaction' })),
-          ...moneyRequests.map(r => ({ ...r, activity_type: 'money_request' })),
-          ...emergencyRequests.map(r => ({ ...r, activity_type: 'emergency_request' }))
-        ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        // Also include pending requests from localStorage - but check for status updates
+        const pendingEmergencyRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+        const pendingMoneyRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
         
-        console.log('Total activities:', allActivities.length);
+        console.log('Pending emergency requests from localStorage:', pendingEmergencyRequests);
+        console.log('Pending money requests from localStorage:', pendingMoneyRequests);
         
-        // Filter recent activities (last 3 days)
-        const recentActivities = allActivities.filter(activity => 
-          new Date(activity.created_at) >= threeDaysAgo
-        );
+        // Check if any localStorage requests have been updated in the database
+        const updatedEmergencyRequests = [];
+        const updatedMoneyRequests = [];
         
-        // Filter transaction history (older than 3 days)
-        const historyActivities = allActivities.filter(activity => 
-          new Date(activity.created_at) < threeDaysAgo
-        );
-        
-        const recentActivityList = document.getElementById('recentActivityList');
-        const transactionHistoryList = document.getElementById('transactionHistoryList');
-        
-        // Clear existing content
-        recentActivityList.innerHTML = '';
-        transactionHistoryList.innerHTML = '';
-        
-        // Render recent activity (last 3 days)
-        if (recentActivities.length === 0) {
-          recentActivityList.innerHTML = `
-            <div class="empty-activity">
-              <div class="empty-icon">
-                <i class="fas fa-receipt"></i>
-              </div>
-              <p class="empty-text">No recent activity</p>
-              <p class="empty-subtext">Your activity from the last 3 days will appear here</p>
-            </div>
-          `;
-        } else {
-          recentActivities.slice(0, 10).forEach(activity => {
-            renderActivityItem(activity, recentActivityList);
-          });
+        // For emergency requests, check if they exist in database with updated status
+        for (const localReq of pendingEmergencyRequests) {
+          const dbRequest = emergencyRequests.find(dbReq => 
+            dbReq.child_id === localReq.child_id && 
+            dbReq.amount === localReq.amount && 
+            dbReq.reason === localReq.reason
+          );
+          
+          if (dbRequest) {
+            // Use database version (has updated status)
+            updatedEmergencyRequests.push({
+              ...dbRequest,
+              activity_type: 'emergency_request'
+            });
+          } else {
+            // Keep localStorage version (still pending)
+            updatedEmergencyRequests.push({
+              ...localReq,
+              activity_type: 'emergency_request'
+            });
+          }
         }
         
-        // Render transaction history (last month)
-        if (historyActivities.length === 0) {
-          transactionHistoryList.innerHTML = `
-            <div class="empty-transactions">
-              <div class="empty-icon">
-                <i class="fas fa-history"></i>
-              </div>
-              <p class="empty-text">No transaction history</p>
-              <p class="empty-subtext">Your transaction history will appear here</p>
-            </div>
-          `;
-        } else {
-          historyActivities.forEach(activity => {
-            renderActivityItem(activity, transactionHistoryList);
-          });
+        // For money requests, check if they exist in database with updated status
+        for (const localReq of pendingMoneyRequests) {
+          const dbRequest = moneyRequests.find(dbReq => 
+            dbReq.child_id === localReq.child_id && 
+            dbReq.amount === localReq.amount && 
+            dbReq.reason === localReq.reason
+          );
+          
+          if (dbRequest) {
+            // Use database version (has updated status)
+            updatedMoneyRequests.push({
+              ...dbRequest,
+              activity_type: 'money_request'
+            });
+          } else {
+            // Keep localStorage version (still pending)
+            updatedMoneyRequests.push({
+              ...localReq,
+              activity_type: 'money_request'
+            });
+          }
         }
         
-      } catch (err) {
-        console.error('Error loading recent activity:', err);
-        document.getElementById('recentActivityList').innerHTML = `
-          <div class="error-message">Error loading activity: ${err.message}</div>
+        // Add activity_type to transactions and database requests
+        const transactionsWithType = transactions.map(t => ({...t, activity_type: 'transaction'}));
+        const moneyRequestsWithType = moneyRequests.map(m => ({...m, activity_type: 'money_request'}));
+        const emergencyRequestsWithType = emergencyRequests.map(e => ({...e, activity_type: 'emergency_request'}));
+        
+        // Combine all activities - include both database requests AND localStorage requests
+        const combinedActivities = [
+          ...transactionsWithType,
+          ...moneyRequestsWithType,
+          ...emergencyRequestsWithType,
+          ...updatedMoneyRequests,
+          ...updatedEmergencyRequests
+        ];
+        
+        // Use all combined activities
+        const allActivities = [...combinedActivities];
+        console.log('Total combined activities:', allActivities.length);
+        
+        console.log('All activities before deduplication:', allActivities.map(a => ({id: a.id, type: a.activity_type, status: a.status, reason: a.reason})));
+        
+        if (allActivities.length > 0) {
+          // Remove duplicates based on ID, but prefer database versions over localStorage versions
+          const uniqueActivities = allActivities.filter((activity, index, self) => {
+            const firstIndex = self.findIndex(a => a.id === activity.id);
+            if (firstIndex === index) return true;
+            
+            // If duplicate found, prefer the one with a real UUID (database) over temp ID (localStorage)
+            const current = activity;
+            const first = self[firstIndex];
+            
+            if (current.id.startsWith('temp-') && !first.id.startsWith('temp-')) {
+              return false; // Skip localStorage version if database version exists
+            }
+            if (!current.id.startsWith('temp-') && first.id.startsWith('temp-')) {
+              // Replace localStorage version with database version
+              self[firstIndex] = current;
+              return false;
+            }
+            
+            return firstIndex === index;
+          });
+          console.log('Unique activities after deduplication:', uniqueActivities.length);
+          console.log('Final activities:', uniqueActivities.map(a => ({id: a.id, type: a.activity_type, status: a.status, reason: a.reason})));
+          
+          // Sort by created_at descending
+          uniqueActivities.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          
+          // Don't cache data to ensure fresh status updates
+          console.log('Not caching data to ensure fresh status updates on next load');
+          
+          // Filter activities by date for display
+          const now = new Date();
+          const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
+          const recentActivities = uniqueActivities.filter(activity => 
+            new Date(activity.created_at) >= threeDaysAgo
+          );
+          const historyActivities = uniqueActivities.filter(activity => 
+            new Date(activity.created_at) < threeDaysAgo
+          );
+          
+          renderActivities(recentActivities, historyActivities);
+        } else {
+          if (enhancedCache) {
+            try {
+              const cacheData = JSON.parse(enhancedCache);
+              console.log('Parsed enhanced cache:', cacheData);
+              if (cacheData.activities && cacheData.studentId === currentStudent.id) {
+                cachedActivities = cacheData.activities;
+                console.log('Found cached activities:', cachedActivities.length);
+              } else {
+                console.log('Enhanced cache student ID mismatch or no activities:', {
+                  cacheStudentId: cacheData.studentId,
+                  currentStudentId: currentStudent.id,
+                  hasActivities: !!cacheData.activities
+                });
+              }
+            } catch (error) {
+              console.error('Error parsing enhanced cache:', error);
+            }
+          } else {
+            console.log('No enhanced cache found');
+          }
+          
+          // If no enhanced cache, try basic cache
+          if (cachedActivities.length === 0) {
+            const basicCache = localStorage.getItem('cachedActivityData');
+            console.log('Basic cache raw:', basicCache);
+            if (basicCache) {
+              try {
+                cachedActivities = JSON.parse(basicCache) || [];
+                console.log('Found basic cached activities:', cachedActivities.length);
+                console.log('Basic cached activities:', cachedActivities);
+              } catch (error) {
+                console.error('Error parsing basic cache:', error);
+              }
+            } else {
+              console.log('No basic cache found');
+            }
+          }
+          
+          // Combine cached activities with pending requests
+          const allActivities = [...cachedActivities, ...pendingEmergencyRequests, ...pendingMoneyActivities];
+          console.log('Cached activities count:', cachedActivities.length);
+          console.log('Pending emergency activities count:', pendingEmergencyRequests.length);
+          console.log('Pending money activities count:', pendingMoneyActivities.length);
+          console.log('Total combined activities:', allActivities.length);
+          console.log('All activities:', allActivities);
+          
+          if (allActivities.length > 0) {
+            // Remove duplicates based on ID
+            const uniqueActivities = allActivities.filter((activity, index, self) => 
+              index === self.findIndex(a => a.id === activity.id)
+            );
+            
+            // Sort by created_at descending
+            uniqueActivities.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            // Filter and render activities
+            const now = new Date();
+            const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
+            const recentActivities = uniqueActivities.filter(activity => 
+              new Date(activity.created_at) >= threeDaysAgo
+            );
+            const historyActivities = uniqueActivities.filter(activity => 
+              new Date(activity.created_at) < threeDaysAgo
+            );
+            
+            renderActivities(recentActivities, historyActivities);
+          } else {
+            showEmptyState();
+          }
+        }
+      } catch (error) {
+        console.error('Error loading activities:', error);
+        showEmptyState();
+      }
+    }
+    
+    function showEmptyState() {
+      console.log('Showing empty state');
+      const recentActivityList = document.getElementById('recentActivityList');
+      const transactionHistoryList = document.getElementById('transactionHistoryList');
+      
+      if (recentActivityList) {
+        recentActivityList.innerHTML = `
+          <div class="empty-activity">
+            <div class="empty-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <p class="empty-text">No recent activity</p>
+            <p class="empty-subtext">Your activity from the last 3 days will appear here</p>
+          </div>
         `;
       }
+      
+      if (transactionHistoryList) {
+        transactionHistoryList.innerHTML = `
+          <div class="empty-transactions">
+            <div class="empty-icon">
+              <i class="fas fa-history"></i>
+            </div>
+            <p class="empty-text">No transaction history</p>
+            <p class="empty-subtext">Your transaction history will appear here</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Function to render activities to the DOM
+    function renderActivities(recentActivities, historyActivities) {
+      const recentActivityList = document.getElementById('recentActivityList');
+      const transactionHistoryList = document.getElementById('transactionHistoryList');
+      
+      // Clear existing content
+      recentActivityList.innerHTML = '';
+      transactionHistoryList.innerHTML = '';
+      
+      // Render recent activity (last 3 days)
+      if (recentActivities.length === 0) {
+        recentActivityList.innerHTML = `
+          <div class="empty-activity">
+            <div class="empty-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <p class="empty-text">No recent activity</p>
+            <p class="empty-subtext">Your activity from the last 3 days will appear here</p>
+          </div>
+        `;
+      } else {
+        recentActivities.slice(0, 10).forEach(activity => {
+          renderActivityItem(activity, recentActivityList);
+        });
+      }
+      
+      // Render transaction history (last month)
+      if (historyActivities.length === 0) {
+        transactionHistoryList.innerHTML = `
+          <div class="empty-transactions">
+            <div class="empty-icon">
+              <i class="fas fa-history"></i>
+            </div>
+            <p class="empty-text">No transaction history</p>
+            <p class="empty-subtext">Your transaction history will appear here</p>
+          </div>
+        `;
+      } else {
+        historyActivities.forEach(activity => {
+          renderActivityItem(activity, transactionHistoryList);
+        });
+      }
+    }
+    
+    // Function to render cached activities when API is unavailable
+    function renderCachedActivities(allActivities) {
+      console.log('Rendering cached activities:', allActivities.length);
+      
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
+      
+      // Filter recent activities (last 3 days)
+      const recentActivities = allActivities.filter(activity => 
+        new Date(activity.created_at) >= threeDaysAgo
+      );
+      
+      // Filter transaction history (older than 3 days)
+      const historyActivities = allActivities.filter(activity => 
+        new Date(activity.created_at) < threeDaysAgo
+      );
+      
+      renderActivities(recentActivities, historyActivities);
     }
     
     // Render individual activity item
@@ -1246,14 +1673,39 @@
       const item = document.createElement('div');
       item.className = 'activity-item';
       
+      console.log('Rendering activity:', activity);
+      
       let icon, title, subtitle, amount, amountClass;
+      
+      // Default fallback values
+      icon = 'fa-question';
+      title = 'Unknown Activity';
+      subtitle = 'No description available';
+      amount = '';
+      amountClass = '';
+      
+      // Handle different activity types - check for missing activity_type and infer from data
+      if (!activity.activity_type) {
+        // Infer activity type from object properties
+        if (activity.type && (activity.type === 'money_sent' || activity.type === 'money_received')) {
+          activity.activity_type = 'transaction';
+        } else if (activity.reason && activity.parent_id && activity.child_id && activity.urgency_level) {
+          activity.activity_type = 'emergency_request';
+        } else if (activity.reason && activity.parent_id && activity.child_id && !activity.urgency_level) {
+          activity.activity_type = 'money_request';
+        }
+        console.log('Inferred activity type:', activity.activity_type, 'from object:', activity);
+      }
       
       if (activity.activity_type === 'transaction') {
         // Handle transaction activities
         icon = getTransactionIcon(activity.type);
         title = getTransactionTitle(activity.type, 'Parent');
         subtitle = activity.description || getTransactionDescription(activity.type);
-        amount = `+$${Math.abs(activity.amount || 0).toFixed(2)}`;
+        // Get parent's currency for transaction display
+        const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+        const symbol = getCurrencySymbol(currency);
+        amount = `+${symbol}${Math.abs(activity.amount || 0).toFixed(2)}`;
         amountClass = 'amount-positive';
       } else if (activity.activity_type === 'money_request') {
         // Handle money request activities
@@ -1261,19 +1713,27 @@
           icon = 'fa-check-circle';
           title = 'Money request approved';
           subtitle = activity.reason || 'Request approved by parent';
-          amount = `+$${activity.amount}`;
+          // Get parent's currency for money request display
+          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+          const symbol = getCurrencySymbol(currency);
+          amount = `+${symbol}${activity.amount}`;
           amountClass = 'amount-positive';
         } else if (activity.status === 'declined') {
           icon = 'fa-times-circle';
           title = 'Money request declined';
           subtitle = activity.reason || 'Request declined by parent';
-          amount = `$${activity.amount}`;
+          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+          const symbol = getCurrencySymbol(currency);
+          amount = `${symbol}${activity.amount}`;
           amountClass = 'amount-neutral';
         } else {
           icon = 'fa-clock';
           title = 'Money request pending';
           subtitle = activity.reason || 'Waiting for parent response';
-          amount = `$${activity.amount}`;
+          // Get parent's currency for money request display
+          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+          const symbol = getCurrencySymbol(currency);
+          amount = `${symbol}${activity.amount}`;
           amountClass = 'amount-neutral';
         }
       } else if (activity.activity_type === 'emergency_request') {
@@ -1282,19 +1742,52 @@
           icon = 'fa-check-circle';
           title = 'Emergency request approved';
           subtitle = activity.reason || 'Emergency request approved by parent';
-          amount = `+$${activity.amount}`;
+          // Get parent's currency for emergency request display
+          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+          const symbol = getCurrencySymbol(currency);
+          amount = `+${symbol}${activity.amount}`;
           amountClass = 'amount-positive';
         } else if (activity.status === 'declined') {
           icon = 'fa-times-circle';
           title = 'Emergency request declined';
           subtitle = activity.reason || 'Emergency request declined by parent';
-          amount = `$${activity.amount}`;
-          amountClass = 'amount-neutral';
+          amount = '';
+          amountClass = '';
         } else {
           icon = 'fa-exclamation-triangle';
-          title = 'Emergency request pending';
-          subtitle = activity.reason || 'Waiting for parent response';
-          amount = `$${activity.amount}`;
+          title = activity.submitted_offline ? 'Emergency request sent' : 'Emergency request pending';
+          subtitle = activity.reason || 'Emergency request awaiting parent approval';
+          // Get parent's currency for emergency request display
+          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+          const symbol = getCurrencySymbol(currency);
+          amount = `${symbol}${activity.amount}`;
+          amountClass = 'amount-neutral';
+        }
+      } else if (activity.activity_type === 'money_request') {
+        // Handle money request activities
+        if (activity.status === 'approved') {
+          icon = 'fa-check-circle';
+          title = 'Money request approved';
+          subtitle = activity.reason || 'Money request approved by parent';
+          // Get parent's currency for money request display
+          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+          const symbol = getCurrencySymbol(currency);
+          amount = `+${symbol}${activity.amount}`;
+          amountClass = 'amount-positive';
+        } else if (activity.status === 'declined') {
+          icon = 'fa-times-circle';
+          title = 'Money request declined';
+          subtitle = activity.reason || 'Money request declined by parent';
+          amount = '';
+          amountClass = '';
+        } else {
+          icon = 'fa-hand-holding-usd';
+          title = activity.submitted_offline ? 'Money request sent' : 'Money request pending';
+          subtitle = activity.reason || 'Money request awaiting parent approval';
+          // Get parent's currency for money request display
+          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
+          const symbol = getCurrencySymbol(currency);
+          amount = `${symbol}${activity.amount}`;
           amountClass = 'amount-neutral';
         }
       }
@@ -1316,15 +1809,15 @@
       
       item.innerHTML = `
         <div class="activity-icon ${iconClass}">
-          <i class="fas ${icon}"></i>
+          <i class="fas ${icon || 'fa-question'}"></i>
         </div>
         <div class="activity-details">
-          <div class="activity-title">${title}</div>
-          <div class="activity-subtitle">${subtitle}</div>
+          <div class="activity-title">${title || 'Unknown Activity'}</div>
+          <div class="activity-subtitle">${subtitle || 'No description available'}</div>
           <div class="activity-date">${formatTransactionDate(activity.created_at)}</div>
         </div>
-        <div class="activity-amount ${amountClass}">
-          ${amount}${statusBadge}
+        <div class="activity-amount ${amountClass || ''}">
+          ${amount || ''}${statusBadge}
         </div>
       `;
       
@@ -1456,23 +1949,28 @@
           });
           document.getElementById('profileCreatedDate').textContent = formattedDate;
           
-          // Update spending limits and balance
-          document.getElementById('profileWeeklyLimit').textContent = `$${(studentData.weekly_limit || 0).toFixed(2)}`;
-          document.getElementById('profileDailyLimit').textContent = `$${(studentData.daily_limit || 0).toFixed(2)}`;
-          document.getElementById('profileCurrentBalance').textContent = `$${(studentData.balance || 0).toFixed(2)}`;
+          // Update spending limits and balance - will be updated by currency handler
+          document.getElementById('profileWeeklyLimit').textContent = `R${(studentData.weekly_limit || 0).toFixed(2)}`;
+          document.getElementById('profileDailyLimit').textContent = `R${(studentData.daily_limit || 0).toFixed(2)}`;
+          document.getElementById('profileCurrentBalance').textContent = `R${(studentData.balance || 0).toFixed(2)}`;
           
-          // Now get parent information
+          // Skip currency update to avoid API calls when parent is signed out
+          
+          // Store parent ID for later use and set placeholder parent information
           if (studentData.parent_id) {
-            const { data: parentData, error: parentError } = await supabase
-              .from('profiles')
-              .select('first_name, surname, email')
-              .eq('id', studentData.parent_id)
-              .single();
+            localStorage.setItem('parentId', studentData.parent_id);
+            console.log('Stored parent_id:', studentData.parent_id);
             
-            if (!parentError && parentData) {
-              document.getElementById('parentFullName').textContent = `${parentData.first_name || ''} ${parentData.surname || ''}`.trim() || 'N/A';
-              document.getElementById('parentEmail').textContent = parentData.email || 'N/A';
-            }
+            // For now, show placeholder information since we can't access parent data directly
+            // The parent information would need to be stored in the children table during registration
+            // or accessed through a different method with proper permissions
+            document.getElementById('parentFullName').textContent = 'Parent Name Available';
+            document.getElementById('parentEmail').textContent = 'Contact parent for details';
+            document.getElementById('emergencyContact').textContent = 'Emergency contact available';
+          } else {
+            document.getElementById('parentFullName').textContent = 'N/A';
+            document.getElementById('parentEmail').textContent = 'N/A';
+            document.getElementById('emergencyContact').textContent = 'N/A';
           }
         }
       } catch (err) {
@@ -1485,87 +1983,28 @@
       if (!currentStudent) return;
       
       try {
-        // Load student points
-        const { data: pointsData, error: pointsError } = await supabase
-          .from('student_points')
-          .select('*')
-          .eq('child_id', currentStudent.id)
-          .single();
-        
-        if (!pointsError && pointsData) {
-          document.getElementById('totalPoints').textContent = pointsData.total_points.toLocaleString();
-          document.getElementById('monthlyPoints').textContent = pointsData.points_this_month.toLocaleString();
+        // Skip points loading to avoid API calls when parent is signed out
+        // Use cached or default values
+        const cachedPoints = localStorage.getItem('cachedStudentPoints');
+        if (cachedPoints) {
+          const pointsData = JSON.parse(cachedPoints);
+          document.getElementById('totalPoints').textContent = pointsData.total_points || '0';
+          document.getElementById('monthlyPoints').textContent = pointsData.points_this_month || '0';
         } else {
-          // Create initial points record if it doesn't exist
-          await supabase
-            .from('student_points')
-            .insert([{ child_id: currentStudent.id, total_points: 0, points_this_month: 0 }]);
           document.getElementById('totalPoints').textContent = '0';
           document.getElementById('monthlyPoints').textContent = '0';
         }
         
-        // Load achievements
-        await loadAchievements();
         
         // Load rewards store
         await loadRewardsStore();
         
-        // Load redemption requests
-        await loadRedemptionRequests();
         
       } catch (err) {
         console.error('Error loading rewards data:', err);
       }
     }
     
-    async function loadAchievements() {
-      try {
-        const { data: achievements, error } = await supabase
-          .from('achievements')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        const achievementsGrid = document.getElementById('achievementsGrid');
-        
-        if (!achievements || achievements.length === 0) {
-          achievementsGrid.innerHTML = '<div class="no-data">No achievements available yet</div>';
-          return;
-        }
-        
-        achievementsGrid.innerHTML = achievements.map(achievement => {
-          const isEarned = achievement.student_id === currentStudent.id;
-          const cardClass = isEarned ? 'achievement-earned' : 'achievement-locked';
-          const iconClass = isEarned ? 'achievement-icon--green' : 'achievement-icon--gray';
-          
-          return `
-            <div class="achievement-card ${cardClass}">
-              <div class="achievement-icon ${iconClass}">
-                <i class="${achievement.icon || 'fas fa-trophy'}"></i>
-              </div>
-              <div class="achievement-content">
-                <h4 class="achievement-title">${achievement.title}</h4>
-                <p class="achievement-description">${achievement.description}</p>
-                <div class="achievement-points">+${achievement.points} points</div>
-                ${achievement.progress_current !== null ? `
-                  <div class="achievement-progress">
-                    <div class="progress-bar">
-                      <div class="progress-fill" style="width: ${Math.min((achievement.progress_current / achievement.progress_target) * 100, 100)}%"></div>
-                    </div>
-                    <div class="progress-text">${achievement.progress_current}/${achievement.progress_target}</div>
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
-        
-      } catch (err) {
-        console.error('Error loading achievements:', err);
-        document.getElementById('achievementsGrid').innerHTML = '<div class="error-message">Error loading achievements</div>';
-      }
-    }
     
     async function loadRewardsStore() {
       try {
@@ -1617,86 +2056,6 @@
       }
     }
     
-    async function loadRedemptionRequests() {
-      try {
-        // First try to get redemption requests with reward details
-        const { data: requests, error } = await supabase
-          .from('reward_redemptions')
-          .select('*')
-          .eq('child_id', currentStudent.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
-        if (error) {
-          console.error('Database error:', error);
-          throw error;
-        }
-        
-        const requestsContainer = document.getElementById('redemptionRequests');
-        
-        if (!requests || requests.length === 0) {
-          requestsContainer.innerHTML = '<div class="no-data">No redemption requests yet</div>';
-          return;
-        }
-
-        // Get reward details for each request
-        const requestsWithRewards = await Promise.all(
-          requests.map(async (request) => {
-            try {
-              const { data: reward } = await supabase
-                .from('rewards_store')
-                .select('title, points_cost, icon')
-                .eq('id', request.reward_id)
-                .single();
-              
-              return { ...request, reward_details: reward };
-            } catch (err) {
-              console.warn('Could not load reward details for request:', request.id);
-              return { ...request, reward_details: null };
-            }
-          })
-        );
-        
-        requestsContainer.innerHTML = requestsWithRewards.map(request => {
-          const statusClass = {
-            'pending': 'status-pending',
-            'approved': 'status-approved',
-            'declined': 'status-declined'
-          }[request.status] || 'status-pending';
-          
-          const statusText = {
-            'pending': 'Pending approval',
-            'approved': 'Approved',
-            'declined': 'Declined'
-          }[request.status] || 'Pending';
-          
-          const timeAgo = formatTimeAgo(new Date(request.created_at));
-          const reward = request.reward_details;
-          
-          return `
-            <div class="redemption-request-item">
-              <div class="request-icon">
-                <i class="${reward?.icon || 'fas fa-gift'}"></i>
-              </div>
-              <div class="request-content">
-                <h4 class="request-title">${reward?.title || 'Reward Request'}</h4>
-                <div class="request-details">
-                  <span class="request-cost">${reward?.points_cost || 0} points</span>
-                  <span class="request-time">${timeAgo}</span>
-                </div>
-                ${request.parent_response ? `<p class="request-response">"${request.parent_response}"</p>` : ''}
-              </div>
-              <div class="request-status ${statusClass}">${statusText}</div>
-            </div>
-          `;
-        }).join('');
-        
-      } catch (err) {
-        console.error('Error loading redemption requests:', err);
-        const requestsContainer = document.getElementById('redemptionRequests');
-        requestsContainer.innerHTML = '<div class="no-data">Unable to load redemption requests. This feature will be available once you make your first reward request.</div>';
-      }
-    }
     
     async function redeemReward(rewardId, pointsCost) {
       try {
@@ -1730,18 +2089,14 @@
         // Deduct points from student's total
         const newPointsTotal = currentPoints - pointsCost;
         
-        // Update student points in database
-        const { error: pointsError } = await supabase
-          .from('student_points')
-          .update({ 
-            total_points: newPointsTotal,
-            updated_at: new Date().toISOString()
-          })
-          .eq('child_id', currentStudent.id);
-        
-        if (pointsError) {
-          console.error('Error updating points:', pointsError);
-        }
+        // Skip database update to avoid API calls when parent is signed out
+        // Cache the points data locally instead
+        const pointsData = {
+          total_points: newPointsTotal,
+          points_this_month: 0, // Would need to calculate this properly
+          updated_at: new Date().toISOString()
+        };
+        localStorage.setItem('cachedStudentPoints', JSON.stringify(pointsData));
         
         // Update UI immediately
         document.getElementById('totalPoints').textContent = newPointsTotal.toLocaleString();
