@@ -69,9 +69,11 @@ git clone <repository-url>
 cd hapopay
 ```
 
-2. **Install dependencies:**
-```bash
-npm install
+2. **Install Extentions:**
+```Install Live Server extension in Visual Studio Code:
+Go to Extensions (Ctrl+Shift+X)
+Search for Live Server by Ritwick Dey
+Click Install
 ```
 
 3. **Configure Supabase:**
@@ -92,7 +94,8 @@ npm install
 
 5. **Start the application:**
 ```bash
-npm run dev
+Use Live Server (VS Code)
+Use browser dev tools or VS Code debugger
 ```
 
 6. **Open your browser:**
