@@ -18,6 +18,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="multi-currency-dashboard.js"></script>
   <script src="loadPendingRequestsFromStorage.js"></script>
 </head>
 <body>
@@ -61,7 +62,7 @@
               </div>
               <div>
                 <div class="card-label">Family Balance</div>
-                <div class="card-value" id="familyBalance"><span id="familyBalanceSymbol"></span><span id="familyBalanceAmount">365.00</span></div>
+                <div class="card-value" id="familyBalance"><span id="familyBalanceSymbol">$</span><span id="familyBalanceAmount">365.00</span></div>
               </div>
             </div>
           </div>
@@ -74,7 +75,7 @@
               </div>
               <div>
                 <div class="card-label">This Month</div>
-                <div class="card-value" id="monthlySpending"><span id="monthlySpendingSymbol"></span><span id="monthlySpendingAmount">98.00</span></div>
+                <div class="card-value" id="monthlySpending"><span id="monthlySpendingSymbol">$</span><span id="monthlySpendingAmount">98.00</span></div>
               </div>
             </div>
           </div>
@@ -1320,23 +1321,26 @@
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <div class="nav-item active" onclick="showSection('home')">
+    <div class="nav-item active" onclick="showSection('home', event)">
       <i class="fas fa-home icon-xl"></i>
       <span>Home</span>
     </div>
-    <div class="nav-item pay-button" onclick="showSection('pay')">
+    <div class="nav-item pay-button" onclick="showSection('pay', event)">
       <i class="fas fa-th icon-xl"></i>
       <span class="nav-mini">Pay</span>
     </div>
-    <div class="nav-item" onclick="showSection('activity')">
+    <div class="nav-item" onclick="showSection('activity', event)">
       <i class="fas fa-chart-line icon-xl"></i>
       <span>Activity</span>
     </div>
-    <div class="nav-item" onclick="showSection('notifications')">
-      <i class="fas fa-bell icon-xl"></i>
+    <div class="nav-item" onclick="showSection('notifications', event)">
+      <div class="nav-icon-container">
+        <i class="fas fa-bell icon-xl"></i>
+        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+      </div>
       <span>Notifications</span>
     </div>
-    <div class="nav-item" onclick="showSection('rewards')">
+    <div class="nav-item" onclick="showSection('rewards', event)">
       <i class="fas fa-gift icon-xl"></i>
       <span>Rewards</span>
     </div>
@@ -1683,8 +1687,27 @@
         // Handle amount display based on activity type
         let amountClass, amountPrefix;
         const activityType = activity.activity_type || activity.type;
-        
-        if (activityType === 'money_request_declined' || activityType === 'emergency_request_declined') {
+        const isRequestType = (
+          activityType === 'money_request' ||
+          activityType === 'emergency_request' ||
+          activityType === 'money_request_approved' ||
+          activityType === 'money_request_declined' ||
+          activityType === 'emergency_request_approved' ||
+          activityType === 'emergency_request_declined'
+        );
+
+        // Always honor explicit pending status first; also treat bare request types without a final status as pending
+        if (
+          activity.status === 'pending' ||
+          (
+            (activityType === 'money_request' || activityType === 'emergency_request') &&
+            activity.status !== 'approved' && activity.status !== 'declined'
+          )
+        ) {
+          // Pending requests: show amount without +/-, pending (orange) color
+          amountClass = 'pending';
+          amountPrefix = '';
+        } else if (activityType === 'money_request_declined' || activityType === 'emergency_request_declined') {
           // Declined requests - no money was sent, so no + prefix and neutral styling
           amountClass = 'neutral';
           amountPrefix = '';
@@ -1881,16 +1904,49 @@
         if (userCurrency) {
           window.parentDefaultCurrency = userCurrency;
           console.log('Pre-loaded currency:', userCurrency);
+          
+          // Update currency symbols immediately
+          const symbol = getCurrencySymbol(userCurrency);
+          document.getElementById('familyBalanceSymbol').textContent = symbol;
+          document.getElementById('monthlySpendingSymbol').textContent = symbol;
         }
       } catch (err) {
         console.error('Pre-load currency error:', err);
       }
     }
 
-    // Initialize dashboard when page loads
+    // Initialize dashboard on page load
     document.addEventListener('DOMContentLoaded', async function() {
-      await preLoadCurrency();
-      initializeDashboard();
+      console.log('Parent dashboard loaded');
+      
+      // Load parent currency settings first
+      await loadParentCurrencySettings();
+      
+      // Show home section by default
+      showSection('home');
+      
+      // Initialize dashboard authentication and user data
+      await initializeDashboard();
+      
+      // Load initial data
+      await fetchAndRenderChildren();
+      await loadActivityData();
+      await loadNotifications();
+      await loadSafetyAlerts();
+      
+      // Set up periodic refresh for notifications - more frequent to catch emergency requests
+      setInterval(loadNotifications, 10000); // Check every 10 seconds
+      
+      // Also check for new emergency requests in localStorage periodically
+      setInterval(() => {
+        const pendingEmergency = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+        const pendingMoney = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
+        const totalPending = pendingEmergency.length + pendingMoney.length;
+        
+        if (totalPending > 0) {
+          updateNotificationBadge(totalPending);
+        }
+      }, 5000); // Check localStorage every 5 seconds
     });
 
     // Check authentication status when page loads
@@ -2352,6 +2408,10 @@
       if (!supabase || !currentUserId) return;
       
       const select = document.getElementById(selectId);
+      if (!select) {
+        console.warn('populateChildDropdown: select element not found for id', selectId);
+        return;
+      }
       // Clear existing options except the first one
       select.innerHTML = '<option value="">Select child</option>';
       
@@ -2479,6 +2539,11 @@
         await loadNotifications();
         await loadActivityData();
         await loadSafetyAlerts();
+        
+        // Force notification badge update after emergency fund approval
+        setTimeout(() => {
+          loadNotifications();
+        }, 1000);
         
       } catch (err) {
         alert('Error sending emergency funds: ' + err.message);
@@ -2898,9 +2963,11 @@
 
     function viewChildActivity(childName) { alert(`Viewing activity for ${childName}`); }
 
-    function showSection(sectionName) {
+    function showSection(sectionName, event) {
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      event.currentTarget.classList.add('active');
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
       
       // Hide all sections
       document.querySelectorAll('.section-content').forEach(section => {
@@ -2916,6 +2983,13 @@
       } else if (sectionName === 'activity') {
         loadActivityData();
       } else if (sectionName === 'notifications') {
+        // Mark notifications as viewed now and clear the badge immediately
+        try {
+          localStorage.setItem('lastViewedNotificationsAt', new Date().toISOString());
+        } catch (e) {
+          console.warn('Unable to persist last viewed notifications timestamp', e);
+        }
+        updateNotificationBadge(0);
         loadNotifications();
       } else if (sectionName === 'rewards') {
         loadParentRewardsData();
@@ -3047,6 +3121,36 @@
       loadReportData();
     }
 
+    // Update notification badge count
+    function updateNotificationBadge(count) {
+      const badge = document.getElementById('notificationBadge');
+      if (!badge) return;
+      
+      if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count.toString();
+        badge.style.display = 'flex';
+        badge.classList.add('pulse');
+        
+        // Remove pulse animation after 3 seconds
+        setTimeout(() => {
+          badge.classList.remove('pulse');
+        }, 3000);
+      } else {
+        badge.style.display = 'none';
+        badge.classList.remove('pulse');
+      }
+    }
+
+    // Helper to get the last time the user viewed notifications
+    function getLastViewedNotificationsAt() {
+      try {
+        const ts = localStorage.getItem('lastViewedNotificationsAt');
+        return ts ? new Date(ts) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
     // Load notifications
     async function loadNotifications() {
       console.log('Loading notifications...');
@@ -3057,21 +3161,24 @@
       if (userError || !user) {
         console.log('User authentication error, checking for pending requests in localStorage');
         // Check for pending requests in localStorage when parent is logged out
-        loadPendingRequestsFromStorage();
-        return;
-      }
-      
-      try {
-        // First get all children for this parent
-        const { data: children, error: childrenError } = await supabase
-          .from('children')
-          .select('id, first_name, surname')
-          .eq('parent_id', user.id);
+        const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
         
-        if (childrenError) throw childrenError;
+        // Update notification badge with unread count (compare to last viewed)
+        const lastViewed = getLastViewedNotificationsAt();
+        const unreadLocal = lastViewed
+          ? pendingRequests.filter(r => r.created_at && new Date(r.created_at) > lastViewed).length
+          : pendingRequests.length;
+        updateNotificationBadge(unreadLocal);
         
-        if (!children || children.length === 0) {
-          console.log('No children found for parent');
+        if (pendingRequests.length > 0) {
+          console.log('Found pending requests in localStorage:', pendingRequests.length);
+          
+          // Render pending requests from localStorage
+          pendingRequests.forEach(request => {
+            renderNotificationItem(request, 'money_request');
+          });
+        } else {
+          // Show empty state
           const list = document.getElementById('notificationsList');
           if (list) {
             list.innerHTML = `
@@ -3084,33 +3191,51 @@
               </div>
             `;
           }
+        }
+        return;
+      }
+      
+      try {
+        // Fetch children data first
+        const { data: children, error: childrenError } = await supabase
+          .from('children')
+          .select('*')
+          .eq('parent_id', user.id);
+        
+        if (childrenError) {
+          console.error('Error fetching children:', childrenError);
           return;
         }
         
-        const childIds = children.map(child => child.id);
+        // Get child IDs for fetching requests
+        const childIds = children ? children.map(child => child.id) : [];
         
-        // Fetch money requests for parent's children
-        console.log('Fetching money requests for children:', childIds);
-        const { data: moneyRequests, error: moneyError } = await supabase
-          .from('money_requests')
-          .select('*')
-          .in('child_id', childIds)
-          .order('created_at', { ascending: false });
+        let moneyRequests = [];
+        let emergencyRequests = [];
         
-        if (moneyError) throw moneyError;
-        
-        // Fetch emergency requests for parent's children
-        console.log('Fetching emergency requests for children:', childIds);
-        const { data: emergencyRequests, error: emergencyError } = await supabase
-          .from('emergency_requests')
-          .select('*')
-          .in('child_id', childIds)
-          .order('created_at', { ascending: false });
-        
-        if (emergencyError) throw emergencyError;
-        
-        console.log('Money requests found:', moneyRequests);
-        console.log('Emergency requests found:', emergencyRequests);
+        if (childIds.length > 0) {
+          // Fetch money requests
+          const { data: moneyReqData, error: moneyError } = await supabase
+            .from('money_requests')
+            .select('*')
+            .in('child_id', childIds)
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+          
+          // Fetch emergency requests
+          const { data: emergencyReqData, error: emergencyError } = await supabase
+            .from('emergency_requests')
+            .select('*')
+            .in('child_id', childIds)
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+          
+          if (moneyError) console.error('Error loading money requests:', moneyError);
+          else moneyRequests = moneyReqData || [];
+          
+          if (emergencyError) console.error('Error loading emergency requests:', emergencyError);
+          else emergencyRequests = emergencyReqData || [];
+        }
         
         const list = document.getElementById('notificationsList');
         if (!list) {
@@ -3140,7 +3265,7 @@
             // Find child info for this request
             const child = children.find(c => c.id === request.child_id);
             allRequests.push({ 
-              ...request, 
+              ...request,
               type: 'emergency',
               child_name: child ? `${child.first_name} ${child.surname}` : 'Unknown Child'
             });
@@ -3164,6 +3289,7 @@
             ...req,
             type: 'emergency',
             status: 'pending', // Force pending status for localStorage requests
+            created_at: req.created_at || new Date().toISOString(),
             child_name: child ? `${child.first_name} ${child.surname}` : (req.child_name || 'Unknown Child')
           };
         });
@@ -3175,6 +3301,7 @@
             ...req,
             type: 'money',
             status: 'pending', // Force pending status for localStorage requests
+            created_at: req.created_at || new Date().toISOString(),
             child_name: child ? `${child.first_name} ${child.surname}` : (req.child_name || 'Unknown Child')
           };
         });
@@ -3186,26 +3313,19 @@
         // Sort by creation date (newest first)
         allRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         
-        if (allRequests.length === 0) {
-          console.log('No requests found');
-          list.innerHTML = `
-            <div class="empty-notifications">
-              <div class="empty-icon">
-                <i class="fas fa-bell"></i>
-              </div>
-              <p class="empty-text">No notifications yet</p>
-              <p class="empty-subtext">You'll receive notifications when your children request money or top-ups</p>
-            </div>
-          `;
-          return;
-        }
-        
         // Debug: Log all request statuses
-        console.log('All requests with statuses:', allRequests.map(r => ({id: r.id, status: r.status, type: r.type})));
+        console.log('All requests with statuses:', allRequests.map(r => ({id: r.id, status: r.status, type: r.type}))); 
         
         // Filter out approved/declined requests - only show pending ones
         const pendingRequests = allRequests.filter(request => request.status === 'pending');
         console.log('Total requests:', allRequests.length, 'Pending requests:', pendingRequests.length);
+        
+        // Update notification badge with unread count relative to last viewed
+        const lastViewed = getLastViewedNotificationsAt();
+        const unreadCount = lastViewed
+          ? pendingRequests.filter(r => r.created_at && new Date(r.created_at) > lastViewed).length
+          : pendingRequests.length;
+        updateNotificationBadge(unreadCount);
         
         if (pendingRequests.length === 0) {
           list.innerHTML = `
@@ -3295,11 +3415,11 @@
         if (request.type === 'emergency') {
           actionsHtml = `
             <div class="notification-actions">
-              <button class="btn btn-approve" onclick="approveEmergencyRequest('${request.id}', ${request.amount}, '${request.child_id}')">
+              <button type="button" class="btn btn-approve" onclick="approveEmergencyRequest('${request.id}', ${request.amount}, '${request.child_id}')">
                 <i class="fas fa-check"></i>
                 Approve
               </button>
-              <button class="btn btn-decline" onclick="declineEmergencyRequest('${request.id}')">
+              <button type="button" class="btn btn-decline" onclick="declineEmergencyRequest('${request.id}')">
                 <i class="fas fa-times"></i>
                 Decline
               </button>
@@ -3308,11 +3428,11 @@
         } else {
           actionsHtml = `
             <div class="notification-actions">
-              <button class="btn btn-approve" onclick="approveMoneyRequest('${request.id}', ${request.amount}, '${request.child_id}')">
+              <button type="button" class="btn btn-approve" onclick="approveMoneyRequest('${request.id}', ${request.amount}, '${request.child_id}')">
                 <i class="fas fa-check"></i>
                 Approve
               </button>
-              <button class="btn btn-decline" onclick="declineMoneyRequest('${request.id}')">
+              <button type="button" class="btn btn-decline" onclick="declineMoneyRequest('${request.id}')">
                 <i class="fas fa-times"></i>
                 Decline
               </button>
@@ -4969,13 +5089,24 @@
     }
 
     async function approveMoneyRequest(requestId, amount, childId) {
+      console.log('[approveMoneyRequest] clicked', { requestId, amount, childId });
+      try {
+        // Normalize amount to a number
+        let normalizedAmount = amount;
+        if (typeof normalizedAmount === 'string') {
+          normalizedAmount = parseFloat(normalizedAmount.replace(/[^\d.]/g, ''));
+        }
+        if (typeof normalizedAmount !== 'number' || isNaN(normalizedAmount)) {
+          console.warn('Amount was not numeric; defaulting to 0');
+          normalizedAmount = 0;
+        }
       // Store the request details for the send money form
       selectedChildForMoney = { 
         id: childId, 
         firstName: 'Child', 
         surname: 'Name',
         requestId: requestId,
-        requestedAmount: amount,
+        requestedAmount: normalizedAmount,
         isFromRequest: true
       };
       
@@ -4983,13 +5114,10 @@
       const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
       const updatedRequests = pendingRequests.filter(req => 
         req.id !== requestId && 
-        !(req.child_id === childId && req.amount === amount)
+        !(req.child_id === childId && (parseFloat(req.amount) === normalizedAmount))
       );
       localStorage.setItem('pendingMoneyRequests', JSON.stringify(updatedRequests));
       console.log('Removed money request from localStorage on approval. Before:', pendingRequests.length, 'After:', updatedRequests.length);
-      
-      // Immediately refresh notifications to remove from UI
-      loadNotifications();
       
       // Get child name for the modal title
       try {
@@ -5010,12 +5138,14 @@
       }
       
       // Show the send money modal with the requested amount pre-filled
-      await populateChildDropdown('sendMoneyChild');
-      document.getElementById('sendMoneyChild').value = childId;
       document.getElementById('sendMoneyModalTitle').textContent = `Send Money to ${selectedChildForMoney.firstName} ${selectedChildForMoney.surname}`;
-      document.getElementById('sendMoneyAmount').value = amount;
+      document.getElementById('sendMoneyAmount').value = normalizedAmount;
       document.getElementById('sendMoneyNote').value = 'Money request approved';
       document.getElementById('sendMoneyModal').style.display = 'block';
+      } catch (e) {
+        console.error('Approve money request failed:', e);
+        alert('Could not open approval flow. Please try again.');
+      }
     }
 
     async function declineMoneyRequest(requestId) {
@@ -5056,13 +5186,24 @@
 
     // Emergency Request Functions
     async function approveEmergencyRequest(requestId, amount, childId) {
+      console.log('[approveEmergencyRequest] clicked', { requestId, amount, childId });
+      try {
+        // Normalize amount to a number
+        let normalizedAmount = amount;
+        if (typeof normalizedAmount === 'string') {
+          normalizedAmount = parseFloat(normalizedAmount.replace(/[^\d.]/g, ''));
+        }
+        if (typeof normalizedAmount !== 'number' || isNaN(normalizedAmount)) {
+          console.warn('Amount was not numeric; defaulting to 0');
+          normalizedAmount = 0;
+        }
       // Store the request details for the emergency fund form
       selectedChildForEmergency = { 
         id: childId, 
         firstName: 'Child', 
         surname: 'Name',
         requestId: requestId,
-        requestedAmount: amount,
+        requestedAmount: normalizedAmount,
         isFromEmergencyRequest: true
       };
       
@@ -5070,13 +5211,10 @@
       const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
       const updatedRequests = pendingRequests.filter(req => 
         req.id !== requestId && 
-        !(req.child_id === childId && req.amount === amount)
+        !(req.child_id === childId && (parseFloat(req.amount) === normalizedAmount))
       );
       localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
       console.log('Removed emergency request from localStorage on approval. Before:', pendingRequests.length, 'After:', updatedRequests.length);
-      
-      // Immediately refresh notifications to remove from UI
-      loadNotifications();
       
       // Get child name for the modal title
       try {
@@ -5099,8 +5237,12 @@
       // Show the emergency fund modal with the requested amount pre-filled
       await populateChildDropdown('emergencyChild');
       document.getElementById('emergencyChild').value = childId;
-      document.getElementById('emergencyAmount').value = amount;
+      document.getElementById('emergencyAmount').value = normalizedAmount;
       document.getElementById('emergencyFundModal').style.display = 'block';
+      } catch (e) {
+        console.error('Approve emergency request failed:', e);
+        alert('Could not open emergency approval flow. Please try again.');
+      }
     }
 
     async function declineEmergencyRequest(requestId) {
@@ -5138,6 +5280,12 @@
         alert('Error declining emergency request: ' + err.message);
       }
     }
+
+    // Expose handlers globally for inline onclick in rendered notifications
+    window.approveMoneyRequest = approveMoneyRequest;
+    window.declineMoneyRequest = declineMoneyRequest;
+    window.approveEmergencyRequest = approveEmergencyRequest;
+    window.declineEmergencyRequest = declineEmergencyRequest;
 
     // Parent QR Scanner functionality
     let parentQrStream = null;
