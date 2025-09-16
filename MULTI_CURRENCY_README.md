@@ -8,7 +8,7 @@ This document provides a comprehensive guide to the multi-currency functionality
 
 ### 🌍 Automatic Currency Detection
 - **Phone-based Currency Assignment**: Parents are automatically assigned a default currency based on their phone number country code
-- **Supported Countries**: South Africa (ZAR), United States (USD), United Kingdom (GBP), Nigeria (NGN), Kenya (KES), India (INR), Canada (CAD), Australia (AUD), Germany/France (EUR)
+- **Supported Countries**: South Africa (ZAR), United States (USD), United Kingdom (GBP), Nigeria (NGN), Kenya (KES), India (INR), Canada (CAD), Australia (AUD), Germany/France (EUR), South Korea (KRW), Zimbabwe (ZWL), Botswana (BWP)
 - **Fallback Currency**: USD is used as the default when no mapping exists
 
 ### 💰 Multi-Currency Wallets
@@ -186,9 +186,9 @@ Test the multi-currency functionality by:
 
 There are about **180 recognized currencies** in the world today 🌍. That number comes from the ISO 4217 standard, which is the official list of currency codes (like USD, ZAR, EUR, JPY, etc.).
 
-However, **HapoPay currently supports 10 major currencies** that cover the most common international money transfer needs for families across different continents.
+However, **HapoPay currently supports 12 major currencies** that cover the most common international money transfer needs for families across different continents.
 
-### Currently Supported Currencies (10 Total)
+### Currently Supported Currencies (12 Total)
 
 | Code | Name | Symbol | Country/Region | Flag |
 |------|------|--------|----------------|------|
@@ -202,8 +202,10 @@ However, **HapoPay currently supports 10 major currencies** that cover the most 
 | AUD | Australian Dollar | A$ | 🇦🇺 Australia | 🇦🇺 |
 | EUR | Euro | € | 🇩🇪 Germany (Eurozone) | 🇪🇺 |
 | KRW | South Korean Won | ₩ | 🇰🇷 South Korea | 🇰🇷 |
+| ZWL | Zimbabwean Dollar | Z$ | 🇿🇼 Zimbabwe | 🇿🇼 |
+| BWP | Botswana Pula | P | 🇧🇼 Botswana | 🇧🇼 |
 
-### Why These 10 Currencies?
+### Why These 12 Currencies?
 
 These currencies were selected based on:
 - **High international usage** for family remittances

@@ -12,14 +12,9 @@ const STUDENT_CURRENCY_SYMBOLS = {
   'INR': '₹',
   'CAD': 'C$',
   'AUD': 'A$',
-  'JPY': '¥',
-  'CNY': '¥',
-  'BRL': 'R$',
-  'MXN': '$',
-  'ARS': '$',
-  'CLP': '$',
-  'COP': '$',
-  'PEN': 'S/'
+  'KRW': '₩',
+  'ZWL': 'Z$',
+  'BWP': 'P'
 };
 
 // Get currency symbol function

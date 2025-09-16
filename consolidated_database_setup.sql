@@ -1008,7 +1008,7 @@ CREATE TABLE IF NOT EXISTS currencies (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert supported currencies (10 total - covers major international remittance needs)
+-- Insert supported currencies (12 total - covers major international remittance needs)
 INSERT INTO currencies (code, name, symbol, decimal_places, is_active) VALUES
 ('ZAR', 'South African Rand', 'R', 2, true),
 ('USD', 'United States Dollar', '$', 2, true),
@@ -1019,7 +1019,9 @@ INSERT INTO currencies (code, name, symbol, decimal_places, is_active) VALUES
 ('CAD', 'Canadian Dollar', 'C$', 2, true),
 ('AUD', 'Australian Dollar', 'A$', 2, true),
 ('EUR', 'Euro', '€', 2, true),
-('KRW', 'South Korean Won', '₩', 0, true)
+('KRW', 'South Korean Won', '₩', 0, true),
+('ZWL', 'Zimbabwean Dollar', 'Z$', 2, true),
+('BWP', 'Botswana Pula', 'P', 2, true)
 ON CONFLICT (code) DO UPDATE SET
     name = EXCLUDED.name,
     symbol = EXCLUDED.symbol,
@@ -1047,7 +1049,9 @@ INSERT INTO country_currency_mapping (country_code, country_name, phone_prefix, 
 ('CA', 'Canada', '+1', 'CAD', false),
 ('AU', 'Australia', '+61', 'AUD', true),
 ('DE', 'Germany', '+49', 'EUR', true),
-('KR', 'South Korea', '+82', 'KRW', true)
+('KR', 'South Korea', '+82', 'KRW', true),
+('ZW', 'Zimbabwe', '+263', 'ZWL', true),
+('BW', 'Botswana', '+267', 'BWP', true)
 ON CONFLICT (country_code) DO UPDATE SET
     country_name = EXCLUDED.country_name,
     phone_prefix = EXCLUDED.phone_prefix,
