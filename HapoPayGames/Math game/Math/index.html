@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fun Math Game — Preschool / Primary / High School</title>
+<style>
+  :root{
+    --accent:#ff6f61;
+    --accent2:#4caf50;
+    --bg1:#FFF7E8;
+    --bg2:#E8F7FF;
+    --card:#ffffff;
+    --muted:#666;
+  }
+  html,body{height:100%;margin:0;font-family:"Comic Sans MS", "Arial", sans-serif;background:linear-gradient(160deg,#f7f3ff 0%, #e6f7ff 100%);color:#222}
+  .center{max-width:1100px;margin:0 auto;padding:18px;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  header h1{margin:0;font-size:28px;color:var(--accent)}
+  .landing{
+    display:flex;align-items:center;justify-content:space-between;
+    background:linear-gradient(90deg,#fff 0%, #f6fff7 100%);border-radius:18px;padding:20px;
+    box-shadow:0 8px 30px rgba(10,10,10,0.06);
+  }
+  .landing-left{max-width:620px;text-align:left}
+  .landing-left h2{font-size:36px;margin:0 0 8px}
+  .lead{color:var(--muted);margin-bottom:12px}
+  .level-buttons{display:flex;gap:12px;flex-wrap:wrap}
+  .level-buttons button{
+    padding:14px 22px;font-size:16px;border-radius:12px;border:none;cursor:pointer;
+    background:linear-gradient(180deg,var(--accent2), #2e8b3a);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .level-buttons button:nth-child(1){background:linear-gradient(180deg,#ff8a65,#ff6f61)}
+  .level-buttons button:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.12)}
+  .landing-right{width:300px;display:flex;gap:8px;justify-content:center;align-items:center;position:relative;height:160px}
+  .floating{position:absolute;font-size:40px;opacity:.95; animation:float 6s ease-in-out infinite}
+  .f1{left:10%;top:10%;animation-delay:0s}
+  .f2{right:8%;top:20%;animation-delay:1s}
+  .f3{left:30%;bottom:10%;animation-delay:2s}
+  @keyframes float{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-18px) rotate(6deg)}100%{transform:translateY(0) rotate(0)}}
+
+  /* visibility helper */
+  .hidden { display: none !important; }
+
+  /* Game area */
+  .game{
+    margin-top:22px;background:var(--card);border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.06);
+  }
+  .hud{display:flex;align-items:center;gap:18px;justify-content:space-between;margin-bottom:12px}
+  .hud .left{display:flex;gap:12px;align-items:center}
+  .chip{background:#fff;border-radius:10px;padding:8px 10px;border:1px solid #eee;min-width:120px;text-align:center}
+  .chip strong{display:block;font-size:18px}
+  #progress-sets{display:flex;gap:6px}
+  .set-seg{width:64px;height:12px;background:#eee;border-radius:8px;overflow:hidden}
+  .set-seg .fill{height:100%;width:0%;background:linear-gradient(90deg,#ffd54f,#ff8a65);transition:width .4s linear}
+
+  .container{display:flex;gap:20px;align-items:flex-start}
+  .left-col{flex:1}
+  .question-card{background:linear-gradient(180deg,#ffffff,#fcfcff);padding:18px;border-radius:12px;border:1px solid #f0f0f0;min-height:140px}
+  .question{font-size:20px;margin:0 0 12px;display:flex;align-items:center;gap:10px}
+  .question-symbol{font-size:40px}
+  .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  #answer{padding:10px 12px;font-size:16px;border-radius:10px;border:1px solid #ddd;width:220px}
+  #submitBtn,#checkBtn,#clearDrop,#nextBtn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:var(--accent2);color:white}
+  #clearDrop{background:#f06292}
+  #nextBtn{background:#1976d2}
+  #submitBtn:hover,#checkBtn:hover,#nextBtn:hover,#clearDrop:hover{opacity:.95;transform:translateY(-2px)}
+
+  .options{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+  .draggable{width:70px;height:70px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:34px;cursor:grab;border:2px solid rgba(0,0,0,.06);box-shadow:0 8px 18px rgba(0,0,0,.06)}
+  .draggable:active{cursor:grabbing;transform:scale(.98)}
+  #dropArea{width:320px;height:140px;border-radius:12px;border:2px dashed #bbb;background:linear-gradient(180deg,#fff9e6,#fff);display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;padding:10px;gap:8px}
+
+  .feedback{font-size:18px;margin-top:12px;font-weight:700}
+  .correct{color:green}
+  .wrong{color:#d32f2f}
+
+  /* right column for extra info */
+  .right-col{width:260px}
+  .legend{background:#fff;padding:12px;border-radius:10px;border:1px solid #f0f0f0}
+  .legend h4{margin:0 0 8px}
+  .streak{font-size:16px;color:#333}
+
+  /* confetti */
+  .confetti{position:fixed;pointer-events:none;z-index:9999;width:12px;height:12px;border-radius:2px;opacity:0.95;animation:fall 2.8s linear forwards}
+  @keyframes fall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(120vh) rotate(720deg);opacity:0}}
+
+  footer{margin-top:18px;font-size:13px;color:var(--muted);}
+  /* responsive */
+  @media(max-width:900px){.container{flex-direction:column}.right-col{width:100%}}
+</style>
+</head>
+<body>
+<div class="center">
+  <header>
+    <h1>Math Fun Game</h1>
+    <div style="font-size:14px;color:#555">Learning made playful ✨</div>
+  </header>
+
+  <!-- Landing -->
+  <section class="landing">
+    <div class="landing-left">
+      <h2>Play • Learn • Grow</h2>
+      <div class="lead">Choose a level. Each level has topic blocks (5 questions per topic). Timer, score, and fun feedback included.</div>
+      <div class="level-buttons">
+        <button onclick="enterLevel('preschool')">Preschool 🧸</button>
+        <button onclick="enterLevel('primary')">Primary 📘</button>
+        <button onclick="enterLevel('highschool')">High School 🎓</button>
+      </div>
+      <div style="margin-top:12px;color:var(--muted)">Preschool: Shapes & Fruits (drag). Primary: + - × ÷ (type). High School: algebra, geometry, trig, graphs.</div>
+    </div>
+    <div class="landing-right">
+      <div class="floating f1">⭐</div>
+      <div class="floating f2">🍎</div>
+      <div class="floating f3">🔺</div>
+    </div>
+  </section>
+
+  <!-- Game -->
+  <section id="gameArea" class="game hidden">
+    <div class="hud">
+      <div class="left">
+        <div class="chip"><strong id="score">0</strong><div style="font-size:12px;color:#777">Score</div></div>
+        <div class="chip"><strong id="streak">0</strong><div style="font-size:12px;color:#777">Streak</div></div>
+        <div class="chip"><strong id="timeLeft">20s</strong><div style="font-size:12px;color:#777">Time</div></div>
+      </div>
+      <div id="progress-sets"></div>
+    </div>
+
+    <div class="container">
+      <div class="left-col">
+        <div class="question-card">
+          <div class="question" id="questionText">Question appears here</div>
+
+          <!-- preschool area -->
+          <div id="preschoolArea" class="controls hidden">
+            <div style="display:flex;gap:12px;align-items:center">
+              <button id="checkBtn">Check</button>
+              <button id="clearDrop">Clear</button>
+            </div>
+            <div style="margin-top:12px" id="dropArea"><div id="dropAreaInner" style="width:100%;text-align:center;color:#999">Drop items here</div></div>
+            <div class="options" id="optionsArea"></div>
+          </div>
+
+          <!-- typed answer area -->
+          <div id="typedArea" class="controls hidden" style="margin-top:12px">
+            <input id="answerInput" type="text" placeholder="Type your answer" />
+            <button id="submitBtn">Submit</button>
+          </div>
+
+          <div class="feedback" id="feedback"></div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <button id="nextBtn" class="hidden">Next →</button>
+          <button id="backBtn">Back to Levels</button>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="legend">
+          <h4>Level</h4>
+          <div id="levelTitle">—</div>
+          <h4 style="margin-top:8px">Round progress</h4>
+          <div id="roundProgress" style="display:flex;gap:8px;margin-top:8px"></div>
+          <h4 style="margin-top:8px">Notes</h4>
+          <div style="font-size:13px;color:#555">Preschool: drag the requested symbol EXACTLY the asked number, then press Check. Primary & High School: type and Submit.</div>
+        </div>
+      </div>
+    </div>
+
+    <footer style="text-align:center;margin-top:14px;color:var(--muted)">Good luck — encourage the child when they get it right! 🎉</footer>
+  </section>
+</div>
+
+<script>
+/* ------------------------
+   Game data & state
+   ------------------------ */
+const STATE = {
+  score:0, streak:0, timeLeft:20, timerId:null,
+  level:"", setIndex:0, questionIndex:0,
+  sets:[], // will be set per level
+  setsCount:0,
+  perSetQuestions:5
+};
+
+/* Preschool sets (2 sets: shapes, fruits) */
+const PRESETS = [
+  { name:"Shapes & Colors", type:"preschool-shapes", questions:[
+      {text:"Drag 3 of these:", symbol:"🔴", count:3},
+      {text:"Drag 2 of these:", symbol:"🟦", count:2},
+      {text:"Drag 4 of these:", symbol:"⭐", count:4},
+      {text:"Drag 5 of these:", symbol:"🟢", count:5},
+      {text:"Drag 3 of these:", symbol:"💜", count:3}
+  ]},
+  { name:"Fruits & Colors", type:"preschool-fruits", questions:[
+      {text:"Drag 3 of these:", symbol:"🍎", count:3},
+      {text:"Drag 2 of these:", symbol:"🍌", count:2},
+      {text:"Drag 4 of these:", symbol:"🌸", count:4},
+      {text:"Drag 5 of these:", symbol:"🍊", count:5},
+      {text:"Drag 3 of these:", symbol:"🍇", count:3}
+  ]}
+];
+
+/* Primary sets: 4 topics each 5 questions */
+const PRIMARY = [
+  { name:"Subtraction", type:"primary", questions:["12 - 5","20 - 7","15 - 9","18 - 4","30 - 12"] },
+  { name:"Addition", type:"primary", questions:["5 + 7","9 + 13","20 + 15","18 + 6","25 + 30"] },
+  { name:"Multiplication", type:"primary", questions:["3 * 4","6 * 7","8 * 5","9 * 9","12 * 3"] },
+  { name:"Division", type:"primary", questions:["12 / 3","20 / 5","18 / 6","25 / 5","30 / 10"] }
+];
+
+/* High school: algebra, geometry, trig, graphs (5 q each) */
+const HIGHSCHOOL = [
+  { name:"Algebra (solve)", type:"highschool", questions:[
+      {q:"Solve: x + 5 = 12", a:7},
+      {q:"Solve: 2x = 10", a:5},
+      {q:"Solve: x - 7 = 4", a:11},
+      {q:"Solve: 3x + 2 = 11", a:3},
+      {q:"Solve: x/2 = 6", a:12}
+  ]},
+  { name:"Geometry", type:"highschool", questions:[
+      {q:"Area of square side 4", a:16},
+      {q:"Perimeter of rectangle 5 by 3", a:16},
+      {q:"Area of triangle base 6 height 4", a:12},
+      {q:"Circumference of circle r=7 (round 2dec)", a: (2*Math.PI*7).toFixed(2)},
+      {q:"Area of circle r=7 (round 2dec)", a: (Math.PI*7*7).toFixed(2)}
+  ]},
+  { name:"Trigonometry", type:"highschool", questions:[
+      {q:"sin(30°)", a:0.5},
+      {q:"cos(60°)", a:0.5},
+      {q:"tan(45°)", a:1},
+      {q:"sin(90°)", a:1},
+      {q:"cos(0°)", a:1}
+  ]},
+  { name:"Graphs (eval)", type:"highschool", questions:[
+      {q:"y=2x when x=3", a:6},
+      {q:"y=x+5 when x=7", a:12},
+      {q:"y=3x-2 when x=4", a:10},
+      {q:"y=x^2 when x=5", a:25},
+      {q:"y=2x^2 when x=3", a:18}
+  ]}
+];
+
+/* ---------- UI elements ---------- */
+const el = id => document.getElementById(id);
+
+/* ---------- sound (simple beeps using WebAudio) ---------- */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+/* low-level tone player */
+function playTone(freq=440, dur=0.12, vol=0.12, type='sine'){
+  try{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = vol;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(()=>{ try{ o.stop(); }catch(e){} }, dur*1000);
+  }catch(e){
+    // silent fail if audio not available
+    console.warn('Audio failed', e);
+  }
+}
+
+/* friendly wrapper sounds */
+function playCorrectSound(){
+  // two short tones
+  playTone(880, 0.08, 0.06);
+  setTimeout(()=> playTone(660, 0.12, 0.08), 80);
+}
+function playWrongSound(){ playTone(220, 0.16, 0.12); }
+function playTimeoutSound(){ playTone(180, 0.4, 0.15); }
+
+/* ---------- helpers (score/streak/time) ---------- */
+function setScore(n){ STATE.score = n; el('score').innerText = n; }
+function incScore(by=1){ setScore(STATE.score + by); }
+function setStreak(n){ STATE.streak = n; el('streak').innerText = n; }
+function incStreak(){ setStreak(STATE.streak + 1); }
+function resetStreak(){ setStreak(0); }
+function setTime(t){ STATE.timeLeft = t; el('timeLeft').innerText = t + 's'; }
+
+/* ---------- UI initial ---------- */
+el('gameArea').classList.add('hidden');
+el('nextBtn').addEventListener('click', ()=> { nextQuestion(); });
+el('backBtn').addEventListener('click', ()=> { backToLanding(); });
+
+/* ---------- entry ---------- */
+function enterLevel(level){
+  // resume audio context on first user gesture to satisfy autoplay policies
+  if(audioCtx.state === 'suspended' && audioCtx.resume){
+    audioCtx.resume().catch(()=>{/* ignore */});
+  }
+
+  // prepare sets based on level
+  STATE.level = level;
+  STATE.setIndex = 0;
+  STATE.questionIndex = 0;
+  setScore(0); setStreak(0);
+
+  if(level === 'preschool'){
+    STATE.sets = PRESETS;
+  } else if(level === 'primary'){
+    STATE.sets = PRIMARY;
+  } else if(level === 'highschool'){
+    STATE.sets = HIGHSCHOOL;
+  }
+  STATE.setsCount = STATE.sets.length;
+
+  // UI
+  document.querySelector('.landing').style.display = 'none';
+  el('gameArea').classList.remove('hidden');
+  renderSetsProgress();
+  loadQuestion();
+}
+
+/* ---------- render progress (sets) ---------- */
+function renderSetsProgress(){
+  const pg = el('progress-sets'); pg.innerHTML = '';
+  for(let i=0;i<STATE.setsCount;i++){
+    const seg = document.createElement('div'); seg.className = 'set-seg';
+    const inner = document.createElement('div'); inner.className='fill';
+    inner.style.width = (i < STATE.setIndex ? '100%' : '0%');
+    seg.appendChild(inner); pg.appendChild(seg);
+  }
+  // roundProgress right panel
+  const rp = el('roundProgress'); rp.innerHTML = '';
+  for(let i=0;i<STATE.setsCount;i++){
+    const seg = document.createElement('div'); seg.style.width='42px'; seg.style.height='8px';
+    seg.style.background = i<STATE.setIndex ? '#ffc107' : '#eee'; seg.style.borderRadius='6px';
+    rp.appendChild(seg);
+  }
+}
+
+/* ---------- Timer ---------- */
+function startTimer(){
+  clearInterval(STATE.timerId);
+  setTime(20);
+  STATE.timerId = setInterval(()=>{
+    STATE.timeLeft--;
+    el('timeLeft').innerText = STATE.timeLeft + 's';
+    if(STATE.timeLeft <= 0){
+      clearInterval(STATE.timerId);
+      playTimeoutSound();
+      el('feedback').innerText = '⏰ Time up! (question marked wrong)';
+      el('feedback').className = 'feedback wrong';
+      resetStreak();
+      // show Next
+      el('nextBtn').classList.remove('hidden');
+    }
+  },1000);
+}
+
+/* ---------- loadQuestion (renders UI based on level & current set/question) ---------- */
+function loadQuestion(){
+  el('feedback').innerText=''; el('feedback').className='feedback';
+  el('nextBtn').classList.add('hidden');
+  // reset input & drop area
+  el('answerInput').value = '';
+  // show level title
+  const setObj = STATE.sets[STATE.setIndex];
+  el('levelTitle').innerText = STATE.level.toUpperCase() + ' — ' + (setObj.name || setObj.type);
+
+  // show set progress
+  renderSetsProgress();
+
+  // question
+  const set = STATE.sets[STATE.setIndex];
+  const qdata = set.questions[STATE.questionIndex];
+
+  // display
+  if(STATE.level === 'preschool'){
+    // show preschool UI
+    el('preschoolArea').classList.remove('hidden');
+    el('typedArea').classList.add('hidden');
+    el('dropArea').style.display = 'flex';
+    // clear drop area inner
+    const drop = el('dropArea');
+    drop.innerHTML = '<div id="dropInner" style="width:100%;text-align:center;color:#999">Drop items here</div>';
+    
+    // Store the current question data for reference
+    STATE.currentQuestion = qdata;
+    
+    // Create a pool with mixed shapes and colors
+    const pool = [];
+    
+    // Add the required symbols
+    for(let i=0;i<qdata.count;i++) pool.push(qdata.symbol);
+    
+    // Add distractor symbols (different shapes and colors)
+    const allSymbols = ['🔴', '🟦', '🟩', '🟨', '🟧', '🟪', '🔵', '🟥', '⭐', '🔺', '🟢', '💜', '🍎', '🍌', '🍓', '🍊', '🍇', '🌸'];
+    
+    // Remove the current symbol from distractors
+    const distractors = allSymbols.filter(s => s !== qdata.symbol);
+    
+    // Add 8-10 distractors (mixed shapes and colors)
+    const numDistractors = 8 + Math.floor(Math.random() * 3);
+    for(let i=0; i<numDistractors; i++) {
+      const randomSymbol = distractors[Math.floor(Math.random() * distractors.length)];
+      pool.push(randomSymbol);
+    }
+    
+    // Shuffle the pool
+    for(let i=pool.length-1;i>0;i--){ 
+      const j=Math.floor(Math.random()*(i+1)); 
+      [pool[i],pool[j]]=[pool[j],pool[i]]; 
+    }
+    
+    // render pool as draggable tiles
+    const options = el('optionsArea'); options.innerHTML = '';
+    pool.forEach((sym, index)=>{
+      const d = document.createElement('div'); 
+      d.className='draggable'; 
+      d.innerText = sym;
+      d.setAttribute('draggable','true');
+      d.setAttribute('data-symbol', sym);
+      d.id = `draggable-${index}`;
+      
+      d.addEventListener('dragstart',(ev)=>{ 
+        ev.dataTransfer.setData('text/plain', sym);
+        ev.dataTransfer.setData('element-id', d.id);
+      });
+      
+      options.appendChild(d);
+    });
+
+    // set question text with visual symbol
+    const questionElement = el('questionText');
+    questionElement.innerHTML = `${qdata.text} <span class="question-symbol">${qdata.symbol}</span>`;
+    
+    // reset collected
+    STATE.collectedItems = [];
+
+    // wire check & clear
+    el('checkBtn').onclick = checkPreschoolAnswer;
+    el('clearDrop').onclick = clearDropArea;
+
+  } else {
+    // Primary or Highschool: typed input
+    el('preschoolArea').classList.add('hidden');
+    el('typedArea').classList.remove('hidden');
+    el('dropArea').style.display = 'none';
+    el('optionsArea').innerHTML = '';
+
+    if(STATE.level === 'primary'){
+      el('questionText').innerText = 'Solve: ' + qdata;
+      el('submitBtn').onclick = checkTypedAnswerInternal;
+    } else {
+      el('questionText').innerText = qdata.q || qdata;
+      el('submitBtn').onclick = checkTypedAnswerInternal;
+    }
+  }
+  // update HUD timer reset and start
+  startTimer();
+}
+
+/* ---------------- preschool drop behavior ---------------- */
+const dropArea = el('dropArea');
+dropArea.addEventListener('dragover', (e)=> {
+  // allow only when in preschool
+  if(STATE.level === 'preschool') e.preventDefault();
+});
+dropArea.addEventListener('drop', (e)=>{
+  e.preventDefault();
+  if(STATE.level !== 'preschool') return; // safety
+  const sym = e.dataTransfer.getData('text/plain');
+  if(!sym) return;
+  
+  // Hide the original element that was dragged
+  const elementId = e.dataTransfer.getData('element-id');
+  if (elementId) {
+    const originalElement = document.getElementById(elementId);
+    if (originalElement) {
+      originalElement.style.visibility = 'hidden';
+    }
+  }
+  
+  // add clone
+  const node = document.createElement('div'); 
+  node.className='draggable'; 
+  node.style.width='46px'; 
+  node.style.height='46px'; 
+  node.style.fontSize='22px';
+  node.innerText = sym; 
+  node.draggable=false; 
+  node.style.margin='6px';
+  el('dropArea').appendChild(node);
+  
+  // update collected items
+  STATE.collectedItems.push(sym);
+  
+  // Update the question text to show remaining items
+  updateQuestionText();
+});
+
+/* clear drop area */
+function clearDropArea(){
+  // Reset all draggable elements to visible
+  const draggables = document.querySelectorAll('#optionsArea .draggable');
+  draggables.forEach(el => {
+    el.style.visibility = 'visible';
+  });
+  
+  el('dropArea').innerHTML = '<div id="dropInner" style="width:100%;text-align:center;color:#999">Drop items here</div>';
+  STATE.collectedItems = [];
+  el('feedback').innerText='';
+  
+  // Reset the question text
+  const qdata = STATE.currentQuestion;
+  const questionElement = el('questionText');
+  questionElement.innerHTML = `${qdata.text} <span class="question-symbol">${qdata.symbol}</span>`;
+}
+
+/* Update question text to show remaining items */
+function updateQuestionText() {
+  const qdata = STATE.currentQuestion;
+  const remaining = qdata.count - STATE.collectedItems.length;
+  
+  if (remaining > 0) {
+    const questionElement = el('questionText');
+    questionElement.innerHTML = `Drag ${remaining} more of these: <span class="question-symbol">${qdata.symbol}</span>`;
+  } else {
+    el('questionText').innerText = `Good! Now press Check`;
+  }
+}
+
+/* Get a descriptive name for symbols */
+function getSymbolDescription(symbol) {
+  const descriptions = {
+    '🔴': 'red circles',
+    '🟦': 'blue squares', 
+    '🟩': 'green squares',
+    '🟨': 'yellow squares',
+    '🟧': 'orange squares',
+    '🟪': 'purple squares',
+    '🔵': 'blue circles',
+    '🟥': 'red squares',
+    '⭐': 'yellow stars',
+    '🔺': 'red triangles',
+    '🟢': 'green circles',
+    '💜': 'purple hearts',
+    '🍎': 'red apples',
+    '🍌': 'yellow bananas',
+    '🍓': 'pink strawberries',
+    '🍊': 'orange oranges',
+    '🍇': 'purple grapes',
+    '🌸': 'pink flowers'
+  };
+  
+  return descriptions[symbol] || symbol;
+}
+
+/* check preschool answer */
+function checkPreschoolAnswer(){
+  const qdata = STATE.currentQuestion;
+  const required = qdata.symbol;
+  const requiredCount = qdata.count;
+  const countCollected = STATE.collectedItems.length;
+
+  // Check if all collected items are the correct symbol
+  const allCorrect = STATE.collectedItems.every(item => item === required);
+  
+  if(countCollected === requiredCount && allCorrect){
+    // correct
+    el('feedback').innerText = `✅ Correct — you collected ${countCollected} ${getSymbolDescription(required)}!`;
+    el('feedback').className = 'feedback correct';
+    incScore(1); incStreak();
+    playCorrectSound();
+    el('nextBtn').classList.remove('hidden');
+  } else if(countCollected < requiredCount){
+    el('feedback').innerText = `❌ Not enough ${getSymbolDescription(required)}. You have ${countCollected}, need ${requiredCount}.`;
+    el('feedback').className = 'feedback wrong';
+    playWrongSound();
+    resetStreak();
+  } else if(countCollected > requiredCount){
+    el('feedback').innerText = `❌ Too many ${getSymbolDescription(required)}. You have ${countCollected}, need ${requiredCount}.`;
+    el('feedback').className = 'feedback wrong';
+    playWrongSound();
+    resetStreak();
+  } else if(!allCorrect){
+    el('feedback').innerText = `❌ You dragged the wrong items. You need ${requiredCount} ${getSymbolDescription(required)}.`;
+    el('feedback').className = 'feedback wrong';
+    playWrongSound();
+    resetStreak();
+  }
+}
+
+/* ---------- typed answer checking (primary & highschool) ---------- */
+function checkTypedAnswerInternal(){
+  const q = el('questionText').innerText;
+  const raw = el('answerInput').value.trim();
+  if(raw === "") { el('feedback').innerText = 'Type an answer or press Next'; el('feedback').className = 'feedback wrong'; return; }
+  let correct = computeCorrectAnswer(q);
+  // numeric compare with tolerance for floats
+  let ok = false;
+  if(isNumeric(correct) && isNumeric(raw)){
+    ok = Math.abs(Number(raw) - Number(correct)) < 0.051; // allow small tolerance
+  } else {
+    ok = String(raw).trim().toLowerCase() === String(correct).toString().trim().toLowerCase();
+  }
+  if(ok){
+    el('feedback').innerText = '✅ Correct!';
+    el('feedback').className = 'feedback correct';
+    incScore(1); incStreak();
+    playCorrectSound();
+  } else {
+    el('feedback').innerText = `❌ Wrong! Correct: ${correct}`;
+    el('feedback').className = 'feedback wrong';
+    resetStreak(); playWrongSound();
+  }
+  el('nextBtn').classList.remove('hidden');
+}
+
+/* compute correct answer for a question string */
+function computeCorrectAnswer(q){
+  try{
+    let text = String(q).trim();
+    // remove leading 'Solve:' or similar
+    text = text.replace(/^solve:\s*/i, '').trim();
+
+    if(STATE.level === 'primary'){
+      // expression like "12 - 5" or "20 / 5"
+      let expr = text.replace('×','*').replace('x','*').replace('X','*').replace('÷','/').replace('—','-');
+      const safe = expr.match(/^[0-9+\-*/().\s]+$/);
+      if(safe){
+        const val = Function('"use strict";return ('+expr+')')();
+        if(Number.isFinite(val)){
+          if(expr.includes('/')) return Number(val.toFixed(2));
+          return Number(val);
+        }
+      }
+    } else if(STATE.level === 'highschool'){
+      const str = text.toLowerCase();
+      // algebra patterns
+      if(str.includes('x +') || str.includes('2x') || str.includes('x -') || str.includes('3x') || str.includes('x/2')){
+        const m1 = str.match(/x \+ (\d+) = (\d+)/); if(m1){ return Number(m1[2]) - Number(m1[1]); }
+        const m2 = str.match(/2x\s*=\s*(\d+)/); if(m2){ return Number(m2[1]) / 2; }
+        const m3 = str.match(/x - (\d+) = (\d+)/); if(m3){ return Number(m3[1]) + Number(m3[2]); }
+        const m4 = str.match(/3x \+ 2 = (\d+)/); if(m4){ return (Number(m4[1]) - 2)/3; }
+        const m5 = str.match(/x\/2 = (\d+)/); if(m5){ return Number(m5[1])*2; }
+      }
+      // geometry
+      if(str.includes('area of square')){ const n = str.match(/side\s*(\d+)/); if(n) return Number(n[1])*Number(n[1]); }
+      if(str.includes('perimeter of rectangle')){ const nums = str.match(/(\d+)\s*by\s*(\d+)/); if(nums) return 2*(Number(nums[1])+Number(nums[2])); }
+      if(str.includes('area of triangle')){ const n = str.match(/base\s*(\d+).*height\s*(\d+)/); if(n) return 0.5*Number(n[1])*Number(n[2]); }
+      if(str.includes('circumference') && str.includes('r=')){ const m = str.match(/r=(\d+(?:\.\d+)?)/); if(m){ const r = Number(m[1]); return Number((2*Math.PI*r).toFixed(2)); } }
+      if(str.includes('area of circle') && str.includes('r=')){ const m = str.match(/r=(\d+(?:\.\d+)?)/); if(m){ const r = Number(m[1]); return Number((Math.PI*r*r).toFixed(2)); } }
+      // trig
+      if(str.includes('sin(30')) return 0.5;
+      if(str.includes('cos(60')) return 0.5;
+      if(str.includes('tan(45')) return 1;
+      if(str.includes('sin(90')) return 1;
+      if(str.includes('cos(0')) return 1;
+      // graphs (small set)
+      if(str.includes('y=2x when x=3')) return 6;
+      if(str.includes('y=x+5 when x=7')) return 12;
+      if(str.includes('y=3x-2 when x=4')) return 10;
+      if(str.includes('y=x^2 when x=5')) return 25;
+      if(str.includes('y=2x^2 when x=3')) return 18;
+    }
+  }catch(e){
+    console.warn('computeCorrectAnswer error', e);
+  }
+  return '';
+}
+function isNumeric(n){ return !isNaN(parseFloat(n)) && isFinite(n); }
+
+/* ---------- navigation ---------- */
+function backToLanding(){
+  clearInterval(STATE.timerId);
+  document.querySelector('.landing').style.display = '';
+  el('gameArea').classList.add('hidden');
+  el('feedback').innerText='';
+}
+
+/* ---------- Next question flow ---------- */
+function nextQuestion(){
+  clearInterval(STATE.timerId);
+  el('nextBtn').classList.add('hidden');
+  el('feedback').innerText = '';
+
+  // advance indexes
+  STATE.questionIndex++;
+  if(STATE.questionIndex >= STATE.sets[STATE.setIndex].questions.length){
+    STATE.setIndex++;
+    STATE.questionIndex = 0;
+  }
+  if(STATE.setIndex >= STATE.sets.length){
+    // finished level
+    el('questionText').innerText = `🎉 Level completed! Final score: ${STATE.score}`;
+    el('optionsArea').innerHTML = '';
+    el('dropArea').innerHTML = '';
+    el('preschoolArea').classList.add('hidden');
+    el('typedArea').classList.add('hidden');
+    launchConfetti();
+    clearInterval(STATE.timerId);
+    return;
+  }
+  // render next question
+  loadQuestion();
+}
+
+/* ---------- confetti ---------- */
+function launchConfetti(){
+  for(let i=0;i<120;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = `hsl(${Math.random()*360},90%,60%)`;
+    c.style.top = '-10vh';
+    c.style.width = (6 + Math.random()*10) + 'px';
+    c.style.height = c.style.width;
+    document.body.appendChild(c);
+    setTimeout(()=> c.remove(), 3000);
+  }
+}
+
+/* ---------- initial small setup ---------- */
+// wire check/submit buttons
+el('submitBtn').addEventListener('click', checkTypedAnswerInternal);
+el('checkBtn').addEventListener('click', checkPreschoolAnswer);
+el('clearDrop').addEventListener('click', clearDropArea);
+el('nextBtn').addEventListener('click', nextQuestion);
+
+/* ---------- user actions to enter levels from landing */
+document.querySelectorAll('.level-buttons button').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    const label = e.target.innerText.toLowerCase();
+    if(label.includes('preschool')) enterLevel('preschool');
+    if(label.includes('primary')) enterLevel('primary');
+    if(label.includes('high school') || label.includes('highschool') || label.includes('high')) enterLevel('highschool');
+  });
+});
+</script>
+</body>
+</html>

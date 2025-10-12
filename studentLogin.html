@@ -64,7 +64,18 @@
         const password_hash = await hashSHA256(password);
         const { data, error } = await supabase
           .from('children')
-          .select('id, first_name, surname, parent_id')
+          .select(`
+            id,
+            first_name,
+            surname,
+            parent_id,
+            currency_code,
+            multi_currency_wallets (
+              currency_code,
+              balance,
+              is_primary
+            )
+          `)
           .eq('email', email)
           .eq('password_hash', password_hash);
         
@@ -76,8 +87,34 @@
         
         // Take the first result if multiple exist
         const student = Array.isArray(data) ? data[0] : data;
+
+        // If a different student is logging in, clear caches to prevent cross-child bleed
+        const previousStudentId = localStorage.getItem('studentId');
+        if (previousStudentId && previousStudentId !== student.id) {
+          localStorage.removeItem('studentActivityCache');
+          localStorage.removeItem('cachedActivityData');
+          localStorage.removeItem('cachedStudentData');
+          // Clear legacy generic currency key
+          localStorage.removeItem('studentCurrencyCode');
+        }
+
+        // Persist current student context
         localStorage.setItem('studentId', student.id);
         localStorage.setItem('student_user', JSON.stringify(student));
+        localStorage.setItem('cachedStudentData', JSON.stringify(student));
+
+        // Resolve and cache student's currency immediately (primary wallet > first wallet > child currency_code)
+        const wallets = student.multi_currency_wallets || [];
+        const primaryWallet = wallets.find(w => w.is_primary) || wallets[0];
+        const resolvedCurrency = (primaryWallet && primaryWallet.currency_code) || student.currency_code || null;
+        if (resolvedCurrency) {
+          try {
+            localStorage.setItem(`studentCurrencyCode:${student.id}`, resolvedCurrency);
+            // Backward-compatible generic key
+            localStorage.setItem('studentCurrencyCode', resolvedCurrency);
+          } catch (_) {}
+        }
+
         window.location.href = 'studentDashboard.html';
       } catch (err) {
         console.error('Login error:', err);

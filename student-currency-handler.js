@@ -1,18 +1,10 @@
 // Student Dashboard Currency Handler
 // This file handles currency display for child accounts to inherit parent's currency
 
-// Currency symbol mapping
+// Currency symbol mapping (limited to supported currencies)
 const STUDENT_CURRENCY_SYMBOLS = {
   'USD': '$',
   'ZAR': 'R',
-  'GBP': '£',
-  'EUR': '€',
-  'NGN': '₦',
-  'KES': 'KSh',
-  'INR': '₹',
-  'CAD': 'C$',
-  'AUD': 'A$',
-  'KRW': '₩',
   'ZWL': 'Z$',
   'BWP': 'P'
 };
@@ -22,46 +14,74 @@ function getCurrencySymbol(currency) {
   return STUDENT_CURRENCY_SYMBOLS[currency] || 'R';
 }
 
+// LocalStorage helpers scoped per-student
+function getStudentCurrencyKey(studentId) {
+  return `studentCurrencyCode:${studentId}`;
+}
+
+function getCachedStudentCurrency() {
+  const studentId = localStorage.getItem('studentId');
+  if (!studentId) return localStorage.getItem('studentCurrencyCode'); // legacy fallback
+  return localStorage.getItem(getStudentCurrencyKey(studentId)) || localStorage.getItem('studentCurrencyCode');
+}
+
+function setCachedStudentCurrency(code) {
+  const studentId = localStorage.getItem('studentId');
+  try {
+    if (studentId) localStorage.setItem(getStudentCurrencyKey(studentId), code);
+    // keep legacy for backward compatibility
+    localStorage.setItem('studentCurrencyCode', code);
+  } catch (_) {}
+}
+
+// Singleton Supabase client for this page (avoid multiple GoTrueClient instances)
+function getSupabase() {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (window.__studentSupabase) return window.__studentSupabase;
+    if (window.supabase && window.APP_CONFIG) {
+      window.__studentSupabase = window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+      return window.__studentSupabase;
+    }
+  } catch (_) {}
+  return null;
+}
+
 // Load and apply student's currency settings
 async function loadStudentCurrencySettings() {
   try {
-    const supabase = window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+    const supabase = getSupabase();
     const studentId = localStorage.getItem('studentId');
     
     if (!studentId) {
-      // Set default currency if no student ID - use ZAR since parent uses Rands
-      updateStudentCurrencyDisplays('ZAR', 'R', { daily_limit: 0, weekly_limit: 0, balance: 0 });
-      return;
-    }
-    
-    // Check if we have a valid session before making any API calls
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.log('No authenticated user, using cached currency settings');
-      // Use default currency without making API calls
-      updateStudentCurrencyDisplays('ZAR', 'R', { daily_limit: 0, weekly_limit: 0, balance: 0 });
+      // No student context yet: keep numeric-only (no symbol) until resolved
+      setDefaultCurrencySymbols();
       return;
     }
 
-    // First try to get parent's currency for immediate inheritance
-    let parentCurrency = 'ZAR'; // Default to ZAR for this user since parent uses Rands
+    // 0) Apply cached currency immediately to avoid flashing wrong default
     try {
-      const parentId = localStorage.getItem('parentId');
-      if (parentId) {
-        const { data: parentData } = await supabase
-          .from('profiles')
-          .select('default_currency')
-          .eq('id', parentId)
-          .single();
-        
-        if (parentData?.default_currency) {
-          parentCurrency = parentData.default_currency;
-          console.log(`Found parent currency: ${parentCurrency}`);
-        }
+      let cachedCurrency = getCachedStudentCurrency();
+      // Prefer cached student data currency_code if available
+      const cachedStudentDataRaw = localStorage.getItem('cachedStudentData');
+      if (!cachedCurrency && cachedStudentDataRaw) {
+        try {
+          const cachedStudentData = JSON.parse(cachedStudentDataRaw);
+          cachedCurrency = cachedStudentData?.currency_code || cachedStudentData?.multi_currency_wallets?.[0]?.currency_code;
+          if (cachedCurrency) setCachedStudentCurrency(cachedCurrency);
+        } catch (_) {}
       }
-    } catch (parentError) {
-      console.log('Could not fetch parent currency initially, using ZAR default');
-    }
+      if (cachedCurrency) {
+        const symbol = getCurrencySymbol(cachedCurrency);
+        updateStudentCurrencyDisplays(cachedCurrency, symbol, { daily_limit: 0, weekly_limit: 0, balance: 0 });
+        window.studentCurrencyHandler = window.studentCurrencyHandler || {};
+        window.studentCurrencyHandler.parentCurrency = cachedCurrency;
+        window.studentCurrencyHandler.activeCurrency = cachedCurrency;
+      }
+    } catch (_) {}
+
+    // Check if we have a valid session before making any API calls
+    const { data: { user } } = await supabase.auth.getUser();
 
     // Get student data with multi-currency wallet
     const { data: studentData, error } = await supabase
@@ -75,60 +95,66 @@ async function loadStudentCurrencySettings() {
         weekly_limit,
         parent_id,
         currency_code,
-        multi_currency_wallets!inner (
+        currency_override,
+        multi_currency_wallets (
           currency_code,
           balance,
           is_primary
         )
       `)
       .eq('id', studentId)
-      .eq('multi_currency_wallets.is_primary', true)
       .single();
 
     if (error) {
       console.error('Error loading student currency:', error);
-      // Use parent currency as fallback
-      const symbol = STUDENT_CURRENCY_SYMBOLS[parentCurrency] || '$';
-      console.log(`Using parent currency fallback: ${parentCurrency} (${symbol})`);
-      updateStudentCurrencyDisplays(parentCurrency, symbol, { daily_limit: 0, weekly_limit: 0, balance: 0 });
+      // Only use cached currency if present; otherwise keep numeric-only until resolved
+      const cachedCurrency = getCachedStudentCurrency();
+      if (cachedCurrency) {
+        const symbol = getCurrencySymbol(cachedCurrency);
+        updateStudentCurrencyDisplays(cachedCurrency, symbol, { daily_limit: 0, weekly_limit: 0, balance: 0 });
+      } else {
+        setDefaultCurrencySymbols();
+      }
       return;
     }
 
     if (studentData) {
-      const wallet = studentData.multi_currency_wallets[0];
-      let currency = wallet?.currency_code || studentData.currency_code || parentCurrency;
-      
-      // Try to get parent's currency again if we have parent_id from student data
-      if (studentData.parent_id && !parentCurrency) {
-        try {
-          const { data: parentData } = await supabase
-            .from('profiles')
-            .select('default_currency')
-            .eq('id', studentData.parent_id)
-            .single();
-          
-          if (parentData?.default_currency) {
-            currency = parentData.default_currency;
-            console.log(`Inherited parent currency: ${currency}`);
-          }
-        } catch (parentError) {
-          console.log('Could not fetch parent currency from student data');
-        }
-      } else if (parentCurrency !== 'USD') {
-        currency = parentCurrency;
+      const walletArray = studentData.multi_currency_wallets || [];
+      const wallet = walletArray.find(w => w.is_primary) || walletArray[0];
+
+      // Resolve via server RPC bound to current auth.uid()
+      let currency = null;
+      try {
+        const { data: rpcCurrency } = await supabase.rpc('get_my_child_currency');
+        if (rpcCurrency) currency = rpcCurrency;
+      } catch (e) { console.warn('RPC get_my_child_currency error:', e?.message || e); }
+
+      // Fallback: child's primary wallet > child currency_code
+      if (!currency) {
+        currency = wallet?.currency_code || studentData.currency_code || null;
       }
-      
-      const symbol = STUDENT_CURRENCY_SYMBOLS[currency] || '$';
+
+      const symbol = STUDENT_CURRENCY_SYMBOLS[currency] || (currency === 'USD' ? '$' : 'R');
       
       console.log(`Student currency: ${currency} (${symbol})`);
       
       // Update all currency displays
       updateStudentCurrencyDisplays(currency, symbol, studentData);
+
+      // Cache resolved currency and expose for other scripts
+      setCachedStudentCurrency(currency);
+      window.studentCurrencyHandler = window.studentCurrencyHandler || {};
+      window.studentCurrencyHandler.parentCurrency = currency; // backward compatibility
+      window.studentCurrencyHandler.activeCurrency = currency;
     }
   } catch (error) {
     console.error('Error in loadStudentCurrencySettings:', error);
     // Final fallback to ZAR since parent uses Rands
-    updateStudentCurrencyDisplays('ZAR', 'R', { daily_limit: 0, weekly_limit: 0, balance: 0 });
+    const cachedCurrency = getCachedStudentCurrency();
+    if (cachedCurrency) {
+      const symbol = getCurrencySymbol(cachedCurrency);
+      updateStudentCurrencyDisplays(cachedCurrency, symbol, { daily_limit: 0, weekly_limit: 0, balance: 0 });
+    }
   }
 }
 
@@ -144,7 +170,7 @@ function updateStudentCurrencyDisplays(currency, symbol, studentData) {
   // Update monthly spending display
   const monthlySpendingElement = document.getElementById('monthlySpending');
   if (monthlySpendingElement) {
-    // Always update with correct currency symbol
+    // Always update with correct currency symbol (replace any token)
     const currentText = monthlySpendingElement.textContent;
     const amount = currentText.replace(/[^\d.]/g, '') || '0.00';
     monthlySpendingElement.textContent = `${symbol}${amount}`;
@@ -179,11 +205,13 @@ function updateStudentCurrencyDisplays(currency, symbol, studentData) {
 
 // Update all currency elements in student dashboard
 function updateAllStudentCurrencyElements(symbol) {
+  const tokenRegex = /(\$|R)/g;
+
   // Update all card values that might contain currency
   const cardValues = document.querySelectorAll('.card-value');
   cardValues.forEach(element => {
     const text = element.textContent;
-    if (text.includes('$') || /^\$?\d+\.\d{2}$/.test(text.trim())) {
+    if (tokenRegex.test(text) || /^\d+\.\d{2}$/.test(text.trim())) {
       const amount = text.replace(/[^\d.]/g, '') || '0.00';
       element.textContent = `${symbol}${amount}`;
     }
@@ -193,7 +221,7 @@ function updateAllStudentCurrencyElements(symbol) {
   const profileValues = document.querySelectorAll('.profile-field-value');
   profileValues.forEach(element => {
     const text = element.textContent;
-    if (text.includes('$') || /^\$?\d+\.\d{2}$/.test(text.trim())) {
+    if (tokenRegex.test(text) || /^\d+\.\d{2}$/.test(text.trim())) {
       const amount = text.replace(/[^\d.]/g, '') || '0.00';
       element.textContent = `${symbol}${amount}`;
     }
@@ -205,19 +233,15 @@ function updateStudentModalCurrencyDisplays(symbol) {
   // Update money request modal
   const requestAmountLabels = document.querySelectorAll('label[for="requestAmount"], label[for="emergencyAmount"]');
   requestAmountLabels.forEach(label => {
-    if (label.textContent.includes('$')) {
-      label.textContent = label.textContent.replace('$', symbol);
-    }
+    label.textContent = label.textContent.replace(/(\$|R)/g, symbol);
   });
 
   // Update payment amount displays
   const paymentAmountElement = document.getElementById('paymentAmount');
   if (paymentAmountElement) {
     const currentText = paymentAmountElement.textContent;
-    if (currentText.includes('$')) {
-      const amount = currentText.replace(/[^\d.]/g, '') || '0.00';
-      paymentAmountElement.textContent = `${symbol}${amount}`;
-    }
+    const amount = currentText.replace(/[^\d.]/g, '') || '0.00';
+    paymentAmountElement.textContent = `${symbol}${amount}`;
   }
 }
 
@@ -230,30 +254,34 @@ function setDefaultCurrencySymbols() {
   const profileCurrentBalance = document.getElementById('profileCurrentBalance');
   const paymentAmount = document.getElementById('paymentAmount');
   
-  // Set default USD symbols initially
-  if (balanceElement && balanceElement.textContent === '0.00') {
-    balanceElement.textContent = '$0.00';
-  }
-  if (monthlySpendingElement && monthlySpendingElement.textContent === '0.00') {
-    monthlySpendingElement.textContent = '$0.00';
-  }
-  if (profileWeeklyLimit && profileWeeklyLimit.textContent === '0.00') {
-    profileWeeklyLimit.textContent = '$0.00';
-  }
-  if (profileDailyLimit && profileDailyLimit.textContent === '0.00') {
-    profileDailyLimit.textContent = '$0.00';
-  }
-  if (profileCurrentBalance && profileCurrentBalance.textContent === '0.00') {
-    profileCurrentBalance.textContent = '$0.00';
-  }
-  if (paymentAmount && paymentAmount.textContent === '0.00') {
-    paymentAmount.textContent = '$0.00';
-  }
+  // Do not inject any default symbol; keep numeric-only until currency resolves
 }
 
 // Initialize currency handling when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load actual currency settings immediately
+  // Apply cached currency instantly before async
+  try {
+    let cachedCurrency = getCachedStudentCurrency();
+    if (!cachedCurrency) {
+      const raw = localStorage.getItem('cachedStudentData');
+      if (raw) {
+        try {
+          const cached = JSON.parse(raw);
+          cachedCurrency = cached?.currency_code || cached?.multi_currency_wallets?.[0]?.currency_code || null;
+          if (cachedCurrency) setCachedStudentCurrency(cachedCurrency);
+        } catch (_) {}
+      }
+    }
+    if (cachedCurrency) {
+      const symbol = getCurrencySymbol(cachedCurrency);
+      updateStudentCurrencyDisplays(cachedCurrency, symbol, { daily_limit: 0, weekly_limit: 0, balance: 0 });
+      window.studentCurrencyHandler = window.studentCurrencyHandler || {};
+      window.studentCurrencyHandler.parentCurrency = cachedCurrency;
+      window.studentCurrencyHandler.activeCurrency = cachedCurrency;
+    }
+  } catch (_) {}
+  
+  // Then fetch/resolve actual settings
   await loadStudentCurrencySettings();
 });
 
@@ -263,3 +291,28 @@ window.studentCurrencyHandler = {
   updateStudentCurrencyDisplays,
   STUDENT_CURRENCY_SYMBOLS
 };
+
+// Helper to resolve the student's currency code synchronously from caches/handler
+function resolveStudentCurrencyCode() {
+  try {
+    if (window.studentCurrencyHandler && window.studentCurrencyHandler.activeCurrency) {
+      return window.studentCurrencyHandler.activeCurrency;
+    }
+    let code = getCachedStudentCurrency();
+    if (code) return code;
+    const raw = localStorage.getItem('cachedStudentData');
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        code = s?.multi_currency_wallets?.[0]?.currency_code || s?.currency_code || null;
+        return code || null;
+      } catch(_) {}
+    }
+  } catch (_) {}
+  return null; // explicit: no symbol until resolved
+}
+
+// Expose helper
+if (typeof window !== 'undefined') {
+  window.resolveStudentCurrencyCode = resolveStudentCurrencyCode;
+}

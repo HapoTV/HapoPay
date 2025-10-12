@@ -19,6 +19,37 @@
           <span class="brand-name-new">Hapo Technology</span>
           <span class="brand-tagline-new" id="studentName">Student Dashboard</span>
         </div>
+
+   <!-- Math Game Modal -->
+   <div id="mathGameModal" class="modal">
+     <div class="modal-content modal-large">
+       <div class="modal-header">
+         <h3 class="modal-title">
+           <i class="fas fa-calculator" style="color: #10b981; margin-right: 8px;"></i>
+           Math Game
+         </h3>
+         <button class="modal-close" onclick="closeMathGame()"><i class="fas fa-times"></i></button>
+       </div>
+       <div class="modal-body">
+         <div class="game-iframe-container">
+           <iframe 
+             id="mathGameFrame" 
+             src="HapoPayGames/Math%20game/Math/index.html" 
+             frameborder="0" 
+             allowfullscreen
+             class="memory-game-iframe">
+           </iframe>
+         </div>
+         <div class="completion-actions" style="margin-top: 12px; display: flex; gap: 8px;">
+           <button class="btn btn-primary" onclick="saveMathGameSession()">
+             <i class="fas fa-save"></i>
+             Save Session & Award Points
+           </button>
+           <button class="btn btn-secondary" onclick="closeMathGame()">Close Game</button>
+         </div>
+       </div>
+     </div>
+   </div>
       </div>
       <div class="nav-actions-new">
         <button class="parent-signup-btn-new" onclick="logoutStudent()">Sign Out</button>
@@ -40,7 +71,7 @@
               </div>
               <div>
                 <div class="card-label">Available Balance</div>
-                <div class="card-value" id="studentBalance">R0.00</div>
+                <div class="card-value" id="studentBalance">0.00</div>
               </div>
             </div>
           </div>
@@ -53,7 +84,7 @@
               </div>
               <div>
                 <div class="card-label">This Month</div>
-                <div class="card-value" id="monthlySpending">R0.00</div>
+                <div class="card-value" id="monthlySpending">0.00</div>
               </div>
             </div>
           </div>
@@ -264,15 +295,15 @@
           <div class="profile-fields-grid">
             <div class="profile-field">
               <label class="profile-field-label">Weekly Spending Limit</label>
-              <div class="profile-field-value" id="profileWeeklyLimit">R0.00</div>
+              <div class="profile-field-value" id="profileWeeklyLimit">0.00</div>
             </div>
             <div class="profile-field">
               <label class="profile-field-label">Daily Spending Limit</label>
-              <div class="profile-field-value" id="profileDailyLimit">R0.00</div>
+              <div class="profile-field-value" id="profileDailyLimit">0.00</div>
             </div>
             <div class="profile-field">
               <label class="profile-field-label">Current Balance</label>
-              <div class="profile-field-value profile-balance-badge" id="profileCurrentBalance">R0.00</div>
+              <div class="profile-field-value profile-balance-badge" id="profileCurrentBalance">0.00</div>
             </div>
           </div>
         </div>
@@ -380,14 +411,24 @@
                   <i class="fas fa-calculator"></i>
                 </div>
                 <div class="game-info">
-                  <h4 class="game-title">Math Quiz</h4>
-                  <p class="game-description">Coming Soon! Practice math skills and earn rewards</p>
+                  <h4 class="game-title">Math Game</h4>
+                  <p class="game-description">Practice math skills across levels and earn points</p>
+                </div>
+              </div>
+              <div class="game-card-stats">
+                <div class="game-stat">
+                  <span class="game-stat-label">Best Score:</span>
+                  <span class="game-stat-value" id="mathBestScore">0</span>
+                </div>
+                <div class="game-stat">
+                  <span class="game-stat-label">Points per correct:</span>
+                  <span class="game-stat-value">1 pt</span>
                 </div>
               </div>
               <div class="game-card-actions">
-                <button class="btn btn-secondary" disabled>
-                  <i class="fas fa-clock"></i>
-                  Coming Soon
+                <button class="btn btn-primary game-play-btn" onclick="startMathGame()">
+                  <i class="fas fa-play"></i>
+                  Play Now
                 </button>
               </div>
             </div>
@@ -503,7 +544,7 @@
              </div>
              <div class="payment-field">
                <label>Amount:</label>
-               <span id="paymentAmount">R0.00</span>
+               <span id="paymentAmount">0.00</span>
              </div>
              <div class="payment-field">
                <label>Description:</label>
@@ -627,6 +668,23 @@
   <script src="student-currency-handler.js"></script>
   
   <script>
+    // Ensure student context is hydrated even if caches were cleared
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const hasId = !!localStorage.getItem('studentId');
+        const hasCached = !!localStorage.getItem('cachedStudentData');
+        if (!hasId || !hasCached) {
+          const raw = localStorage.getItem('student_user');
+          if (raw) {
+            const s = JSON.parse(raw);
+            if (s && s.id) {
+              if (!hasId) localStorage.setItem('studentId', s.id);
+              if (!hasCached) localStorage.setItem('cachedStudentData', JSON.stringify(s));
+            }
+          }
+        }
+      } catch (_) {}
+    });
     // Force currency inheritance on page load
     document.addEventListener('DOMContentLoaded', () => {
       // Set parent ID in localStorage if available from URL or session
@@ -656,6 +714,20 @@
         window.location.href = 'studentLogin.html';
         return;
       }
+      // If cached student data is for a different student, clear caches to prevent showing previous student
+      try {
+        const cachedRaw = localStorage.getItem('cachedStudentData');
+        if (cachedRaw) {
+          const cached = JSON.parse(cachedRaw);
+          if (cached && cached.id && cached.id !== studentId) {
+            console.log('Detected student switch. Clearing cached student currency and activity.');
+            localStorage.removeItem('studentCurrencyCode');
+            localStorage.removeItem('cachedStudentData');
+            localStorage.removeItem('studentActivityCache');
+            localStorage.removeItem('cachedActivityData');
+          }
+        }
+      } catch (e) { console.log('Cache compare error:', e?.message); }
       
       try {
         console.log('Fetching student data from database...');
@@ -663,7 +735,23 @@
         // Get fresh student data from database using service role to bypass RLS
         const { data: studentData, error } = await supabase
           .from('children')
-          .select('id, first_name, surname, email, balance, weekly_limit, daily_limit, parent_id, created_at')
+          .select(`
+            id,
+            first_name,
+            surname,
+            email,
+            balance,
+            weekly_limit,
+            daily_limit,
+            parent_id,
+            created_at,
+            currency_code,
+            multi_currency_wallets (
+              currency_code,
+              balance,
+              is_primary
+            )
+          `)
           .eq('id', studentId)
           .single();
         
@@ -682,7 +770,7 @@
               const studentData = JSON.parse(cachedStudent);
               currentStudent = studentData;
               document.getElementById('studentName').textContent = `${studentData.first_name} ${studentData.surname}`;
-              document.getElementById('studentBalance').textContent = `R${(studentData.balance || 0).toFixed(2)}`;
+              document.getElementById('studentBalance').textContent = `${(studentData.balance || 0).toFixed(2)}`;
               // Load initial activity data
               await loadRecentActivity(currentStudent.id, false);
               return;
@@ -700,16 +788,35 @@
               };
               currentStudent = mockStudentData;
               document.getElementById('studentName').textContent = `${mockStudentData.first_name} ${mockStudentData.surname}`;
-              document.getElementById('studentBalance').textContent = `R${(mockStudentData.balance || 0).toFixed(2)}`;
+              document.getElementById('studentBalance').textContent = `${(mockStudentData.balance || 0).toFixed(2)}`;
               
               // Try to load any cached activity data
               await loadRecentActivity();
               return;
             }
           }
-          // Don't redirect immediately, show error but stay on page
-          document.getElementById('studentName').textContent = 'Error loading data';
-          document.getElementById('studentBalance').textContent = 'R0.00';
+          // Graceful fallback: use cached student data if available
+          try {
+            const cachedRaw = localStorage.getItem('cachedStudentData') || localStorage.getItem('student_user');
+            if (cachedRaw) {
+              const s = JSON.parse(cachedRaw);
+              currentStudent = s;
+              const nameElement = document.getElementById('studentName');
+              const balanceElement = document.getElementById('studentBalance');
+              if (nameElement) nameElement.textContent = `${s.first_name || ''} ${s.surname || ''}`.trim() || 'Student';
+              if (balanceElement) balanceElement.textContent = `${(s.balance || s.multi_currency_wallets?.[0]?.balance || 0).toFixed(2)}`;
+              // Trigger currency rendering from cache
+              if (window.studentCurrencyHandler && typeof window.studentCurrencyHandler.loadStudentCurrencySettings === 'function') {
+                setTimeout(() => window.studentCurrencyHandler.loadStudentCurrencySettings(), 0);
+              }
+              // Continue with cached activity load
+              await loadRecentActivity(s.id, false);
+              return;
+            }
+          } catch(_) {}
+          // Final fallback display
+          document.getElementById('studentName').textContent = 'Student';
+          document.getElementById('studentBalance').textContent = '0.00';
           return;
         }
         
@@ -717,7 +824,7 @@
           console.error('No student found');
           // Don't redirect immediately, show error but stay on page
           document.getElementById('studentName').textContent = 'Student not found';
-          document.getElementById('studentBalance').textContent = 'R0.00';
+          document.getElementById('studentBalance').textContent = '0.00';
           return;
         }
         
@@ -737,8 +844,17 @@
         }
         
         if (balanceElement) {
-          balanceElement.textContent = `R${(studentData.balance || 0).toFixed(2)}`;
-          
+          balanceElement.textContent = `${(studentData.balance || 0).toFixed(2)}`;
+          // Cache currency for immediate symbol rendering
+          const walletCurrency = (studentData.multi_currency_wallets && studentData.multi_currency_wallets[0]?.currency_code) || null;
+          const resolvedCurrency = walletCurrency || studentData.currency_code || null;
+          if (resolvedCurrency) {
+            try { localStorage.setItem('studentCurrencyCode', resolvedCurrency); } catch (_) {}
+            if (window.studentCurrencyHandler && typeof window.studentCurrencyHandler.loadStudentCurrencySettings === 'function') {
+              // Trigger immediate currency render
+              setTimeout(() => window.studentCurrencyHandler.loadStudentCurrencySettings(), 0);
+            }
+          }
           // Skip currency update to avoid API calls when parent is signed out
         } else {
           console.error('studentBalance element not found in DOM');
@@ -771,7 +887,7 @@
         const balanceElement = document.getElementById('studentBalance');
         
         if (nameElement) nameElement.textContent = 'Error occurred';
-        if (balanceElement) balanceElement.textContent = 'R0.00';
+        if (balanceElement) balanceElement.textContent = '0.00';
       }
     });
 
@@ -800,13 +916,17 @@
           currentStudent.balance = student.balance;
           const balanceElement = document.getElementById('studentBalance');
           if (balanceElement) {
-            balanceElement.textContent = `R${(student.balance || 0).toFixed(2)}`;
+            const amount = (student.balance || 0).toFixed(2);
+            const cachedCode = localStorage.getItem('studentCurrencyCode');
+            const map = (window.studentCurrencyHandler && window.studentCurrencyHandler.STUDENT_CURRENCY_SYMBOLS) || {};
+            const symbol = cachedCode ? (map[cachedCode] || '') : '';
+            balanceElement.textContent = symbol ? `${symbol}${amount}` : `${amount}`;
             
             // Trigger currency update after balance refresh (only if not periodic)
             if (window.studentCurrencyHandler && !isPeriodicRefresh) {
               setTimeout(() => {
                 window.studentCurrencyHandler.loadStudentCurrencySettings();
-              }, 100);
+              }, 50);
             }
           }
         } else if (error && !isPeriodicRefresh) {
@@ -1069,7 +1189,12 @@
 
         // Update UI with payment details
         document.getElementById('merchantName').textContent = paymentData.merchant || 'Unknown Merchant';
-        document.getElementById('paymentAmount').textContent = `$${(paymentData.amount || 0).toFixed(2)}`;
+        // Use student's own currency symbol if resolved, otherwise no symbol
+        (function(){
+          const code = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(code);
+          document.getElementById('paymentAmount').textContent = `${symbol}${(paymentData.amount || 0).toFixed(2)}`;
+        })();
         document.getElementById('paymentDescription').textContent = paymentData.description || 'Payment';
 
         // Show payment details and hide scanner
@@ -1149,11 +1274,20 @@
         // Update current student balance
         currentStudent.balance = newBalance;
         
-        alert(`Payment successful! $${amount.toFixed(2)} paid to ${merchant}`);
+        // Alert with student's currency
+        (function(){
+          const code = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(code);
+          alert(`Payment successful! ${symbol}${amount.toFixed(2)} paid to ${merchant}`);
+        })();
         closeQRScanner();
         
         // Refresh balance display
-        document.getElementById('studentBalance').textContent = `$${newBalance.toFixed(2)}`;
+        (function(){
+          const code = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(code);
+          document.getElementById('studentBalance').textContent = `${symbol}${newBalance.toFixed(2)}`;
+        })();
         loadRecentActivity();
 
       } catch (err) {
@@ -1296,6 +1430,21 @@
 
     // Load recent activity
     async function loadRecentActivity(studentId, isPeriodicRefresh = false) {
+      // Ensure we have a currentStudent object if possible
+      if (!currentStudent) {
+        try {
+          const cachedRaw = localStorage.getItem('cachedStudentData');
+          if (cachedRaw) currentStudent = JSON.parse(cachedRaw);
+        } catch (_) {}
+      }
+      // Resolve a studentId from param, currentStudent, or localStorage
+      const resolvedStudentId = studentId || (currentStudent && currentStudent.id) || localStorage.getItem('studentId');
+      if (!resolvedStudentId) {
+        console.log('No student data available');
+        if (typeof showEmptyState === 'function') showEmptyState();
+        return;
+      }
+      studentId = resolvedStudentId;
       if (!studentId) return;
       
       console.log('Loading recent activity for student:', studentId);
@@ -1344,6 +1493,8 @@
       };
       
       try {
+        // Local cache holder to avoid ReferenceError in later branches
+        let cachedActivities = [];
         // Always try to fetch fresh data first, only use cache as fallback
         if (!supabase) {
           console.log('Supabase client not available, using cached data');
@@ -1498,6 +1649,8 @@
           
           renderActivities(recentActivities, historyActivities);
         } else {
+          // Define enhancedCache locally for this branch
+          const enhancedCache = localStorage.getItem('enhancedActivityCache');
           if (enhancedCache) {
             try {
               const cacheData = JSON.parse(enhancedCache);
@@ -1537,10 +1690,10 @@
           }
           
           // Combine cached activities with pending requests
-          const allActivities = [...cachedActivities, ...pendingEmergencyRequests, ...pendingMoneyActivities];
+          const allActivities = [...cachedActivities, ...pendingEmergencyRequests, ...pendingMoneyRequests];
           console.log('Cached activities count:', cachedActivities.length);
           console.log('Pending emergency activities count:', pendingEmergencyRequests.length);
-          console.log('Pending money activities count:', pendingMoneyActivities.length);
+          console.log('Pending money activities count:', pendingMoneyRequests.length);
           console.log('Total combined activities:', allActivities.length);
           console.log('All activities:', allActivities);
           
@@ -1574,6 +1727,9 @@
       }
     }
     
+    // Ensure enhancedCache is defined before use
+    const enhancedCache = localStorage.getItem('enhancedActivityCache');
+    
     function showEmptyState() {
       console.log('Showing empty state');
       const recentActivityList = document.getElementById('recentActivityList');
@@ -1604,6 +1760,37 @@
       }
     }
     
+    // Helpers: resolve student's currency code and symbol
+    function resolveStudentCurrencyCode() {
+      try {
+        // Prefer handler active currency
+        const active = window.studentCurrencyHandler && window.studentCurrencyHandler.activeCurrency;
+        if (active) return active;
+        // Then per-student cache
+        const cachedPerStudent = (function(){
+          const sid = localStorage.getItem('studentId');
+          return sid ? localStorage.getItem(`studentCurrencyCode:${sid}`) : null;
+        })();
+        if (cachedPerStudent) return cachedPerStudent;
+        // Then generic cache
+        const cached = localStorage.getItem('studentCurrencyCode');
+        if (cached) return cached;
+        // Then cached student data
+        const raw = localStorage.getItem('cachedStudentData');
+        if (raw) {
+          const sd = JSON.parse(raw);
+          const fromWallet = sd?.multi_currency_wallets?.[0]?.currency_code || null;
+          return fromWallet || sd?.currency_code || null;
+        }
+      } catch(_) {}
+      return null;
+    }
+    function getSymbolFromCode(code) {
+      if (code === 'USD') return '$';
+      if (code === 'ZAR') return 'R';
+      return '';
+    }
+
     // Function to render activities to the DOM
     function renderActivities(recentActivities, historyActivities) {
       const recentActivityList = document.getElementById('recentActivityList');
@@ -1702,9 +1889,9 @@
         icon = getTransactionIcon(activity.type);
         title = getTransactionTitle(activity.type, 'Parent');
         subtitle = activity.description || getTransactionDescription(activity.type);
-        // Get parent's currency for transaction display
-        const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-        const symbol = getCurrencySymbol(currency);
+        // Use student's currency for transaction display
+        const currency = resolveStudentCurrencyCode();
+        const symbol = getSymbolFromCode(currency);
         amount = `+${symbol}${Math.abs(activity.amount || 0).toFixed(2)}`;
         amountClass = 'amount-positive';
       } else if (activity.activity_type === 'money_request') {
@@ -1713,26 +1900,26 @@
           icon = 'fa-check-circle';
           title = 'Money request approved';
           subtitle = activity.reason || 'Request approved by parent';
-          // Get parent's currency for money request display
-          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-          const symbol = getCurrencySymbol(currency);
+          // Use student's currency for money request display
+          const currency = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(currency);
           amount = `+${symbol}${activity.amount}`;
           amountClass = 'amount-positive';
         } else if (activity.status === 'declined') {
           icon = 'fa-times-circle';
           title = 'Money request declined';
           subtitle = activity.reason || 'Request declined by parent';
-          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-          const symbol = getCurrencySymbol(currency);
+          const currency = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(currency);
           amount = `${symbol}${activity.amount}`;
           amountClass = 'amount-neutral';
         } else {
           icon = 'fa-clock';
           title = 'Money request pending';
           subtitle = activity.reason || 'Waiting for parent response';
-          // Get parent's currency for money request display
-          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-          const symbol = getCurrencySymbol(currency);
+          // Use student's currency
+          const currency = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(currency);
           amount = `${symbol}${activity.amount}`;
           amountClass = 'amount-neutral';
         }
@@ -1742,9 +1929,9 @@
           icon = 'fa-check-circle';
           title = 'Emergency request approved';
           subtitle = activity.reason || 'Emergency request approved by parent';
-          // Get parent's currency for emergency request display
-          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-          const symbol = getCurrencySymbol(currency);
+          // Use student's currency for emergency request display
+          const currency = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(currency);
           amount = `+${symbol}${activity.amount}`;
           amountClass = 'amount-positive';
         } else if (activity.status === 'declined') {
@@ -1757,9 +1944,9 @@
           icon = 'fa-exclamation-triangle';
           title = activity.submitted_offline ? 'Emergency request sent' : 'Emergency request pending';
           subtitle = activity.reason || 'Emergency request awaiting parent approval';
-          // Get parent's currency for emergency request display
-          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-          const symbol = getCurrencySymbol(currency);
+          // Use student's currency
+          const currency = resolveStudentCurrencyCode();
+          const symbol = getSymbolFromCode(currency);
           amount = `${symbol}${activity.amount}`;
           amountClass = 'amount-neutral';
         }
@@ -1949,10 +2136,10 @@
           });
           document.getElementById('profileCreatedDate').textContent = formattedDate;
           
-          // Update spending limits and balance - will be updated by currency handler
-          document.getElementById('profileWeeklyLimit').textContent = `R${(studentData.weekly_limit || 0).toFixed(2)}`;
-          document.getElementById('profileDailyLimit').textContent = `R${(studentData.daily_limit || 0).toFixed(2)}`;
-          document.getElementById('profileCurrentBalance').textContent = `R${(studentData.balance || 0).toFixed(2)}`;
+          // Update spending limits and balance - currency handler will prefix symbol
+          document.getElementById('profileWeeklyLimit').textContent = `${(studentData.weekly_limit || 0).toFixed(2)}`;
+          document.getElementById('profileDailyLimit').textContent = `${(studentData.daily_limit || 0).toFixed(2)}`;
+          document.getElementById('profileCurrentBalance').textContent = `${(studentData.balance || 0).toFixed(2)}`;
           
           // Skip currency update to avoid API calls when parent is signed out
           

@@ -8,7 +8,7 @@ This document provides a comprehensive guide to the multi-currency functionality
 
 ### 🌍 Automatic Currency Detection
 - **Phone-based Currency Assignment**: Parents are automatically assigned a default currency based on their phone number country code
-- **Supported Countries**: South Africa (ZAR), United States (USD), United Kingdom (GBP), Nigeria (NGN), Kenya (KES), India (INR), Canada (CAD), Australia (AUD), Germany/France (EUR), South Korea (KRW), Zimbabwe (ZWL), Botswana (BWP)
+- **Supported Countries**: South Africa (ZAR) and United States (USD)
 - **Fallback Currency**: USD is used as the default when no mapping exists
 
 ### 💰 Multi-Currency Wallets
@@ -95,8 +95,8 @@ Updates wallet balance with add/subtract operations. Returns false if insufficie
 - **Visual Feedback**: Currency note explains the auto-selection
 
 ### Parent Dashboard (`parentDashboard.html`)
-- **Child Currency Selection**: Currency dropdown in "Add Child" modal
-- **Currency Symbols**: Display appropriate currency symbols (R, $, £, etc.)
+- **Child Currency Selection**: Currency dropdown in "Add Child" modal (limited to ZAR and USD)
+- **Currency Symbols**: Display appropriate currency symbols (R and $)
 - **Override Indication**: Visual badge when child uses different currency than parent
 - **Multi-Currency Balance Display**: Show balances with correct currency symbols
 
@@ -182,37 +182,14 @@ Test the multi-currency functionality by:
 
 ## Currency Support
 
-### Global Currency Context
+### Supported Currencies
 
-There are about **180 recognized currencies** in the world today 🌍. That number comes from the ISO 4217 standard, which is the official list of currency codes (like USD, ZAR, EUR, JPY, etc.).
+HapoPay now supports only the following currencies:
 
-However, **HapoPay currently supports 12 major currencies** that cover the most common international money transfer needs for families across different continents.
-
-### Currently Supported Currencies (12 Total)
-
-| Code | Name | Symbol | Country/Region | Flag |
-|------|------|--------|----------------|------|
-| ZAR | South African Rand | R | 🇿🇦 South Africa | 🇿🇦 |
-| USD | United States Dollar | $ | 🇺🇸 United States | 🇺🇸 |
-| GBP | British Pound Sterling | £ | 🇬🇧 United Kingdom | 🇬🇧 |
-| NGN | Nigerian Naira | ₦ | 🇳🇬 Nigeria | 🇳🇬 |
-| KES | Kenyan Shilling | KSh | 🇰🇪 Kenya | 🇰🇪 |
-| INR | Indian Rupee | ₹ | 🇮🇳 India | 🇮🇳 |
-| CAD | Canadian Dollar | C$ | 🇨🇦 Canada | 🇨🇦 |
-| AUD | Australian Dollar | A$ | 🇦🇺 Australia | 🇦🇺 |
-| EUR | Euro | € | 🇩🇪 Germany (Eurozone) | 🇪🇺 |
-| KRW | South Korean Won | ₩ | 🇰🇷 South Korea | 🇰🇷 |
-| ZWL | Zimbabwean Dollar | Z$ | 🇿🇼 Zimbabwe | 🇿🇼 |
-| BWP | Botswana Pula | P | 🇧🇼 Botswana | 🇧🇼 |
-
-### Why These 12 Currencies?
-
-These currencies were selected based on:
-- **High international usage** for family remittances
-- **Major economic regions** representation
-- **Common study abroad destinations** for students
-- **Significant diaspora populations** worldwide
-- **Strong digital payment infrastructure** in these countries
+| Code | Name | Symbol | Country/Region |
+|------|------|--------|----------------|
+| ZAR | South African Rand | R | South Africa |
+| USD | United States Dollar | $ | United States |
 
 ### Adding New Currencies
 
@@ -231,13 +208,7 @@ VALUES ('JP', 'Japan', '+81', 'JPY', true);
 ```
 
 3. **Update Frontend**:
-```javascript
-// Add to CURRENCY_SYMBOLS in multi-currency-dashboard.js
-const CURRENCY_SYMBOLS = {
-  // ... existing currencies
-  'JPY': '¥'
-};
-```
+Currently, the frontend is intentionally limited to ZAR and USD. Extending support requires updating the currency maps and UI dropdowns accordingly.
 
 4. **Update Signup Form**:
 ```html

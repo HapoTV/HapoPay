@@ -1,11 +1,21 @@
-// Global Supabase client creation function
+// Global Supabase client creation function (resilient)
 const createClient = () => {
-  if (!window?.supabase || !window?.APP_CONFIG) {
-    console.error('Supabase or APP_CONFIG not available');
-    return null;
-  }
   try {
-    return window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+    // Return cached instance if available
+    if (window._supabaseClient) return window._supabaseClient;
+
+    // Determine config from window or built-in fallback
+    const fallbackUrl = 'https://ckyncyqsakqevzeqgwgv.supabase.co';
+    const fallbackKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNreW5jeXFzYWtxZXZ6ZXFnd2d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU3NzE2MTUsImV4cCI6MjA3MTM0NzYxNX0.t32UWdoe6w9b-OYfxb_FcTWTwvGJP-uIndGATxWOowQ';
+    const cfg = (window && window.APP_CONFIG) ? window.APP_CONFIG : { SUPABASE_URL: fallbackUrl, SUPABASE_KEY: fallbackKey };
+
+    if (!window?.supabase) {
+      console.error('Supabase library not loaded yet (CDN). If on a restricted network, ensure CDN access.');
+      return null;
+    }
+
+    window._supabaseClient = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
+    return window._supabaseClient;
   } catch (err) {
     console.error('Failed to create Supabase client:', err);
     return null;
