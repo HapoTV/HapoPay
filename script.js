@@ -325,5 +325,30 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     updateCurrencyFromPhone();
   }, 100);
+  
+  // Scroll animation for Get in Touch section
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('slide-in');
+      }
+    });
+  }, observerOptions);
+  
+  const getInTouchImage = document.querySelector('.get-in-touch-image');
+  const getInTouchContent = document.querySelector('.get-in-touch-content');
+  
+  if (getInTouchImage) {
+    observer.observe(getInTouchImage);
+  }
+  
+  if (getInTouchContent) {
+    observer.observe(getInTouchContent);
+  }
 });
 

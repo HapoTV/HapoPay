@@ -11,14 +11,45 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <nav class="nav-header-new">
-    <div class="nav-container-new">
-      <div class="nav-brand-new">
-        <img src="src/lib/images/logo.jpg" alt="Hapo Logo" class="logo-new">
-        <div class="brand-content-new">
-          <span class="brand-name-new">Hapo Technology</span>
-          <span class="brand-tagline-new" id="studentName">Student Dashboard</span>
+  <nav class="nav-header-new" style="background: linear-gradient(135deg, #e11d48, #8b5cf6); position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; max-width: 100%;">
+      <!-- Left Icon - Profile -->
+      <button onclick="toggleStudentProfileMenu()" style="background: none; border: none; cursor: pointer; color: white; font-size: 24px; padding: 8px;">
+        <i class="fas fa-user-circle"></i>
+      </button>
+      
+      <!-- Center - HapoPay Brand -->
+      <div style="flex: 1; text-align: center;">
+        <span style="color: white; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;">HapoPay</span>
+      </div>
+      
+      <!-- Right Icons -->
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <!-- Search Icon -->
+        <button onclick="showStudentSearchModal()" style="background: none; border: none; cursor: pointer; color: white; font-size: 20px; padding: 8px;">
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <!-- Notification Bell -->
+        <button onclick="showStudentNotifications()" style="background: none; border: none; cursor: pointer; color: white; font-size: 20px; padding: 8px; position: relative;">
+          <i class="fas fa-bell"></i>
+          <span id="studentNotificationBadge" class="notification-badge" style="display: none; position: absolute; top: 2px; right: 2px; background: #ef4444; color: white; border-radius: 50%; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; padding: 2px;">0</span>
+        </button>
+      </div>
+      
+      <!-- Profile Dropdown Menu -->
+      <div id="studentProfileMenuDropdown" style="display: none; position: fixed; right: 20px; top: 60px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 150px; z-index: 1001;">
+        <a href="javascript:void(0)" onclick="showStudentSettings()" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #e5e7eb; font-size: 14px; transition: background 0.2s; border-radius: 8px 8px 0 0;">
+          <i class="fas fa-cog" style="margin-right: 8px;"></i>Settings
+        </a>
+        <a href="javascript:void(0)" onclick="logoutStudent()" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='white'" style="display: block; padding: 12px 20px; color: #ef4444; text-decoration: none; font-size: 14px; transition: background 0.2s; border-radius: 0 0 8px 8px;">
+          <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i>Logout
+        </a>
+      </div>
         </div>
+      </div>
+    </div>
+  </nav>
 
    <!-- Math Game Modal -->
    <div id="mathGameModal" class="modal">
@@ -50,14 +81,10 @@
        </div>
      </div>
    </div>
-      </div>
-      <div class="nav-actions-new">
-        <button class="parent-signup-btn-new" onclick="logoutStudent()">Sign Out</button>
-      </div>
     </div>
   </nav>
 
-  <main class="dashboard-main">
+  <main class="dashboard-main" style="padding-top: 100px;">
     <div id="homeSection" class="section-content">
       <div class="dashboard-container">
 
@@ -355,7 +382,7 @@
 
         <!-- Available Games -->
         <div class="section-spacer">
-          <h3 class="section-title sm">Available Games</h3>
+          <h3 class="section-title sm" style="margin-bottom: 24px;">Available Games</h3>
           <div class="games-grid">
             <!-- Memory Game Card -->
             <div class="game-card">
@@ -364,7 +391,7 @@
                   <i class="fas fa-brain"></i>
                 </div>
                 <div class="game-info">
-                  <h4 class="game-title">Memory Game</h4>
+                  <h4 class="game-title">Memory Games</h4>
                   <p class="game-description">Test your memory skills by matching pairs of cards</p>
                 </div>
               </div>
@@ -393,8 +420,8 @@
                   <i class="fas fa-puzzle-piece"></i>
                 </div>
                 <div class="game-info">
-                  <h4 class="game-title">Puzzle Challenge</h4>
-                  <p class="game-description">Coming Soon! Solve puzzles to earn bonus points</p>
+                  <h4 class="game-title">Another game</h4>
+                  <p class="game-description">Coming Soon!</p>
                 </div>
               </div>
               <div class="game-card-actions">
@@ -405,28 +432,45 @@
               </div>
             </div>
 
-            <div class="game-card game-card--coming-soon">
-              <div class="game-card-header">
-                <div class="game-icon">
-                  <i class="fas fa-calculator"></i>
+            <div style="background: white; border-radius: 16px; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; border-top: 4px solid #e11d48;">
+              <div style="padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+                  <div style="width: 80px; height: 80px; background: #e11d48; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-calculator" style="font-size: 36px; color: white;"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: 24px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Math Games</h4>
+                    <p style="font-size: 14px; color: #6b7280; margin: 0;">Practice math skills across levels and earn points</p>
+                  </div>
                 </div>
-                <div class="game-info">
-                  <h4 class="game-title">Math Game</h4>
-                  <p class="game-description">Practice math skills across levels and earn points</p>
+                
+                <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="text-align: center;">
+                      <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Best Score:</div>
+                      <div style="font-size: 28px; font-weight: 700; color: #e11d48;" id="mathBestScore">0</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; text-align: center;">Points Per Win:</div>
+                      <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background: white; border-radius: 6px;">
+                          <span style="font-size: 13px; color: #6b7280; font-weight: 500;">Preschool:</span>
+                          <span style="font-size: 16px; font-weight: 700; color: #e11d48;" id="mathPointsPreschool">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background: white; border-radius: 6px;">
+                          <span style="font-size: 13px; color: #6b7280; font-weight: 500;">Primary:</span>
+                          <span style="font-size: 16px; font-weight: 700; color: #e11d48;" id="mathPointsPrimary">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background: white; border-radius: 6px;">
+                          <span style="font-size: 13px; color: #6b7280; font-weight: 500;">High School:</span>
+                          <span style="font-size: 16px; font-weight: 700; color: #e11d48;" id="mathPointsHighSchool">-</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="game-card-stats">
-                <div class="game-stat">
-                  <span class="game-stat-label">Best Score:</span>
-                  <span class="game-stat-value" id="mathBestScore">0</span>
-                </div>
-                <div class="game-stat">
-                  <span class="game-stat-label">Points per correct:</span>
-                  <span class="game-stat-value">1 pt</span>
-                </div>
-              </div>
-              <div class="game-card-actions">
-                <button class="btn btn-primary game-play-btn" onclick="startMathGame()">
+                
+                <button onclick="startMathGame()" style="width: 100%; background: #e11d48; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#be123c'" onmouseout="this.style.background='#e11d48'">
                   <i class="fas fa-play"></i>
                   Play Now
                 </button>
@@ -562,7 +606,7 @@
 
    <!-- Memory Game Modal -->
    <div id="memoryGameModal" class="modal">
-     <div class="modal-content modal-large">
+     <div class="modal-content modal-large" style="max-width: 95vw; max-height: 95vh; width: 95vw; height: 95vh; margin: 2.5vh auto;">
        <div class="modal-header">
          <h3 class="modal-title">
            <i class="fas fa-brain" style="color: #8b5cf6; margin-right: 8px;"></i>
@@ -946,7 +990,58 @@
     }
 
     // Student logout function
+    // Profile menu functions
+    function toggleStudentProfileMenu() {
+      const dropdown = document.getElementById('studentProfileMenuDropdown');
+      if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.style.display = 'none';
+      }
+    }
+    
+    function showStudentProfileMenu() {
+      const dropdown = document.getElementById('studentProfileMenuDropdown');
+      dropdown.style.display = 'block';
+    }
+    
+    function hideStudentProfileMenu() {
+      const dropdown = document.getElementById('studentProfileMenuDropdown');
+      setTimeout(() => {
+        if (!dropdown.matches(':hover')) {
+          dropdown.style.display = 'none';
+        }
+      }, 100);
+    }
+    
+    function showStudentSettings() {
+      document.getElementById('studentProfileMenuDropdown').style.display = 'none';
+      alert('Student settings coming soon!');
+      // TODO: Implement student settings page
+    }
+    
+    function showStudentSearchModal() {
+      alert('Search functionality coming soon! You will be able to search for transactions and more.');
+      // TODO: Implement search modal
+    }
+    
+    function showStudentNotifications() {
+      alert('Notifications coming soon! You will receive updates from your parent here.');
+      // TODO: Implement notifications
+    }
+    
+    // Close profile menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const profileMenu = document.getElementById('studentProfileMenuDropdown');
+      const profileContainer = event.target.closest('[onmouseenter="showStudentProfileMenu()"]');
+      
+      if (profileMenu && !profileContainer && !profileMenu.contains(event.target)) {
+        profileMenu.style.display = 'none';
+      }
+    });
+
     function logoutStudent() {
+      document.getElementById('studentProfileMenuDropdown').style.display = 'none';
       // Clear student data
       localStorage.removeItem('studentId');
       localStorage.removeItem('parentId');
@@ -2343,17 +2438,15 @@
       lastCompletedDifficulty: null
     };
 
-    function startMemoryGame() {
-      document.getElementById('memoryGameModal').style.display = 'block';
-      // Initialize game progress tracking
-      initializeGameProgress();
-      // Listen for messages from the game iframe
-      window.addEventListener('message', handleGameMessage);
-    }
-
     function closeMemoryGame() {
       document.getElementById('memoryGameModal').style.display = 'none';
       window.removeEventListener('message', handleGameMessage);
+    }
+    
+    // Math Game Integration Functions
+    function startMathGame() {
+      // Open math game in a new tab
+      window.open('HapoPayGames/Math%20game/Math/index.html', '_blank');
     }
 
     function initializeGameProgress() {
