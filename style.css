@@ -5,7 +5,7 @@ body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica
 
 :root {
   --brand: #e11d48;
-  --brand-dark: #1559ad;
+  --brand-dark: #be123c;
   --ink: #0f172a;
 }
 
@@ -133,19 +133,22 @@ body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica
 }
 
 .student-login-btn-new { 
-  background: transparent; 
-  color: #fff; 
-  border: 1px solid rgba(255,255,255,.3); 
+  background: white; 
+  color: #e11d48; 
+  border: 2px solid #e11d48; 
   padding: 8px 20px; 
   border-radius: 6px; 
   cursor: pointer;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.3s ease;
 }
 .student-login-btn-new:hover { 
-  background: rgba(255,255,255,.1); 
-  border-color: rgba(255,255,255,.5);
+  background: #e11d48; 
+  color: white;
+  border-color: #e11d48;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
 }
 .parent-signup-btn-new { 
   background: linear-gradient(135deg, #e11d48, #f43f5e); 
@@ -2531,7 +2534,7 @@ input:checked + .toggle-slider:before {
 
 .child-left { display: flex; align-items: center; gap: 1rem; }
 
-.child-avatar { width: 48px; height: 48px; background: #a855f7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1rem; }
+.child-avatar { width: 48px; height: 48px; background: #e11d48; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1rem; }
 
 .child-name { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.25rem; }
 
@@ -2541,7 +2544,7 @@ input:checked + .toggle-slider:before {
 
 .child-balance { text-align: right; }
 
-.child-balance .amount { font-size: 1.5rem; font-weight: 700; color: #a855f7; margin-bottom: 0.25rem; }
+.child-balance .amount { font-size: 1.5rem; font-weight: 700; color: #e11d48; margin-bottom: 0.25rem; }
 
 .child-balance .caption { color: #6b7280; font-size: 0.75rem; }
 
@@ -2693,14 +2696,14 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3csv
 
 .btn-add-payment { 
   width: 100%; 
-  background: #8b5cf6; 
-  border-color: #8b5cf6; 
+  background: #e11d48; 
+  border-color: #e11d48; 
   margin-top: 1rem; 
 }
 
 .btn-add-payment:hover { 
-  background: #7c3aed; 
-  border-color: #7c3aed; 
+  background: #be123c; 
+  border-color: #be123c; 
 }
 
 /* Empty state for recurring payments */
@@ -3325,7 +3328,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3csv
 .profile-avatar {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background: #e11d48;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3635,7 +3638,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3csv
 }
 
 .rewards-month-card {
-  background: #8b5cf6;
+  background: linear-gradient(135deg, #f472b6, #ec4899);
   border-radius: 8px;
   padding: 0.75rem;
   color: white;
@@ -3643,7 +3646,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3csv
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 2px 6px rgba(244, 114, 182, 0.25);
 }
 
 .rewards-month-icon {

@@ -260,6 +260,11 @@
           <i class="fas fa-bell"></i>
           <span id="headerNotificationBadge" class="notification-badge" style="display: none; position: absolute; top: 2px; right: 2px; background: #ef4444; color: white; border-radius: 50%; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; padding: 2px;">0</span>
         </button>
+        
+        <!-- Logout Button -->
+        <button onclick="logout()" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; color: white; font-size: 14px; padding: 8px 16px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+          <i class="fas fa-sign-out-alt" style="margin-right: 6px;"></i>Logout
+        </button>
       </div>
       
       <!-- Profile Dropdown Menu -->
@@ -935,7 +940,7 @@
       </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeWalletTopUpModal()">Cancel</button>
-        <button class="btn btn-success" onclick="topupWallet()">Top-up Wallet</button>
+        <button class="btn btn-primary" onclick="topupWallet()">Top-up Wallet</button>
       </div>
     </div>
   </div>
@@ -985,16 +990,16 @@
           <div class="field">
             <label for="editRewardIcon">Icon</label>
             <select id="editRewardIcon" class="input">
-              <option value="fas fa-gift">🎁 Gift</option>
-              <option value="fas fa-gamepad">🎮 Gaming</option>
-              <option value="fas fa-ice-cream">🍦 Ice Cream</option>
-              <option value="fas fa-dollar-sign">💰 Money</option>
-              <option value="fas fa-clock">⏰ Extra Time</option>
-              <option value="fas fa-star">⭐ Special Treat</option>
-              <option value="fas fa-book">📚 Book</option>
-              <option value="fas fa-music">🎵 Music</option>
-              <option value="fas fa-film">🎬 Movie</option>
-              <option value="fas fa-pizza-slice">🍕 Food Treat</option>
+              <option value="fas fa-gift">Gift</option>
+              <option value="fas fa-gamepad">Gaming</option>
+              <option value="fas fa-ice-cream">Ice Cream</option>
+              <option value="fas fa-dollar-sign">Money</option>
+              <option value="fas fa-clock">Extra Time</option>
+              <option value="fas fa-star">Special Treat</option>
+              <option value="fas fa-book">Book</option>
+              <option value="fas fa-music">Music</option>
+              <option value="fas fa-film">Movie</option>
+              <option value="fas fa-pizza-slice">Food Treat</option>
             </select>
           </div>
         </div>
@@ -1041,16 +1046,16 @@
           <div class="field">
             <label for="rewardIcon">Icon</label>
             <select id="rewardIcon" class="input">
-              <option value="fas fa-gift">🎁 Gift</option>
-              <option value="fas fa-gamepad">🎮 Gaming</option>
-              <option value="fas fa-ice-cream">🍦 Ice Cream</option>
-              <option value="fas fa-dollar-sign">💰 Money</option>
-              <option value="fas fa-clock">⏰ Extra Time</option>
-              <option value="fas fa-star">⭐ Special Treat</option>
-              <option value="fas fa-book">📚 Book</option>
-              <option value="fas fa-music">🎵 Music</option>
-              <option value="fas fa-film">🎬 Movie</option>
-              <option value="fas fa-pizza-slice">🍕 Food Treat</option>
+              <option value="fas fa-gift">Gift</option>
+              <option value="fas fa-gamepad">Gaming</option>
+              <option value="fas fa-ice-cream">Ice Cream</option>
+              <option value="fas fa-dollar-sign">Money</option>
+              <option value="fas fa-clock">Extra Time</option>
+              <option value="fas fa-star">Special Treat</option>
+              <option value="fas fa-book">Book</option>
+              <option value="fas fa-music">Music</option>
+              <option value="fas fa-film">Movie</option>
+              <option value="fas fa-pizza-slice">Food Treat</option>
             </select>
           </div>
         </div>
@@ -2427,19 +2432,25 @@
           console.log('Final currency set to:', window.parentDefaultCurrency);
           
           const fullName = `${profileData?.first_name || ''} ${profileData?.surname || ''}`.trim();
-          if (fullName) {
-            document.getElementById('userName').textContent = `Welcome, ${fullName}`;
-          } else {
-            // If no name in profile, try user metadata directly
-            const md = user.user_metadata || {};
-            const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
-            document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          const userNameEl = document.getElementById('userName');
+          if (userNameEl) {
+            if (fullName) {
+              userNameEl.textContent = `Welcome, ${fullName}`;
+            } else {
+              // If no name in profile, try user metadata directly
+              const md = user.user_metadata || {};
+              const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
+              userNameEl.textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+            }
           }
         } else {
           // If profile query fails, use user metadata
           const md = user.user_metadata || {};
           const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
-          document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          const userNameEl = document.getElementById('userName');
+          if (userNameEl) {
+            userNameEl.textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          }
           
           // Try to get currency from user metadata
           const userCurrency = md.default_currency;
@@ -2453,7 +2464,10 @@
         }
       } catch (err) {
         console.error('Profile loading error:', err);
-        document.getElementById('userName').textContent = `Welcome, ${user.user_metadata?.full_name || 'Parent'}`;
+        const userNameEl = document.getElementById('userName');
+        if (userNameEl) {
+          userNameEl.textContent = `Welcome, ${user.user_metadata?.full_name || 'Parent'}`;
+        }
         window.parentDefaultCurrency = 'ZAR';
       }
 
@@ -2801,7 +2815,15 @@
         
       } catch (err) {
         console.error('Error fetching recurring payments:', err);
-        list.innerHTML = '<div class="error-message">Error loading payments</div>';
+        list.innerHTML = `
+          <div class="empty-recurring">
+            <div class="empty-icon">
+              <i class="fas fa-sync-alt" style="color: #e11d48;"></i>
+            </div>
+            <p class="empty-text">No recurring payments set up yet</p>
+            <p class="empty-subtext">Click "Add New Payment" below to create automatic allowances and scheduled payments for your children.</p>
+          </div>
+        `;
       }
     }
 
@@ -2924,16 +2946,34 @@
 
     // Populate child dropdown for modals
     async function populateChildDropdown(selectId) {
-      const supabase = createClient();
-      if (!supabase || !currentUserId) return;
-      
       const select = document.getElementById(selectId);
       if (!select) {
         console.warn('populateChildDropdown: select element not found for id', selectId);
         return;
       }
+      
       // Clear existing options except the first one
       select.innerHTML = '<option value="">Select child</option>';
+      
+      // Try to get children from DOM first (faster)
+      const childCards = document.querySelectorAll('.child-card');
+      if (childCards && childCards.length > 0) {
+        childCards.forEach(card => {
+          const childId = card.dataset.childId;
+          const nameElement = card.querySelector('.child-name');
+          if (childId && nameElement) {
+            const option = document.createElement('option');
+            option.value = childId;
+            option.textContent = nameElement.textContent;
+            select.appendChild(option);
+          }
+        });
+        return;
+      }
+      
+      // Fallback to database query
+      const supabase = createClient();
+      if (!supabase || !currentUserId) return;
       
       try {
         const { data, error } = await supabase
@@ -3373,6 +3413,7 @@
       const list = document.getElementById('childrenList');
       const card = document.createElement('div');
       card.className = 'child-card';
+      card.dataset.childId = child.id;
 
       const left = document.createElement('div');
       left.className = 'child-left';
@@ -3675,6 +3716,11 @@
       const supabase = createClient();
       if (!supabase) { alert('Supabase client not available.'); return; }
       try { await supabase.auth.signOut(); window.location.href = 'index.html'; } catch (err) { alert('Error signing out'); }
+    }
+
+    // Logout function (alias for signOut)
+    function logout() {
+      signOut();
     }
 
     // Placeholder sections
@@ -5008,10 +5054,10 @@
     // Test Alerts functionality
     function testAlerts() {
       const testMessages = [
-        "🚨 Test Alert: Out-of-hours spending detected at 22:30",
+        "⚠ Test Alert: Out-of-hours spending detected at 22:30",
         "📍 Test Alert: Unusual location spending - Mall XYZ (15km from home)",
-        "💰 Test Alert: Large transaction of $45 exceeds single limit of $25",
-        "📱 Test Alert: Emergency contact notification sent to Mom (+27 123 456 789)"
+        "💵 Test Alert: Large transaction of $45 exceeds single limit of $25",
+        "📞 Test Alert: Emergency contact notification sent to Mom (+27 123 456 789)"
       ];
       
       let messageIndex = 0;
