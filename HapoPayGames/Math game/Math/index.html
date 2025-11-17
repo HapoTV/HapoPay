@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Fun Math Game — Preschool / Primary / High School</title>
+<title>Fun Math Game — Primary / High School</title>
 <style>
   :root{
     --accent:#ff6f61;
@@ -104,11 +104,10 @@
       <h2>Play • Learn • Grow</h2>
       <div class="lead">Choose a level. Each level has topic blocks (5 questions per topic). Timer, score, and fun feedback included.</div>
       <div class="level-buttons">
-        <button onclick="enterLevel('preschool')">Preschool 🧸</button>
         <button onclick="enterLevel('primary')">Primary 📘</button>
         <button onclick="enterLevel('highschool')">High School 🎓</button>
       </div>
-      <div style="margin-top:12px;color:var(--muted)">Preschool: Shapes & Fruits (drag). Primary: + - × ÷ (type). High School: algebra, geometry, trig, graphs.</div>
+      <div style="margin-top:12px;color:var(--muted)">Primary: + - × ÷ (type). High School: algebra, geometry, trig, graphs.</div>
     </div>
     <div class="landing-right">
       <div class="floating f1">⭐</div>
@@ -133,16 +132,6 @@
         <div class="question-card">
           <div class="question" id="questionText">Question appears here</div>
 
-          <!-- preschool area -->
-          <div id="preschoolArea" class="controls hidden">
-            <div style="display:flex;gap:12px;align-items:center">
-              <button id="checkBtn">Check</button>
-              <button id="clearDrop">Clear</button>
-            </div>
-            <div style="margin-top:12px" id="dropArea"><div id="dropAreaInner" style="width:100%;text-align:center;color:#999">Drop items here</div></div>
-            <div class="options" id="optionsArea"></div>
-          </div>
-
           <!-- typed answer area -->
           <div id="typedArea" class="controls hidden" style="margin-top:12px">
             <input id="answerInput" type="text" placeholder="Type your answer" />
@@ -165,7 +154,7 @@
           <h4 style="margin-top:8px">Round progress</h4>
           <div id="roundProgress" style="display:flex;gap:8px;margin-top:8px"></div>
           <h4 style="margin-top:8px">Notes</h4>
-          <div style="font-size:13px;color:#555">Preschool: drag the requested symbol EXACTLY the asked number, then press Check. Primary & High School: type and Submit.</div>
+          <div style="font-size:13px;color:#555">Primary & High School: type and Submit.</div>
         </div>
       </div>
     </div>
@@ -185,24 +174,6 @@ const STATE = {
   setsCount:0,
   perSetQuestions:5
 };
-
-/* Preschool sets (2 sets: shapes, fruits) */
-const PRESETS = [
-  { name:"Shapes & Colors", type:"preschool-shapes", questions:[
-      {text:"Drag 3 of these:", symbol:"🔴", count:3},
-      {text:"Drag 2 of these:", symbol:"🟦", count:2},
-      {text:"Drag 4 of these:", symbol:"⭐", count:4},
-      {text:"Drag 5 of these:", symbol:"🟢", count:5},
-      {text:"Drag 3 of these:", symbol:"💜", count:3}
-  ]},
-  { name:"Fruits & Colors", type:"preschool-fruits", questions:[
-      {text:"Drag 3 of these:", symbol:"🍎", count:3},
-      {text:"Drag 2 of these:", symbol:"🍌", count:2},
-      {text:"Drag 4 of these:", symbol:"🌸", count:4},
-      {text:"Drag 5 of these:", symbol:"🍊", count:5},
-      {text:"Drag 3 of these:", symbol:"🍇", count:3}
-  ]}
-];
 
 /* Primary sets: 4 topics each 5 questions */
 const PRIMARY = [
@@ -302,9 +273,7 @@ function enterLevel(level){
   STATE.questionIndex = 0;
   setScore(0); setStreak(0);
 
-  if(level === 'preschool'){
-    STATE.sets = PRESETS;
-  } else if(level === 'primary'){
+  if(level === 'primary'){
     STATE.sets = PRIMARY;
   } else if(level === 'highschool'){
     STATE.sets = HIGHSCHOOL;
@@ -373,220 +342,18 @@ function loadQuestion(){
   const qdata = set.questions[STATE.questionIndex];
 
   // display
-  if(STATE.level === 'preschool'){
-    // show preschool UI
-    el('preschoolArea').classList.remove('hidden');
-    el('typedArea').classList.add('hidden');
-    el('dropArea').style.display = 'flex';
-    // clear drop area inner
-    const drop = el('dropArea');
-    drop.innerHTML = '<div id="dropInner" style="width:100%;text-align:center;color:#999">Drop items here</div>';
-    
-    // Store the current question data for reference
-    STATE.currentQuestion = qdata;
-    
-    // Create a pool with mixed shapes and colors
-    const pool = [];
-    
-    // Add the required symbols
-    for(let i=0;i<qdata.count;i++) pool.push(qdata.symbol);
-    
-    // Add distractor symbols (different shapes and colors)
-    const allSymbols = ['🔴', '🟦', '🟩', '🟨', '🟧', '🟪', '🔵', '🟥', '⭐', '🔺', '🟢', '💜', '🍎', '🍌', '🍓', '🍊', '🍇', '🌸'];
-    
-    // Remove the current symbol from distractors
-    const distractors = allSymbols.filter(s => s !== qdata.symbol);
-    
-    // Add 8-10 distractors (mixed shapes and colors)
-    const numDistractors = 8 + Math.floor(Math.random() * 3);
-    for(let i=0; i<numDistractors; i++) {
-      const randomSymbol = distractors[Math.floor(Math.random() * distractors.length)];
-      pool.push(randomSymbol);
-    }
-    
-    // Shuffle the pool
-    for(let i=pool.length-1;i>0;i--){ 
-      const j=Math.floor(Math.random()*(i+1)); 
-      [pool[i],pool[j]]=[pool[j],pool[i]]; 
-    }
-    
-    // render pool as draggable tiles
-    const options = el('optionsArea'); options.innerHTML = '';
-    pool.forEach((sym, index)=>{
-      const d = document.createElement('div'); 
-      d.className='draggable'; 
-      d.innerText = sym;
-      d.setAttribute('draggable','true');
-      d.setAttribute('data-symbol', sym);
-      d.id = `draggable-${index}`;
-      
-      d.addEventListener('dragstart',(ev)=>{ 
-        ev.dataTransfer.setData('text/plain', sym);
-        ev.dataTransfer.setData('element-id', d.id);
-      });
-      
-      options.appendChild(d);
-    });
+  // Primary or Highschool: typed input
+  el('typedArea').classList.remove('hidden');
 
-    // set question text with visual symbol
-    const questionElement = el('questionText');
-    questionElement.innerHTML = `${qdata.text} <span class="question-symbol">${qdata.symbol}</span>`;
-    
-    // reset collected
-    STATE.collectedItems = [];
-
-    // wire check & clear
-    el('checkBtn').onclick = checkPreschoolAnswer;
-    el('clearDrop').onclick = clearDropArea;
-
+  if(STATE.level === 'primary'){
+    el('questionText').innerText = 'Solve: ' + qdata;
+    el('submitBtn').onclick = checkTypedAnswerInternal;
   } else {
-    // Primary or Highschool: typed input
-    el('preschoolArea').classList.add('hidden');
-    el('typedArea').classList.remove('hidden');
-    el('dropArea').style.display = 'none';
-    el('optionsArea').innerHTML = '';
-
-    if(STATE.level === 'primary'){
-      el('questionText').innerText = 'Solve: ' + qdata;
-      el('submitBtn').onclick = checkTypedAnswerInternal;
-    } else {
-      el('questionText').innerText = qdata.q || qdata;
-      el('submitBtn').onclick = checkTypedAnswerInternal;
-    }
+    el('questionText').innerText = qdata.q || qdata;
+    el('submitBtn').onclick = checkTypedAnswerInternal;
   }
   // update HUD timer reset and start
   startTimer();
-}
-
-/* ---------------- preschool drop behavior ---------------- */
-const dropArea = el('dropArea');
-dropArea.addEventListener('dragover', (e)=> {
-  // allow only when in preschool
-  if(STATE.level === 'preschool') e.preventDefault();
-});
-dropArea.addEventListener('drop', (e)=>{
-  e.preventDefault();
-  if(STATE.level !== 'preschool') return; // safety
-  const sym = e.dataTransfer.getData('text/plain');
-  if(!sym) return;
-  
-  // Hide the original element that was dragged
-  const elementId = e.dataTransfer.getData('element-id');
-  if (elementId) {
-    const originalElement = document.getElementById(elementId);
-    if (originalElement) {
-      originalElement.style.visibility = 'hidden';
-    }
-  }
-  
-  // add clone
-  const node = document.createElement('div'); 
-  node.className='draggable'; 
-  node.style.width='46px'; 
-  node.style.height='46px'; 
-  node.style.fontSize='22px';
-  node.innerText = sym; 
-  node.draggable=false; 
-  node.style.margin='6px';
-  el('dropArea').appendChild(node);
-  
-  // update collected items
-  STATE.collectedItems.push(sym);
-  
-  // Update the question text to show remaining items
-  updateQuestionText();
-});
-
-/* clear drop area */
-function clearDropArea(){
-  // Reset all draggable elements to visible
-  const draggables = document.querySelectorAll('#optionsArea .draggable');
-  draggables.forEach(el => {
-    el.style.visibility = 'visible';
-  });
-  
-  el('dropArea').innerHTML = '<div id="dropInner" style="width:100%;text-align:center;color:#999">Drop items here</div>';
-  STATE.collectedItems = [];
-  el('feedback').innerText='';
-  
-  // Reset the question text
-  const qdata = STATE.currentQuestion;
-  const questionElement = el('questionText');
-  questionElement.innerHTML = `${qdata.text} <span class="question-symbol">${qdata.symbol}</span>`;
-}
-
-/* Update question text to show remaining items */
-function updateQuestionText() {
-  const qdata = STATE.currentQuestion;
-  const remaining = qdata.count - STATE.collectedItems.length;
-  
-  if (remaining > 0) {
-    const questionElement = el('questionText');
-    questionElement.innerHTML = `Drag ${remaining} more of these: <span class="question-symbol">${qdata.symbol}</span>`;
-  } else {
-    el('questionText').innerText = `Good! Now press Check`;
-  }
-}
-
-/* Get a descriptive name for symbols */
-function getSymbolDescription(symbol) {
-  const descriptions = {
-    '🔴': 'red circles',
-    '🟦': 'blue squares', 
-    '🟩': 'green squares',
-    '🟨': 'yellow squares',
-    '🟧': 'orange squares',
-    '🟪': 'purple squares',
-    '🔵': 'blue circles',
-    '🟥': 'red squares',
-    '⭐': 'yellow stars',
-    '🔺': 'red triangles',
-    '🟢': 'green circles',
-    '💜': 'purple hearts',
-    '🍎': 'red apples',
-    '🍌': 'yellow bananas',
-    '🍓': 'pink strawberries',
-    '🍊': 'orange oranges',
-    '🍇': 'purple grapes',
-    '🌸': 'pink flowers'
-  };
-  
-  return descriptions[symbol] || symbol;
-}
-
-/* check preschool answer */
-function checkPreschoolAnswer(){
-  const qdata = STATE.currentQuestion;
-  const required = qdata.symbol;
-  const requiredCount = qdata.count;
-  const countCollected = STATE.collectedItems.length;
-
-  // Check if all collected items are the correct symbol
-  const allCorrect = STATE.collectedItems.every(item => item === required);
-  
-  if(countCollected === requiredCount && allCorrect){
-    // correct
-    el('feedback').innerText = `✅ Correct — you collected ${countCollected} ${getSymbolDescription(required)}!`;
-    el('feedback').className = 'feedback correct';
-    incScore(1); incStreak();
-    playCorrectSound();
-    el('nextBtn').classList.remove('hidden');
-  } else if(countCollected < requiredCount){
-    el('feedback').innerText = `❌ Not enough ${getSymbolDescription(required)}. You have ${countCollected}, need ${requiredCount}.`;
-    el('feedback').className = 'feedback wrong';
-    playWrongSound();
-    resetStreak();
-  } else if(countCollected > requiredCount){
-    el('feedback').innerText = `❌ Too many ${getSymbolDescription(required)}. You have ${countCollected}, need ${requiredCount}.`;
-    el('feedback').className = 'feedback wrong';
-    playWrongSound();
-    resetStreak();
-  } else if(!allCorrect){
-    el('feedback').innerText = `❌ You dragged the wrong items. You need ${requiredCount} ${getSymbolDescription(required)}.`;
-    el('feedback').className = 'feedback wrong';
-    playWrongSound();
-    resetStreak();
-  }
 }
 
 /* ---------- typed answer checking (primary & highschool) ---------- */
@@ -692,9 +459,6 @@ function nextQuestion(){
   if(STATE.setIndex >= STATE.sets.length){
     // finished level
     el('questionText').innerText = `🎉 Level completed! Final score: ${STATE.score}`;
-    el('optionsArea').innerHTML = '';
-    el('dropArea').innerHTML = '';
-    el('preschoolArea').classList.add('hidden');
     el('typedArea').classList.add('hidden');
     launchConfetti();
     clearInterval(STATE.timerId);
@@ -722,15 +486,12 @@ function launchConfetti(){
 /* ---------- initial small setup ---------- */
 // wire check/submit buttons
 el('submitBtn').addEventListener('click', checkTypedAnswerInternal);
-el('checkBtn').addEventListener('click', checkPreschoolAnswer);
-el('clearDrop').addEventListener('click', clearDropArea);
 el('nextBtn').addEventListener('click', nextQuestion);
 
 /* ---------- user actions to enter levels from landing */
 document.querySelectorAll('.level-buttons button').forEach(btn=>{
   btn.addEventListener('click', (e)=>{
     const label = e.target.innerText.toLowerCase();
-    if(label.includes('preschool')) enterLevel('preschool');
     if(label.includes('primary')) enterLevel('primary');
     if(label.includes('high school') || label.includes('highschool') || label.includes('high')) enterLevel('highschool');
   });
