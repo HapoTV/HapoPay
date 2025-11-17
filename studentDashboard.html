@@ -93,6 +93,13 @@
     <div id="homeSection" class="section-content">
       <div class="dashboard-container">
 
+        <!-- Welcome Header -->
+        <div class="welcome-header" style="margin-bottom: 20px;">
+          <h1 style="color: #1f2937; font-size: 24px; margin: 0;">
+            Welcome back, <span id="studentName">Student</span>! 
+          </h1>
+        </div>
+
         <!-- Balance Cards -->
         <div class="balance-grid">
           <!-- Available Balance Card -->
@@ -922,6 +929,25 @@
             return;
           }
           
+          // Check for parent transaction updates
+          const lastTransactionUpdate = localStorage.getItem('lastTransactionUpdate');
+          if (lastTransactionUpdate) {
+            try {
+              const update = JSON.parse(lastTransactionUpdate);
+              if (update.childId === currentStudent.id) {
+                console.log('Detected parent transaction update:', update);
+                // Clear the trigger
+                localStorage.removeItem('lastTransactionUpdate');
+                // Force immediate refresh
+                await refreshBalance('parent_transfer');
+                await loadRecentActivity(currentStudent.id, true);
+                return; // Skip the regular refresh
+              }
+            } catch (err) {
+              console.error('Error parsing lastTransactionUpdate:', err);
+            }
+          }
+          
           await refreshBalance('periodic');
           await loadRecentActivity(currentStudent.id, true);
         }, 5000); // Refresh every 5 seconds
@@ -1709,6 +1735,9 @@
         const moneyRequestsWithType = moneyRequests.map(m => ({...m, activity_type: 'money_request'}));
         const emergencyRequestsWithType = emergencyRequests.map(e => ({...e, activity_type: 'emergency_request'}));
         
+        console.log('Transactions fetched:', transactions);
+        console.log('Transactions with type:', transactionsWithType);
+        
         // Combine all activities - include both database requests AND localStorage requests
         const combinedActivities = [
           ...transactionsWithType,
@@ -2009,8 +2038,15 @@
         // Use student's currency for transaction display
         const currency = resolveStudentCurrencyCode();
         const symbol = getSymbolFromCode(currency);
-        amount = `+${symbol}${Math.abs(activity.amount || 0).toFixed(2)}`;
-        amountClass = 'amount-positive';
+        
+        // Handle different transaction types
+        if (activity.type === 'money_request_declined' || activity.type === 'emergency_request_declined') {
+          amount = '';
+          amountClass = 'amount-neutral';
+        } else {
+          amount = `+${symbol}${Math.abs(activity.amount || 0).toFixed(2)}`;
+          amountClass = 'amount-positive';
+        }
       } else if (activity.activity_type === 'money_request') {
         // Handle money request activities
         if (activity.status === 'approved') {
@@ -2067,33 +2103,6 @@
           amount = `${symbol}${activity.amount}`;
           amountClass = 'amount-neutral';
         }
-      } else if (activity.activity_type === 'money_request') {
-        // Handle money request activities
-        if (activity.status === 'approved') {
-          icon = 'fa-check-circle';
-          title = 'Money request approved';
-          subtitle = activity.reason || 'Money request approved by parent';
-          // Get parent's currency for money request display
-          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-          const symbol = getCurrencySymbol(currency);
-          amount = `+${symbol}${activity.amount}`;
-          amountClass = 'amount-positive';
-        } else if (activity.status === 'declined') {
-          icon = 'fa-times-circle';
-          title = 'Money request declined';
-          subtitle = activity.reason || 'Money request declined by parent';
-          amount = '';
-          amountClass = '';
-        } else {
-          icon = 'fa-hand-holding-usd';
-          title = activity.submitted_offline ? 'Money request sent' : 'Money request pending';
-          subtitle = activity.reason || 'Money request awaiting parent approval';
-          // Get parent's currency for money request display
-          const currency = window.studentCurrencyHandler?.parentCurrency || 'ZAR';
-          const symbol = getCurrencySymbol(currency);
-          amount = `${symbol}${activity.amount}`;
-          amountClass = 'amount-neutral';
-        }
       }
       
       const iconClass = activity.status === 'approved' ? 'positive' : 
@@ -2135,7 +2144,10 @@
         'qr_payment': 'negative',
         'wallet_topup': 'positive',
         'emergency_fund': 'positive',
-        'money_request_approved': 'positive'
+        'emergency_fund_approved': 'positive',
+        'money_request_approved': 'positive',
+        'money_request_declined': 'negative',
+        'emergency_request_declined': 'negative'
       };
       return iconClasses[type] || 'default';
     }
@@ -2147,7 +2159,10 @@
         'qr_payment': 'fa-qrcode',
         'wallet_topup': 'fa-plus-circle',
         'emergency_fund': 'fa-exclamation-triangle',
-        'money_request_approved': 'fa-hand-holding-usd'
+        'emergency_fund_approved': 'fa-exclamation-triangle',
+        'money_request_approved': 'fa-hand-holding-usd',
+        'money_request_declined': 'fa-times-circle',
+        'emergency_request_declined': 'fa-times-circle'
       };
       return icons[type] || 'fa-receipt';
     }
@@ -2159,7 +2174,10 @@
         'qr_payment': 'QR Payment made',
         'wallet_topup': 'Wallet topped up',
         'emergency_fund': 'Emergency funds received',
-        'money_request_approved': `Money request approved by ${parentName}`
+        'emergency_fund_approved': 'Emergency request approved',
+        'money_request_approved': `Money request approved by ${parentName}`,
+        'money_request_declined': 'Money request declined',
+        'emergency_request_declined': 'Emergency request declined'
       };
       return titles[type] || 'Transaction';
     }
@@ -2171,19 +2189,22 @@
         'qr_payment': 'Payment via QR code',
         'wallet_topup': 'Wallet top-up',
         'emergency_fund': 'Emergency fund transfer',
-        'money_request_approved': 'Money request approved'
+        'emergency_fund_approved': 'Emergency request approved by parent',
+        'money_request_approved': 'Money request approved',
+        'money_request_declined': 'Money request declined by parent',
+        'emergency_request_declined': 'Emergency request declined by parent'
       };
       return descriptions[type] || 'Transaction';
     }
-
+    
     // Money request helper functions
     function getMoneyRequestIconClass(status) {
-      const iconClasses = {
-        'pending': 'warning',
-        'approved': 'positive',
-        'declined': 'negative'
+      const icons = {
+        'pending': 'fa-clock',
+        'approved': 'fa-check-circle',
+        'declined': 'fa-times-circle'
       };
-      return iconClasses[status] || 'default';
+      return icons[status] || 'fa-hand-holding-usd';
     }
     
     function getMoneyRequestIcon(status) {

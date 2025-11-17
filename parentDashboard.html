@@ -4,6 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hapo Technology • Parent Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+  <script>
+    // Initialize Supabase client
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if Supabase is loaded
+      if (typeof supabase === 'undefined') {
+        console.error('Supabase client not loaded');
+        // Show error to user
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #f44336; color: white; padding: 15px; text-align: center; z-index: 9999;';
+        errorDiv.textContent = 'Error: Failed to load required resources. Please refresh the page.';
+        document.body.prepend(errorDiv);
+      } else if (typeof createClient !== 'function') {
+        console.error('createClient function not found');
+      } else {
+        // Initialize the client
+        const client = createClient();
+        if (!client) {
+          console.error('Failed to initialize Supabase client');
+        } else {
+          console.log('Supabase client initialized successfully');
+        }
+      }
+    });
+  </script>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="src/lib/images/logo.jpg">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
@@ -1767,9 +1793,42 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="script.js"></script>
   <script>
     // Use shared Supabase client from script.js to avoid multiple instances
+    
+    // Show section function - defined early to be available for inline handlers
+    function showSection(sectionName, event) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
+      
+      // Hide all sections
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show selected section
+      document.getElementById(sectionName + 'Section').style.display = 'block';
+      
+      // Load data based on section
+      if (sectionName === 'pay') {
+        loadQrPayments();
+      } else if (sectionName === 'wallet') {
+        loadWalletData();
+      } else if (sectionName === 'notifications') {
+        // Mark notifications as viewed now and clear the badge immediately
+        try {
+          localStorage.setItem('lastViewedNotificationsAt', new Date().toISOString());
+        } catch (e) {
+          console.warn('Unable to persist last viewed notifications timestamp', e);
+        }
+        updateNotificationBadge(0);
+        loadNotifications();
+      } else if (sectionName === 'rewards') {
+        loadParentRewardsData();
+      }
+    }
     
     // Function to handle user profile creation/update after authentication
     async function handleUserProfile(user) {
@@ -1817,11 +1876,16 @@
       }
     }
 
-    let currentUserId = null;
-
     // Core Activity Tracking Functions
     async function trackParentActivity(activityData) {
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for activity tracking');
+        return;
+      }
       
       try {
         // Get child name for better activity description
@@ -1843,7 +1907,7 @@
           const { error } = await supabase
             .from('parent_activities')
             .insert({
-              parent_id: currentUserId,
+              parent_id: user.id,
               child_id: activityData.child_id,
               activity_type: activityData.type,
               amount: activityData.amount,
@@ -1870,14 +1934,21 @@
     // Enhanced wallet loading with comprehensive data
     async function loadWalletData() {
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for wallet data');
+        return;
+      }
       
       try {
         // Load transactions first
         const { data: transactions, error } = await supabase
           .from('transactions')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('created_at', { ascending: false });
         
         if (error) {
@@ -1889,7 +1960,7 @@
         const { data: children, error: childrenError } = await supabase
           .from('children')
           .select('id, first_name, surname')
-          .eq('parent_id', currentUserId);
+          .eq('parent_id', user.id);
         
         if (childrenError) {
           console.error('Error loading children:', childrenError);
@@ -1901,7 +1972,7 @@
           const { data: activitiesData, error: activitiesError } = await supabase
             .from('parent_activities')
             .select('*')
-            .eq('parent_id', currentUserId)
+            .eq('parent_id', user.id)
             .order('created_at', { ascending: false });
           
           if (!activitiesError && activitiesData) {
@@ -2375,8 +2446,6 @@
         return;
       }
 
-      currentUserId = user.id;
-
       // Handle user profile creation/update (especially for Google OAuth users)
       try { 
         const profileResult = await handleUserProfile(user); 
@@ -2551,14 +2620,16 @@
         return;
       }
       
-      if (!paymentMethod) {
-        alert('Please select a payment method');
+      const supabase = createClient();
+      if (!supabase) {
+        alert('Authentication required');
         return;
       }
       
-      const supabase = createClient();
-      if (!supabase || !currentUserId) {
-        alert('Please log in to continue');
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        alert('Please sign in to add money');
         return;
       }
       
@@ -2567,7 +2638,7 @@
         const { data: parentData, error: fetchError } = await supabase
           .from('parents')
           .select('balance, currency')
-          .eq('id', currentUserId)
+          .eq('id', user.id)
           .single();
         
         if (fetchError) throw fetchError;
@@ -2579,7 +2650,7 @@
         const { error: updateError } = await supabase
           .from('parents')
           .update({ balance: newBalance })
-          .eq('id', currentUserId);
+          .eq('id', user.id);
         
         if (updateError) throw updateError;
         
@@ -2587,12 +2658,13 @@
         const { error: transError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             type: 'deposit',
             amount: amount,
             description: `Account funding via ${paymentMethod.toUpperCase()}`,
             status: 'completed',
-            payment_method: paymentMethod
+            payment_method: paymentMethod,
+            currency: parentData.currency || 'ZAR'
           });
         
         if (transError) console.error('Error recording transaction:', transError);
@@ -2679,7 +2751,15 @@
 
     // Load child limits for the selected child
     async function loadChildLimits() {
-      if (!supabase || !currentUserId) return;
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for loading child limits');
+        return;
+      }
 
       const childId = document.getElementById('limitsChild').value;
       if (!childId) {
@@ -2707,7 +2787,15 @@
 
     // Update child limits
     async function updateSpendingLimits() {
-      if (!supabase || !currentUserId) return;
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for updating spending limits');
+        return;
+      }
 
       const childId = document.getElementById('limitsChild').value;
       const dailyLimit = parseFloat(document.getElementById('dailyLimit').value);
@@ -2757,7 +2845,15 @@
 
     // Fetch and render existing recurring payments
     async function fetchAndRenderRecurringPayments() {
-      if (!supabase || !currentUserId) return;
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for recurring payments');
+        return;
+      }
       
       const list = document.getElementById('recurringPaymentsList');
       list.innerHTML = '';
@@ -2774,7 +2870,7 @@
             start_date, 
             is_active
           `)
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .eq('is_active', true)
           .order('created_at', { ascending: false });
         
@@ -2905,13 +3001,21 @@
       }
       
       try {
+        const supabase = createClient();
         if (!supabase) return;
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          alert('Please sign in to create recurring payments');
+          return;
+        }
         
         // Create recurring payment record
         const { error } = await supabase
           .from('recurring_payments')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             payment_type: paymentType,
             amount: amount,
@@ -2973,13 +3077,20 @@
       
       // Fallback to database query
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for child dropdown');
+        return;
+      }
       
       try {
         const { data, error } = await supabase
           .from('children')
           .select('id, first_name, surname')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('first_name', { ascending: true });
         
         if (error) throw error;
@@ -2999,114 +3110,208 @@
 
     // Send emergency funds
     async function sendEmergencyFunds() {
-      const childId = document.getElementById('emergencyChild').value;
-      const amount = parseFloat(document.getElementById('emergencyAmount').value);
-      
-      if (!childId) {
-        alert('Please select a child');
-        return;
-      }
-      
-      if (!amount || amount <= 0) {
-        alert('Please enter a valid amount');
-        return;
-      }
-      
       try {
-        if (!supabase) return;
+        console.log('sendEmergencyFunds called');
         
-        // First get current balance
-        const { data: currentData, error: fetchError } = await supabase
+        // Get form values
+        const childId = document.getElementById('emergencyChild')?.value;
+        const amountInput = document.getElementById('emergencyAmount')?.value;
+        const amount = parseFloat(amountInput);
+        
+        // Input validation
+        if (!childId) {
+          throw new Error('Please select a child');
+        }
+        
+        if (!amount || isNaN(amount) || amount <= 0) {
+          throw new Error('Please enter a valid amount');
+        }
+        
+        // Initialize Supabase client
+        const supabase = createClient();
+        if (!supabase) {
+          throw new Error('Failed to initialize database connection');
+        }
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error('User not authenticated:', userError);
+          window.location.href = 'parentLogin.html';
+          return;
+        }
+        
+        // Get child details for logging
+        const { data: childData, error: childError } = await supabase
           .from('children')
-          .select('balance')
+          .select('first_name, surname, balance')
           .eq('id', childId)
           .single();
+          
+        if (childError) throw new Error('Failed to fetch child details: ' + childError.message);
         
-        if (fetchError) throw fetchError;
+        console.log('Processing emergency funds for child:', {
+          childId,
+          childName: `${childData.first_name} ${childData.surname}`,
+          currentBalance: childData.balance,
+          amount,
+          newBalance: (childData.balance || 0) + amount
+        });
         
-        const newBalance = (currentData.balance || 0) + amount;
-        
-        // Update child's balance
-        const { error } = await supabase
+        // Update child's balance directly
+        const newBalance = (childData.balance || 0) + amount;
+        const { error: updateError } = await supabase
           .from('children')
           .update({ balance: newBalance })
           .eq('id', childId);
         
-        if (error) throw error;
+        if (updateError) throw new Error('Failed to update child balance: ' + updateError.message);
         
         // Create transaction record
         const transactionType = selectedChildForEmergency?.isFromEmergencyRequest ? 'emergency_fund_approved' : 'emergency_fund';
         const transactionDescription = selectedChildForEmergency?.isFromEmergencyRequest ? 
           'Emergency request approved' : 'Emergency funds sent';
         
-        const { error: transactionError } = await supabase
+        console.log('Creating emergency fund transaction:', {
+          parent_id: user.id,
+          child_id: childId,
+          amount: amount,
+          type: transactionType,
+          description: transactionDescription,
+          status: 'completed',
+          currency: window.parentDefaultCurrency || 'ZAR'
+        });
+        
+        const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             amount: amount,
             type: transactionType,
             description: transactionDescription,
-            status: 'completed'
-          });
-        
-        // Note: Transaction record above already tracks this activity
-        // No need for separate parent activity tracking to avoid duplicates
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
+          })
+          .select();
         
         if (transactionError) {
-          console.error('Error creating transaction record:', transactionError);
+          console.error('Error creating transaction record (non-fatal):', transactionError);
           // Don't fail the whole operation if transaction record fails
+        } else {
+          console.log('Emergency fund transaction created successfully:', transactionData);
         }
         
         // If this was from an emergency request, update the request status
         if (selectedChildForEmergency?.isFromEmergencyRequest && selectedChildForEmergency.requestId) {
           try {
+            console.log('Updating emergency request status for request ID:', selectedChildForEmergency.requestId);
+            
             const { error: requestUpdateError } = await supabase
               .from('emergency_requests')
               .update({ 
                 status: 'approved',
                 parent_response: 'Emergency request approved and funds sent',
-                updated_at: new Date().toISOString()
+                updated_at: new Date().toISOString(),
+                resolved_at: new Date().toISOString()
               })
               .eq('id', selectedChildForEmergency.requestId);
             
             if (requestUpdateError) {
               console.error('Error updating emergency request status:', requestUpdateError);
+              // Continue execution even if this part fails
             } else {
+              console.log('Successfully updated emergency request status');
+              
               // Remove from pending requests in localStorage
-              const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
-              const updatedRequests = pendingRequests.filter(req => 
-                req.id !== selectedChildForEmergency.requestId && 
-                !(req.child_id === selectedChildForEmergency.id && 
-                  req.amount === selectedChildForEmergency.requestedAmount &&
-                  req.reason === (selectedChildForEmergency.reason || req.reason))
-              );
-              localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
-              console.log('Removed emergency request from localStorage. Before:', pendingRequests.length, 'After:', updatedRequests.length);
+              try {
+                const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+                console.log('Current pending requests in localStorage:', pendingRequests);
+                
+                const updatedRequests = pendingRequests.filter(req => 
+                  req.id !== selectedChildForEmergency.requestId && 
+                  !(req.child_id === selectedChildForEmergency.id && 
+                    req.amount === selectedChildForEmergency.requestedAmount &&
+                    req.reason === (selectedChildForEmergency.reason || req.reason))
+                );
+                
+                localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
+                console.log('Updated pending requests in localStorage. Before:', pendingRequests.length, 'After:', updatedRequests.length);
+              } catch (storageError) {
+                console.error('Error updating localStorage:', storageError);
+              }
             }
           } catch (err) {
-            console.error('Error updating emergency request:', err);
+            console.error('Error in emergency request update process:', err);
+            // Continue with success flow even if this part fails
           }
         }
         
-        const currency = window.parentDefaultCurrency || 'USD';
+        // Get currency symbol for success message
+        const currency = window.parentDefaultCurrency || 'ZAR';
         const symbol = getCurrencySymbol(currency);
-        alert(`Emergency funds sent successfully! ${symbol}${amount.toFixed(2)} added to child's wallet.`);
+        
+        // Show success message with formatted amount
+        const successMessage = `Emergency funds sent successfully! ${symbol}${amount.toFixed(2)} has been added to ${childData.first_name}'s wallet.`;
+        console.log(successMessage);
+        alert(successMessage);
+        
+        // Close the modal
         closeEmergencyFundModal();
         
-        // Refresh children list, notifications, and wallet data
-        await fetchAndRenderChildren();
-        await loadNotifications();
-        await loadWalletData();
-        await loadSafetyAlerts();
-        
-        // Force notification badge update after emergency fund approval
-        setTimeout(() => {
-          loadNotifications();
-        }, 1000);
+        // Refresh all necessary data
+        try {
+          console.log('Refreshing dashboard data...');
+          await Promise.all([
+            fetchAndRenderChildren(),
+            loadNotifications(),
+            loadWalletData(),
+            loadSafetyAlerts()
+          ]);
+          console.log('Dashboard data refreshed successfully');
+          
+          // Trigger a refresh on the student's dashboard if they're logged in
+          console.log('Triggering student dashboard refresh for child:', childId);
+          // Update localStorage to trigger refresh
+          localStorage.setItem('lastTransactionUpdate', JSON.stringify({
+            childId: childId,
+            timestamp: new Date().toISOString(),
+            amount: amount,
+            type: transactionType
+          }));
+        } catch (refreshError) {
+          console.error('Error refreshing dashboard data:', refreshError);
+          // Non-critical error, continue
+        }
         
       } catch (err) {
-        alert('Error sending emergency funds: ' + err.message);
+        console.error('Error in sendEmergencyFunds:', {
+          error: err,
+          message: err.message,
+          stack: err.stack
+        });
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to send emergency funds. ';
+        
+        if (err.message.includes('network') || err.message.includes('fetch')) {
+          errorMessage += 'Please check your internet connection and try again.';
+        } else if (err.message.includes('permission') || err.message.includes('auth')) {
+          errorMessage += 'Your session may have expired. Please sign in again.';
+          setTimeout(() => window.location.href = 'parentLogin.html', 2000);
+        } else {
+          errorMessage += `Error: ${err.message}`;
+        }
+        
+        alert(errorMessage);
+        
+        // Re-enable the send button if it exists
+        const sendBtn = document.getElementById('sendEmergencyBtn');
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = 'Send Emergency Funds';
+        }
       }
     }
 
@@ -3124,7 +3329,9 @@
          return;
        }
        
-       if (!currentUserId) {
+       // Get authenticated user
+       const { data: { user }, error: authError } = await supabase.auth.getUser();
+       if (authError || !user) {
          alert('Please sign in to send money');
          return;
        }
@@ -3138,30 +3345,44 @@
        }
        
        try {
-         console.log('Sending money to child:', selectedChildForMoney.id, 'Amount:', amount);
-         
-         // First get current balance
-         const { data: currentData, error: fetchError } = await supabase
-           .from('children')
-           .select('balance')
-           .eq('id', selectedChildForMoney.id)
-           .single();
-         
-         console.log('Current balance fetch result:', { currentData, fetchError });
-         
-         if (fetchError) {
-           console.error('Error fetching current balance:', fetchError);
-           throw fetchError;
-         }
-         
-         const newBalance = (currentData.balance || 0) + amount;
-         console.log('Updating balance from', currentData.balance, 'to', newBalance);
-         
-         // Update child's balance
-         const { error: updateError } = await supabase
-           .from('children')
-           .update({ balance: newBalance })
-           .eq('id', selectedChildForMoney.id);
+        console.log('Sending money to child:', selectedChildForMoney.id, 'Amount:', amount);
+        
+        // Initialize Supabase client
+        const supabase = createClient();
+        if (!supabase) {
+          throw new Error('Failed to initialize database connection');
+        }
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error('User not authenticated:', userError);
+          window.location.href = 'parentLogin.html';
+          return;
+        }
+        
+        // First get current balance
+        const { data: currentData, error: fetchError } = await supabase
+          .from('children')
+          .select('balance, first_name')
+          .eq('id', selectedChildForMoney.id)
+          .single();
+        
+        console.log('Current balance fetch result:', { currentData, fetchError });
+        
+        if (fetchError) {
+          console.error('Error fetching current balance:', fetchError);
+          throw fetchError;
+        }
+        
+        const newBalance = (currentData.balance || 0) + amount;
+        console.log('Updating balance from', currentData.balance, 'to', newBalance);
+        
+        // Update child's balance
+        const { error: updateError } = await supabase
+          .from('children')
+          .update({ balance: newBalance })
+          .eq('id', selectedChildForMoney.id);
          
          console.log('Balance update result:', { updateError });
          
@@ -3175,16 +3396,29 @@
         const transactionDescription = selectedChildForMoney.isFromRequest ? 
           'Money request approved' : (note || `Money sent from parent`);
         
-        const { error: transactionError } = await supabase
+        console.log('Creating money transfer transaction:', {
+          parent_id: user.id,
+          child_id: selectedChildForMoney.id,
+          amount: amount,
+          type: transactionType,
+          description: transactionDescription,
+          status: 'completed',
+          currency: window.parentDefaultCurrency || 'ZAR'
+        });
+        
+        const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: selectedChildForMoney.id,
             amount: amount,
             type: transactionType,
             description: transactionDescription,
-            status: 'completed'
-          });
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
+          })
+          .select();
         
         // Note: Transaction record above already tracks this activity
         // No need for separate parent activity tracking to avoid duplicates
@@ -3192,6 +3426,8 @@
          if (transactionError) {
            console.error('Error creating transaction record:', transactionError);
            // Don't fail the whole operation if transaction record fails
+         } else {
+           console.log('Transaction created successfully:', transactionData);
          }
          
          // If this was from a money request, update the request status
@@ -3225,14 +3461,28 @@
            }
          }
          
-         const currency = window.parentDefaultCurrency || 'USD';
-         const symbol = getCurrencySymbol(currency);
-         alert(`Money sent successfully! ${symbol}${amount.toFixed(2)} added to ${selectedChildForMoney.firstName}'s wallet.`);
-         closeSendMoneyModal();
+         const currency = window.parentDefaultCurrency || 'ZAR';
+        const symbol = getCurrencySymbol(currency);
+        alert(`Money sent successfully! ${symbol}${amount.toFixed(2)} added to ${currentData.first_name}'s wallet.`);
+        closeSendMoneyModal();
          
          // Refresh children list and notifications
          await fetchAndRenderChildren();
          await loadNotifications();
+         
+         // Trigger a refresh on the student's dashboard if they're logged in
+         try {
+           console.log('Triggering student dashboard refresh for child:', selectedChildForMoney.id);
+           // Update localStorage to trigger refresh
+           localStorage.setItem('lastTransactionUpdate', JSON.stringify({
+             childId: selectedChildForMoney.id,
+             timestamp: new Date().toISOString(),
+             amount: amount,
+             type: transactionType
+           }));
+         } catch (err) {
+           console.error('Error triggering student dashboard refresh:', err);
+         }
          
        } catch (err) {
          alert('Error sending money: ' + err.message);
@@ -3255,7 +3505,19 @@
       }
       
       try {
-        if (!supabase) return;
+        // Initialize Supabase client
+        const supabase = createClient();
+        if (!supabase) {
+          throw new Error('Failed to initialize database connection');
+        }
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error('User not authenticated:', userError);
+          window.location.href = 'parentLogin.html';
+          return;
+        }
         
         // First get current balance
         const { data: currentData, error: fetchError } = await supabase
@@ -3280,12 +3542,14 @@
         const { error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             amount: amount,
             type: 'wallet_topup',
             description: 'Wallet top-up from parent',
-            status: 'completed'
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
           });
         
         if (transactionError) {
@@ -3295,7 +3559,7 @@
         // Note: Transaction record above already tracks this activity
         // No need for separate parent activity tracking to avoid duplicates
         
-        const currency = window.parentDefaultCurrency || 'USD';
+        const currency = window.parentDefaultCurrency || 'ZAR';
         const symbol = getCurrencySymbol(currency);
         alert(`Wallet top-up successful! ${symbol}${amount.toFixed(2)} added to child's wallet.`);
         closeWalletTopUpModal();
@@ -3642,14 +3906,21 @@
     // Load settings data
     async function loadSettingsData() {
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for settings data');
+        return;
+      }
       
       try {
         // Load parent data
         const { data: parentData, error: parentError } = await supabase
           .from('parents')
           .select('*')
-          .eq('id', currentUserId)
+          .eq('id', user.id)
           .single();
         
         if (parentError) throw parentError;
@@ -3658,7 +3929,7 @@
         const { data: childrenData, error: childrenError } = await supabase
           .from('children')
           .select('id')
-          .eq('parent_id', currentUserId);
+          .eq('parent_id', user.id);
         
         const childrenCount = childrenData ? childrenData.length : 0;
         
@@ -3666,7 +3937,7 @@
         const { data: transactionsData, error: transError } = await supabase
           .from('transactions')
           .select('id')
-          .eq('parent_id', currentUserId);
+          .eq('parent_id', user.id);
         
         const transactionCount = transactionsData ? transactionsData.length : 0;
         
@@ -3723,52 +3994,7 @@
       signOut();
     }
 
-    // Placeholder sections
-    function showSpendingLimitsModal() { 
-      populateChildDropdown('limitsChild'); // Populate the child dropdown
-      document.getElementById('spendingLimitsModal').style.display = 'block';
-      loadChildLimits(); // Load current limits for the selected child
-    }
-    function showRecurringPaymentsModal() { 
-      document.getElementById('recurringPaymentsModal').style.display = 'block';
-      fetchAndRenderRecurringPayments();
-    }
-    function showSafetySettings() { alert('Safety settings coming soon!'); }
-
     function viewChildActivity(childName) { alert(`Viewing activity for ${childName}`); }
-
-    function showSection(sectionName, event) {
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      if (event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
-      }
-      
-      // Hide all sections
-      document.querySelectorAll('.section-content').forEach(section => {
-        section.style.display = 'none';
-      });
-      
-      // Show selected section
-      document.getElementById(sectionName + 'Section').style.display = 'block';
-      
-      // Load data based on section
-      if (sectionName === 'pay') {
-        loadQrPayments();
-      } else if (sectionName === 'wallet') {
-        loadWalletData();
-      } else if (sectionName === 'notifications') {
-        // Mark notifications as viewed now and clear the badge immediately
-        try {
-          localStorage.setItem('lastViewedNotificationsAt', new Date().toISOString());
-        } catch (e) {
-          console.warn('Unable to persist last viewed notifications timestamp', e);
-        }
-        updateNotificationBadge(0);
-        loadNotifications();
-      } else if (sectionName === 'rewards') {
-        loadParentRewardsData();
-      }
-    }
 
     // QR Scanner Functions
     function startQRScan() {
@@ -5101,8 +5327,15 @@
           secondaryApp: document.getElementById('secondaryApp').checked
         };
 
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          alert('Please sign in to save safety settings');
+          return;
+        }
+
         // Store settings in localStorage for now (until database table is created)
-        localStorage.setItem('safetySettings_' + currentUserId, JSON.stringify(settings));
+        localStorage.setItem('safetySettings_' + user.id, JSON.stringify(settings));
         
         alert('✅ Safety alert settings saved successfully!');
         closeSafetySettingsModal();
@@ -5113,7 +5346,15 @@
 
     // Parent Rewards Management Functions
     async function loadParentRewardsData() {
-      if (!currentUserId) return;
+      // Get authenticated user
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.log('User not authenticated for rewards data');
+        return;
+      }
       
       try {
         // Load overview statistics
@@ -5135,12 +5376,19 @@
           console.log('Supabase client not available, using sample data');
           return;
         }
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for active rewards');
+          return;
+        }
 
         // Load ALL rewards (both active and inactive) for the Active Rewards tab
         const { data: rewards, error } = await supabase
           .from('rewards_store')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -5271,11 +5519,18 @@
           console.log('Supabase client not available');
           return;
         }
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for rewards overview');
+          return;
+        }
 
         const { data: rewardsResult, error } = await supabase
           .from('rewards_store')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .eq('is_active', true);
 
         if (error) throw error;
@@ -5297,11 +5552,18 @@
           // Use the existing sample data in the HTML
           return;
         }
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for rewards store');
+          return;
+        }
 
         const { data: rewards, error } = await supabase
           .from('rewards_store')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -5506,20 +5768,26 @@
 
       try {
         const supabase = createClient();
-        if (supabase && currentUserId) {
-          // Update in database
-          const { error } = await supabase
-            .from('rewards_store')
-            .update({
-              title: title,
-              description: description,
-              points_cost: points,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', currentEditingRewardId);
-
-          if (error) throw error;
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for editing reward');
+          return;
         }
+        
+        // Update in database
+        const { error } = await supabase
+          .from('rewards_store')
+          .update({
+            title: title,
+            description: description,
+            points_cost: points,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentEditingRewardId);
+
+        if (error) throw error;
 
         // Update UI immediately
         const editButton = document.querySelector(`button[onclick="editReward('${currentEditingRewardId}')"]`);
@@ -5527,41 +5795,20 @@
           const rewardCard = editButton.closest('.reward-card');
           if (rewardCard) {
             const titleElement = rewardCard.querySelector('.reward-title');
-            const descElement = rewardCard.querySelector('.reward-description');
-            const costElement = rewardCard.querySelector('.cost-value');
-            const iconElement = rewardCard.querySelector('.reward-icon i');
+            const pointsElement = rewardCard.querySelector('.reward-points');
+            const descriptionElement = rewardCard.querySelector('.reward-description');
             
             if (titleElement) titleElement.textContent = title;
-            if (descElement) descElement.textContent = description || 'No description';
-            if (costElement) costElement.textContent = `${points} points`;
-            if (iconElement) iconElement.className = icon;
+            if (pointsElement) pointsElement.textContent = `${points} pts`;
+            if (descriptionElement) descriptionElement.textContent = description;
           }
         }
 
+        alert('✅ Reward updated successfully!');
         closeEditRewardModal();
-        alert('Reward updated successfully!');
-        
       } catch (err) {
         console.error('Error updating reward:', err);
-        // Still update UI even if database fails
-        const editButton = document.querySelector(`button[onclick="editReward('${currentEditingRewardId}')"]`);
-        if (editButton) {
-          const rewardCard = editButton.closest('.reward-card');
-          if (rewardCard) {
-            const titleElement = rewardCard.querySelector('.reward-title');
-            const descElement = rewardCard.querySelector('.reward-description');
-            const costElement = rewardCard.querySelector('.cost-value');
-            const iconElement = rewardCard.querySelector('.reward-icon i');
-            
-            if (titleElement) titleElement.textContent = title;
-            if (descElement) descElement.textContent = description || 'No description';
-            if (costElement) costElement.textContent = `${points} points`;
-            if (iconElement) iconElement.className = icon;
-          }
-        }
-        
-        closeEditRewardModal();
-        alert('Reward updated locally! (Note: Database connection unavailable)');
+        alert('Error updating reward. Please try again.');
       }
     }
     
@@ -5573,7 +5820,12 @@
         const newStatus = !isCurrentlyActive;
         
         const supabase = createClient();
-        if (supabase && currentUserId) {
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for toggling reward status');
+        } else {
           // Update in database
           const { error } = await supabase
             .from('rewards_store')
@@ -5669,12 +5921,16 @@
         const supabase = createClient();
         let data = null;
         
-        if (supabase && currentUserId) {
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for reward creation');
+        } else {
           // Try to save to database
           const result = await supabase
           .from('rewards_store')
           .insert([{
-            parent_id: currentUserId,
+            parent_id: user.id,
             title: title,
             description: description,
             points_cost: points,
@@ -5690,8 +5946,6 @@
           
           data = result.data;
           console.log('Reward created successfully in database:', data);
-        } else {
-          console.log('No supabase client or currentUserId available');
         }
 
         // Add to UI immediately - use the returned data if available, otherwise use temp ID
@@ -5888,7 +6142,8 @@
           console.warn('Amount was not numeric; defaulting to 0');
           normalizedAmount = 0;
         }
-      // Store the request details for the send money form
+        
+        // Store the request details for the send money form
       selectedChildForMoney = { 
         id: childId, 
         firstName: 'Child', 
@@ -5938,9 +6193,30 @@
 
     async function declineMoneyRequest(requestId) {
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for declining money request');
+        return;
+      }
       
       try {
+        // First get the request details to create a transaction
+        let requestDetails = null;
+        if (requestId && !requestId.startsWith('temp-')) {
+          const { data: requestData, error: fetchError } = await supabase
+            .from('money_requests')
+            .select('*')
+            .eq('id', requestId)
+            .single();
+          
+          if (!fetchError && requestData) {
+            requestDetails = requestData;
+          }
+        }
+        
         // First remove from localStorage immediately
         const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
         const updatedRequests = pendingRequests.filter(req => req.id !== requestId);
@@ -5959,6 +6235,28 @@
             .eq('id', requestId);
           
           if (error) throw error;
+          
+          // Create a transaction record for the declined request
+          if (requestDetails) {
+            const { error: transactionError } = await supabase
+              .from('transactions')
+              .insert({
+                parent_id: user.id,
+                child_id: requestDetails.child_id,
+                amount: requestDetails.amount || 0,
+                type: 'money_request_declined',
+                description: 'Money request declined',
+                status: 'declined',
+                currency: window.parentDefaultCurrency || 'ZAR',
+                created_at: new Date().toISOString()
+              });
+            
+            if (transactionError) {
+              console.error('Error creating declined request transaction:', transactionError);
+            } else {
+              console.log('Declined money request transaction created');
+            }
+          }
         }
         
         alert('Money request declined.');
@@ -5985,7 +6283,8 @@
           console.warn('Amount was not numeric; defaulting to 0');
           normalizedAmount = 0;
         }
-      // Store the request details for the emergency fund form
+        
+        // Store the request details for the emergency fund form
       selectedChildForEmergency = { 
         id: childId, 
         firstName: 'Child', 
@@ -6035,9 +6334,30 @@
 
     async function declineEmergencyRequest(requestId) {
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for declining emergency request');
+        return;
+      }
       
       try {
+        // First get the request details to create a transaction
+        let requestDetails = null;
+        if (requestId && !requestId.startsWith('temp-')) {
+          const { data: requestData, error: fetchError } = await supabase
+            .from('emergency_requests')
+            .select('*')
+            .eq('id', requestId)
+            .single();
+          
+          if (!fetchError && requestData) {
+            requestDetails = requestData;
+          }
+        }
+        
         // First remove from localStorage immediately
         const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
         const updatedRequests = pendingRequests.filter(req => req.id !== requestId);
@@ -6056,6 +6376,28 @@
             .eq('id', requestId);
           
           if (error) throw error;
+          
+          // Create a transaction record for the declined request
+          if (requestDetails) {
+            const { error: transactionError } = await supabase
+              .from('transactions')
+              .insert({
+                parent_id: user.id,
+                child_id: requestDetails.child_id,
+                amount: requestDetails.amount || 0,
+                type: 'emergency_request_declined',
+                description: 'Emergency request declined',
+                status: 'declined',
+                currency: window.parentDefaultCurrency || 'ZAR',
+                created_at: new Date().toISOString()
+              });
+            
+            if (transactionError) {
+              console.error('Error creating declined emergency request transaction:', transactionError);
+            } else {
+              console.log('Declined emergency request transaction created');
+            }
+          }
         }
         
         alert('Emergency request declined.');
@@ -6140,8 +6482,21 @@
     }
 
     async function confirmParentQRPayment() {
-      if (!parentQrScannedData || !currentUserId) {
+      if (!parentQrScannedData) {
         alert('Payment data not available');
+        return;
+      }
+      
+      const supabase = createClient();
+      if (!supabase) {
+        alert('Authentication required');
+        return;
+      }
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        alert('Please sign in to make payments');
         return;
       }
       
@@ -6187,16 +6542,18 @@
         
         if (updateError) throw updateError;
         
-        // Create transaction record
+        // Record transaction
         const { error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             amount: -amount, // Negative for expense
             type: 'qr_payment',
             description: `QR Payment to ${parentQrScannedData.merchant} - ${parentQrScannedData.description}`,
-            status: 'completed'
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
           });
         
         if (transactionError) {
