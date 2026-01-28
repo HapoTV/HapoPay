@@ -10,7 +10,7 @@ body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica
 }
 
 /* Navigation Header */
-.nav-header-new { background: var(--brand); color: #fff; position: sticky; top: 0; z-index: 20; }
+.nav-header-new { background: var(--brand) ;background-color: #4a77f3; color: #fff; position: sticky; top: 0; z-index: 20; }
 .nav-container-new { max-width: 1120px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
 .nav-brand-new { display: flex; gap: 12px; align-items: center; }
 .logo-new { width: 36px; height: 36px; border-radius: 8px; object-fit: contain; background: #fff; padding: 4px; }
@@ -30,20 +30,21 @@ body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica
   line-height: 1.2;
 }
 
-.nav-actions-new { display: flex; gap: 10px; }
+.nav-actions-new { display: flex; gap: 10px;  }
 .student-login-btn-new { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.2); padding: 8px 14px; border-radius: 8px; cursor: pointer; }
 .student-login-btn-new:hover { background: rgba(255,255,255,.2); }
 .parent-signup-btn-new { background: #fff; color: var(--brand); border: 1px solid #fff; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 .parent-signup-btn-new:hover { background: #f1f5f9; }
 
 /* Hero */
-.hero-section-new { background: linear-gradient(#f8fafc, #eef2f7); }
-.hero-container-new { max-width: 1120px; margin: 0 auto; padding: 64px 16px; text-align: center; }
+.hero-section-new { background: linear-gradient(#2181e0, #eef2f7); }
+.hero-container-new { max-width: 1120px; height: 900px; margin: 0 auto; padding: 64px 16px; text-align: center; }
 .hero-title-new { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 900; color: #1f2937; margin: 0; }
-.highlight-new { color: var(--brand); }
+.highlight-new { color: whitesmoke; }
 .hero-description-new { max-width: 760px; margin: 14px auto 0; font-size: 1.05rem; color: #475569; }
 .cta-button-new { margin-top: 24px; background: var(--brand); color: #fff; border: 0; padding: 12px 22px; border-radius: 10px; font-size: 1.05rem; font-weight: 700; box-shadow: 0 10px 16px rgba(29,111,212,.15); cursor: pointer; }
 .cta-button-new:hover { background: var(--brand-dark); }
+.phone{ width: 500px; align-items: center; height: auto;}
 
 /* Multi-Currency Styles */
 .currency-selection {
@@ -2060,7 +2061,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Features */
-.features-section-new { padding: 56px 0; }
+.features-section-new { padding: 56px 0; background: #e6f1fc ; }
 .features-container-new { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
 .features-title-new { font-size: clamp(1.25rem, 2.5vw, 2rem); text-align: center; color: #0f172a; margin: 0 0 24px; font-weight: 800; }
 
