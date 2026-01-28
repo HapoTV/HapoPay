@@ -4,6 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hapo Technology • Parent Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+  <script>
+    // Initialize Supabase client
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if Supabase is loaded
+      if (typeof supabase === 'undefined') {
+        console.error('Supabase client not loaded');
+        // Show error to user
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #f44336; color: white; padding: 15px; text-align: center; z-index: 9999;';
+        errorDiv.textContent = 'Error: Failed to load required resources. Please refresh the page.';
+        document.body.prepend(errorDiv);
+      } else if (typeof createClient !== 'function') {
+        console.error('createClient function not found');
+      } else {
+        // Initialize the client
+        const client = createClient();
+        if (!client) {
+          console.error('Failed to initialize Supabase client');
+        } else {
+          console.log('Supabase client initialized successfully');
+        }
+      }
+    });
+  </script>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="src/lib/images/logo.jpg">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
@@ -14,6 +40,171 @@
     }
     .activity-icon.declined i {
       color: white;
+    }
+    .activity-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      background: #e11d48;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+    }
+    .stat-info {
+      flex: 1;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.25rem;
+    }
+    .stat-label {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    .qr-scanner-card {
+      background: white;
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .qr-scanner-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .qr-scanner-icon {
+      width: 80px;
+      height: 80px;
+      background: #e11d48;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      color: white;
+      font-size: 36px;
+    }
+    .qr-scanner-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 0.5rem;
+    }
+    .qr-scanner-description {
+      color: #6b7280;
+      font-size: 1rem;
+      margin: 0;
+    }
+    .rewards-overview-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    .rewards-icon {
+      width: 64px;
+      height: 64px;
+      background: #e11d48;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+    }
+    .rewards-tabs {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 2rem;
+    }
+    .rewards-tab {
+      padding: 1rem 1.5rem;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #6b7280;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .rewards-tab.active {
+      color: #e11d48;
+      border-bottom-color: #e11d48;
+    }
+    .reward-item-icon {
+      width: 56px;
+      height: 56px;
+      background: #e11d48 !important;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+    }
+    .reward-overview-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .reward-overview-icon {
+      width: 64px;
+      height: 64px;
+      background: #e11d48 !important;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .reward-overview-icon.gift {
+      background: #e11d48 !important;
+    }
+    .reward-overview-content {
+      flex: 1;
+    }
+    .reward-overview-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.25rem;
+    }
+    .reward-overview-label {
+      font-size: 1rem;
+      color: #6b7280;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -71,57 +262,85 @@
   </script>
 </head>
 <body>
-  <nav class="nav-header-new">
-    <div class="nav-container-new">
-      <div class="nav-brand-new">
-        <img src="src/lib/images/logo.jpg" alt="Hapo Logo" class="logo-new">
-        <div class="brand-content-new">
-          <span class="brand-name-new">Hapo Technology</span>
-          <span class="brand-tagline-new">Your Money, Your Growth, The Hapo Way!</span>
-        </div>
+  <nav class="nav-header-new" style="background: linear-gradient(135deg, #e11d48, #8b5cf6); position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; max-width: 100%;">
+      <!-- Left Icon - Profile -->
+      <button onclick="toggleProfileMenu()" style="background: none; border: none; cursor: pointer; color: white; font-size: 24px; padding: 8px;">
+        <i class="fas fa-user-circle"></i>
+      </button>
+      
+      <!-- Center - HapoPay Brand -->
+      <div style="flex: 1; text-align: center;">
+        <span style="color: white; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;">HapoPay</span>
       </div>
-      <div class="nav-actions-new">
-        <button class="user-menu-button" onclick="toggleUserMenu()">
-          <span id="userName">Welcome, Parent</span>
-          <i class="fas fa-chevron-down ml-2"></i>
+      
+      <!-- Right Icons -->
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <!-- Search Icon -->
+        <button onclick="showSearchModal()" style="background: none; border: none; cursor: pointer; color: white; font-size: 20px; padding: 8px;">
+          <i class="fas fa-search"></i>
         </button>
-        <div class="user-menu-dropdown" id="userMenuDropdown">
-          <a href="javascript:void(0)" class="user-menu-item user-menu-item--border" onclick="showProfile()">Profile Settings</a>
-          <a href="javascript:void(0)" class="user-menu-item" onclick="signOut()">Logout</a>
-        </div>
+        
+        <!-- Notification Bell -->
+        <button onclick="showSection('notifications', event)" style="background: none; border: none; cursor: pointer; color: white; font-size: 20px; padding: 8px; position: relative;">
+          <i class="fas fa-bell"></i>
+          <span id="headerNotificationBadge" class="notification-badge" style="display: none; position: absolute; top: 2px; right: 2px; background: #ef4444; color: white; border-radius: 50%; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; padding: 2px;">0</span>
+        </button>
+        
+        <!-- Logout Button -->
+        <button onclick="logout()" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; color: white; font-size: 14px; padding: 8px 16px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+          <i class="fas fa-sign-out-alt" style="margin-right: 6px;"></i>Logout
+        </button>
+      </div>
+      
+      <!-- Profile Dropdown Menu -->
+      <div id="profileMenuDropdown" style="display: none; position: fixed; right: 20px; top: 60px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 150px; z-index: 1001;">
+        <a href="javascript:void(0)" onclick="showSettingsPage()" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #e5e7eb; font-size: 14px; transition: background 0.2s; border-radius: 8px 8px 0 0;">
+          <i class="fas fa-cog" style="margin-right: 8px;"></i>Settings
+        </a>
+        <a href="javascript:void(0)" onclick="signOut()" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='white'" style="display: block; padding: 12px 20px; color: #ef4444; text-decoration: none; font-size: 14px; transition: background 0.2s; border-radius: 0 0 8px 8px;">
+          <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i>Logout
+        </a>
       </div>
     </div>
   </nav>
 
   <!-- Dashboard Content -->
-  <main class="dashboard-main">
+  <main class="dashboard-main" style="padding-top: 100px;">
     <div id="homeSection" class="section-content">
       <div class="dashboard-container">
 
         <!-- Balance Cards -->
         <div class="balance-grid">
           <!-- Family Balance Card -->
-          <div class="card card--blue-left">
-            <div class="card-row">
-              <div class="card-icon card-icon--blue">
-                <i class="fas fa-wallet"></i>
+          <div class="card" style="background: white; border-radius: 16px; padding: 20px; border-left: 4px solid #e11d48; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+              <div style="width: 40px; height: 40px; background: #e11d48; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas fa-wallet" style="color: white; font-size: 18px;"></i>
               </div>
-              <div>
-                <div class="card-label">Family Balance</div>
-                <div class="card-value" id="familyBalance"><span id="familyBalanceSymbol"></span><span id="familyBalanceAmount">365.00</span></div>
+              <div style="flex: 1;">
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">Family Balance</div>
+                <div style="color: #1f2937; font-size: 28px; font-weight: 700;" id="familyBalance">
+                  <span id="familyBalanceSymbol">R</span><span id="familyBalanceAmount">365.00</span>
+                </div>
+                <button style="background: linear-gradient(135deg, #e11d48, #8b5cf6); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; display: inline-flex; align-items: center; gap: 6px;" onclick="showAddMoneyModal()">
+                  <i class="fas fa-plus"></i> Add money
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- This Month Card -->
-          <div class="card card--green-left">
-            <div class="card-row">
-              <div class="card-icon card-icon--green">
-                <i class="fas fa-chart-line"></i>
+          <!-- This Month Spending Card -->
+          <div class="card" style="background: white; border-radius: 16px; padding: 20px; border-left: 4px solid #e11d48; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+              <div style="width: 40px; height: 40px; background: #e11d48; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas fa-chart-line" style="color: white; font-size: 18px;"></i>
               </div>
-              <div>
-                <div class="card-label">This Month</div>
-                <div class="card-value" id="monthlySpending"><span id="monthlySpendingSymbol"></span><span id="monthlySpendingAmount">98.00</span></div>
+              <div style="flex: 1;">
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">This Month</div>
+                <div style="color: #1f2937; font-size: 28px; font-weight: 700;" id="monthlySpending">
+                  <span id="monthlySpendingSymbol">R</span><span id="monthlySpendingAmount">98.00</span>
+                </div>
               </div>
             </div>
           </div>
@@ -170,6 +389,63 @@
                 </div>
                 <span class="action-label">Manage Spending Limits</span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recharge Section -->
+<div class="section-spacer">
+  <h2 class="section-title">Recharge</h2>
+  <div class="actions-grid">
+    <!-- Airtime -->
+    <div onclick="showRechargeModal('airtime')" class="action-card" style="background: white; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <div style="width: 50px; height: 50px; background: #e11d48; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+        <i class="fas fa-phone-alt" style="font-size: 24px; color: white;"></i>
+      </div>
+      <span style="font-size: 14px; color: #333;">Airtime</span>
+    </div>
+
+    <!-- Data -->
+    <div onclick="showRechargeModal('data')" class="action-card" style="background: white; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <div style="width: 50px; height: 50px; background: #e11d48; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+        <i class="fas fa-wifi" style="font-size: 24px; color: white;"></i>
+      </div>
+      <span style="font-size: 14px; color: #333;">Data</span>
+    </div>
+
+    <!-- Electricity -->
+    <div onclick="showRechargeModal('electricity')" class="action-card" style="background: white; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <div style="width: 50px; height: 50px; background: #e11d48; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+        <i class="fas fa-bolt" style="font-size: 24px; color: white;"></i>
+      </div>
+      <span style="font-size: 14px; color: #333;">Electricity</span>
+    </div>
+
+    <!-- TV -->
+    <div onclick="showRechargeModal('tv')" class="action-card" style="background: white; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <div style="width: 50px; height: 50px; background: #e11d48; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+        <i class="fas fa-tv" style="font-size: 24px; color: white;"></i>
+      </div>
+      <span style="font-size: 14px; color: #333;">TV</span>
+    </div>
+  </div>
+</div>
+
+        <!-- Recharge Modal -->
+        <div id="rechargeModal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="rechargeModalTitle">Recharge</h3>
+              <button class="modal-close" onclick="closeRechargeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+              <div id="rechargeForm">
+                <!-- Form will be dynamically populated based on recharge type -->
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" onclick="closeRechargeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="processRecharge()">Proceed to Pay</button>
             </div>
           </div>
         </div>
@@ -239,15 +515,32 @@
       </div>
     </div>
 
-    <!-- Activity Section (Hidden by default) -->
-    <div id="activitySection" class="section-content" style="display: none;">
+    <!-- Wallet Section (Hidden by default) -->
+    <div id="walletSection" class="section-content" style="display: none;">
       <div class="dashboard-container">
+
         <div class="section-header">
-          <h2 class="section-title">Activity & Reports</h2>
+          <h2 class="section-title">Wallet</h2>
           <button class="view-reports-btn" onclick="showTransactionReports()">
             <i class="fas fa-chart-bar"></i>
             View Smart Reports
           </button>
+        </div>
+
+        <!-- Balance Cards -->
+        <div class="balance-grid">
+          <!-- This Month Card -->
+          <div class="card card--green-left">
+            <div class="card-row">
+              <div class="card-icon card-icon--green">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div>
+                <div class="card-label">This Month</div>
+                <div class="card-value" id="monthlySpendingWallet"><span id="monthlySpendingSymbolWallet"></span><span id="monthlySpendingAmountWallet">98.00</span></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Activity Statistics Grid -->
@@ -299,6 +592,72 @@
               <p class="empty-subtext">Your transaction history will appear here when you make payments or transfers</p>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Section (Hidden by default) -->
+    <div id="settingsSection" class="section-content" style="display: none;">
+      <div class="dashboard-container">
+        <div class="section-header">
+          <h2 class="section-title">Account Settings</h2>
+          <p class="section-subtitle">Manage your account details and preferences</p>
+        </div>
+
+        <!-- Profile Information Card -->
+        <div class="card" style="margin-bottom: 20px; padding: 24px;">
+          <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #1f2937;">
+            <i class="fas fa-user" style="margin-right: 10px; color: #0ea5e9;"></i>Profile Information
+          </h3>
+          <div style="display: grid; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+              <span style="color: #6b7280; font-weight: 500;">Full Name</span>
+              <span style="color: #1f2937; font-weight: 600;" id="settingsFullName">Loading...</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+              <span style="color: #6b7280; font-weight: 500;">Email</span>
+              <span style="color: #1f2937; font-weight: 600;" id="settingsEmail">Loading...</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+              <span style="color: #6b7280; font-weight: 500;">Phone Number</span>
+              <span style="color: #1f2937; font-weight: 600;" id="settingsPhone">Loading...</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+              <span style="color: #6b7280; font-weight: 500;">Currency</span>
+              <span style="color: #1f2937; font-weight: 600;" id="settingsCurrency">Loading...</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+              <span style="color: #6b7280; font-weight: 500;">Number of Children</span>
+              <span style="color: #0ea5e9; font-weight: 700; font-size: 18px;" id="settingsChildrenCount">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Statistics Card -->
+        <div class="card" style="margin-bottom: 20px; padding: 24px;">
+          <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #1f2937;">
+            <i class="fas fa-chart-bar" style="margin-right: 10px; color: #0ea5e9;"></i>Account Statistics
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div style="text-align: center; padding: 16px; background: #f0f9ff; border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: #0ea5e9;" id="settingsTotalBalance">R0.00</div>
+              <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Total Family Balance</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: #f0fdf4; border-radius: 8px;">
+              <div style="font-size: 24px; font-weight: 700; color: #10b981;" id="settingsTotalTransactions">0</div>
+              <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Total Transactions</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button onclick="editProfile()" style="flex: 1; background: #0ea5e9; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-edit" style="margin-right: 8px;"></i>Edit Profile
+          </button>
+          <button onclick="changePassword()" style="flex: 1; background: white; color: #0ea5e9; border: 2px solid #0ea5e9; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-key" style="margin-right: 8px;"></i>Change Password
+          </button>
         </div>
       </div>
     </div>
@@ -520,11 +879,77 @@
     </div>
   </div>
 
-  <!-- Wallet Top-up Modal -->
+  <!-- Add Money to Parent Account Modal -->
+  <div id="addMoneyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Money to Your Account</h3>
+        <button class="modal-close" onclick="closeAddMoneyModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="addMoneyAmount">Amount to Add</label>
+          <input id="addMoneyAmount" type="number" class="input" placeholder="0.00" min="1" step="0.01" required>
+        </div>
+        
+        <div class="field">
+          <label>Payment Method</label>
+          <div style="display: grid; gap: 12px; margin-top: 8px;">
+            <div onclick="selectPaymentMethod('card')" id="paymentCard" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-credit-card" style="font-size: 24px; color: #0ea5e9;"></i>
+                <div>
+                  <div style="font-weight: 600; color: #1f2937;">Debit/Credit Card</div>
+                  <div style="font-size: 12px; color: #6b7280;">Instant payment via card</div>
+                </div>
+              </div>
+            </div>
+            
+            <div onclick="selectPaymentMethod('eft')" id="paymentEFT" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-university" style="font-size: 24px; color: #0ea5e9;"></i>
+                <div>
+                  <div style="font-weight: 600; color: #1f2937;">EFT / Bank Transfer</div>
+                  <div style="font-size: 12px; color: #6b7280;">Transfer from your bank account</div>
+                </div>
+              </div>
+            </div>
+            
+            <div onclick="selectPaymentMethod('instant')" id="paymentInstant" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-bolt" style="font-size: 24px; color: #0ea5e9;"></i>
+                <div>
+                  <div style="font-weight: 600; color: #1f2937;">Instant EFT</div>
+                  <div style="font-size: 12px; color: #6b7280;">Secure instant bank payment</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <input type="hidden" id="selectedPaymentMethod" value="">
+        
+        <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 12px; border-radius: 4px; margin-top: 16px;">
+          <div style="display: flex; gap: 8px;">
+            <i class="fas fa-info-circle" style="color: #0ea5e9; margin-top: 2px;"></i>
+            <div style="font-size: 14px; color: #1e40af;">
+              Your payment is secure and encrypted. Funds will be available immediately after successful payment.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAddMoneyModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="processAddMoney()">Continue to Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wallet Top-up Modal (for children) -->
   <div id="walletTopUpModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">Wallet Top-up</h3>
+        <h3 class="modal-title">Top-up Child's Wallet</h3>
         <button class="modal-close" onclick="closeWalletTopUpModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
@@ -541,7 +966,7 @@
       </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeWalletTopUpModal()">Cancel</button>
-        <button class="btn btn-success" onclick="topupWallet()">Top-up Wallet</button>
+        <button class="btn btn-primary" onclick="topupWallet()">Top-up Wallet</button>
       </div>
     </div>
   </div>
@@ -591,16 +1016,16 @@
           <div class="field">
             <label for="editRewardIcon">Icon</label>
             <select id="editRewardIcon" class="input">
-              <option value="fas fa-gift">🎁 Gift</option>
-              <option value="fas fa-gamepad">🎮 Gaming</option>
-              <option value="fas fa-ice-cream">🍦 Ice Cream</option>
-              <option value="fas fa-dollar-sign">💰 Money</option>
-              <option value="fas fa-clock">⏰ Extra Time</option>
-              <option value="fas fa-star">⭐ Special Treat</option>
-              <option value="fas fa-book">📚 Book</option>
-              <option value="fas fa-music">🎵 Music</option>
-              <option value="fas fa-film">🎬 Movie</option>
-              <option value="fas fa-pizza-slice">🍕 Food Treat</option>
+              <option value="fas fa-gift">Gift</option>
+              <option value="fas fa-gamepad">Gaming</option>
+              <option value="fas fa-ice-cream">Ice Cream</option>
+              <option value="fas fa-dollar-sign">Money</option>
+              <option value="fas fa-clock">Extra Time</option>
+              <option value="fas fa-star">Special Treat</option>
+              <option value="fas fa-book">Book</option>
+              <option value="fas fa-music">Music</option>
+              <option value="fas fa-film">Movie</option>
+              <option value="fas fa-pizza-slice">Food Treat</option>
             </select>
           </div>
         </div>
@@ -647,16 +1072,16 @@
           <div class="field">
             <label for="rewardIcon">Icon</label>
             <select id="rewardIcon" class="input">
-              <option value="fas fa-gift">🎁 Gift</option>
-              <option value="fas fa-gamepad">🎮 Gaming</option>
-              <option value="fas fa-ice-cream">🍦 Ice Cream</option>
-              <option value="fas fa-dollar-sign">💰 Money</option>
-              <option value="fas fa-clock">⏰ Extra Time</option>
-              <option value="fas fa-star">⭐ Special Treat</option>
-              <option value="fas fa-book">📚 Book</option>
-              <option value="fas fa-music">🎵 Music</option>
-              <option value="fas fa-film">🎬 Movie</option>
-              <option value="fas fa-pizza-slice">🍕 Food Treat</option>
+              <option value="fas fa-gift">Gift</option>
+              <option value="fas fa-gamepad">Gaming</option>
+              <option value="fas fa-ice-cream">Ice Cream</option>
+              <option value="fas fa-dollar-sign">Money</option>
+              <option value="fas fa-clock">Extra Time</option>
+              <option value="fas fa-star">Special Treat</option>
+              <option value="fas fa-book">Book</option>
+              <option value="fas fa-music">Music</option>
+              <option value="fas fa-film">Movie</option>
+              <option value="fas fa-pizza-slice">Food Treat</option>
             </select>
           </div>
         </div>
@@ -1180,7 +1605,7 @@
         <div id="overviewTab" class="report-tab-content active">
           <div class="report-stats-grid">
             <div class="report-stat-card">
-              <div class="stat-icon" style="background: #3b82f6;">
+              <div class="stat-icon" style="background: #e11d48;">
                 <i class="fas fa-wallet"></i>
               </div>
               <div class="stat-info">
@@ -1349,35 +1774,61 @@
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="showSection('home', event)">
-      <i class="fas fa-home icon-xl"></i>
+      <i class="fas fa-house icon-xl"></i>
       <span>Home</span>
     </div>
+     <div class="nav-item" onclick="showSection('wallet', event)">
+      <i class="fas fa-credit-card icon-xl"></i>
+      <span>Wallet</span>
+    </div>
     <div class="nav-item pay-button" onclick="showSection('pay', event)">
-      <i class="fas fa-th icon-xl"></i>
+      <i class="fas fa-qrcode icon-xl"></i>
       <span class="nav-mini">Pay</span>
     </div>
-    <div class="nav-item" onclick="showSection('activity', event)">
-      <i class="fas fa-chart-line icon-xl"></i>
-      <span>Activity</span>
-    </div>
-    <div class="nav-item" onclick="showSection('notifications', event)">
-      <div class="nav-icon-container">
-        <i class="fas fa-bell icon-xl"></i>
-        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
-      </div>
-      <span>Notifications</span>
-    </div>
     <div class="nav-item" onclick="showSection('rewards', event)">
-      <i class="fas fa-gift icon-xl"></i>
+      <i class="fas fa-trophy icon-xl"></i>
       <span>Rewards</span>
     </div>
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="script.js"></script>
   <script>
     // Use shared Supabase client from script.js to avoid multiple instances
+    
+    // Show section function - defined early to be available for inline handlers
+    function showSection(sectionName, event) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
+      
+      // Hide all sections
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show selected section
+      document.getElementById(sectionName + 'Section').style.display = 'block';
+      
+      // Load data based on section
+      if (sectionName === 'pay') {
+        loadQrPayments();
+      } else if (sectionName === 'wallet') {
+        loadWalletData();
+      } else if (sectionName === 'notifications') {
+        // Mark notifications as viewed now and clear the badge immediately
+        try {
+          localStorage.setItem('lastViewedNotificationsAt', new Date().toISOString());
+        } catch (e) {
+          console.warn('Unable to persist last viewed notifications timestamp', e);
+        }
+        updateNotificationBadge(0);
+        loadNotifications();
+      } else if (sectionName === 'rewards') {
+        loadParentRewardsData();
+      }
+    }
     
     // Function to handle user profile creation/update after authentication
     async function handleUserProfile(user) {
@@ -1425,11 +1876,16 @@
       }
     }
 
-    let currentUserId = null;
-
     // Core Activity Tracking Functions
     async function trackParentActivity(activityData) {
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for activity tracking');
+        return;
+      }
       
       try {
         // Get child name for better activity description
@@ -1451,7 +1907,7 @@
           const { error } = await supabase
             .from('parent_activities')
             .insert({
-              parent_id: currentUserId,
+              parent_id: user.id,
               child_id: activityData.child_id,
               activity_type: activityData.type,
               amount: activityData.amount,
@@ -1475,17 +1931,24 @@
       }
     }
     
-    // Enhanced activity loading with comprehensive data
-    async function loadActivityData() {
+    // Enhanced wallet loading with comprehensive data
+    async function loadWalletData() {
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for wallet data');
+        return;
+      }
       
       try {
         // Load transactions first
         const { data: transactions, error } = await supabase
           .from('transactions')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('created_at', { ascending: false });
         
         if (error) {
@@ -1497,7 +1960,7 @@
         const { data: children, error: childrenError } = await supabase
           .from('children')
           .select('id, first_name, surname')
-          .eq('parent_id', currentUserId);
+          .eq('parent_id', user.id);
         
         if (childrenError) {
           console.error('Error loading children:', childrenError);
@@ -1509,7 +1972,7 @@
           const { data: activitiesData, error: activitiesError } = await supabase
             .from('parent_activities')
             .select('*')
-            .eq('parent_id', currentUserId)
+            .eq('parent_id', user.id)
             .order('created_at', { ascending: false });
           
           if (!activitiesError && activitiesData) {
@@ -1947,7 +2410,7 @@
       
       // Load initial data
       await fetchAndRenderChildren();
-      await loadActivityData();
+      await loadWalletData();
       await loadNotifications();
       await loadSafetyAlerts();
       
@@ -1982,8 +2445,6 @@
         window.location.href = 'parentLogin.html';
         return;
       }
-
-      currentUserId = user.id;
 
       // Handle user profile creation/update (especially for Google OAuth users)
       try { 
@@ -2040,19 +2501,25 @@
           console.log('Final currency set to:', window.parentDefaultCurrency);
           
           const fullName = `${profileData?.first_name || ''} ${profileData?.surname || ''}`.trim();
-          if (fullName) {
-            document.getElementById('userName').textContent = `Welcome, ${fullName}`;
-          } else {
-            // If no name in profile, try user metadata directly
-            const md = user.user_metadata || {};
-            const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
-            document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          const userNameEl = document.getElementById('userName');
+          if (userNameEl) {
+            if (fullName) {
+              userNameEl.textContent = `Welcome, ${fullName}`;
+            } else {
+              // If no name in profile, try user metadata directly
+              const md = user.user_metadata || {};
+              const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
+              userNameEl.textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+            }
           }
         } else {
           // If profile query fails, use user metadata
           const md = user.user_metadata || {};
           const metadataFullName = `${md.first_name || ''} ${md.surname || ''}`.trim();
-          document.getElementById('userName').textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          const userNameEl = document.getElementById('userName');
+          if (userNameEl) {
+            userNameEl.textContent = `Welcome, ${metadataFullName || md.full_name || 'User'}`;
+          }
           
           // Try to get currency from user metadata
           const userCurrency = md.default_currency;
@@ -2066,7 +2533,10 @@
         }
       } catch (err) {
         console.error('Profile loading error:', err);
-        document.getElementById('userName').textContent = `Welcome, ${user.user_metadata?.full_name || 'Parent'}`;
+        const userNameEl = document.getElementById('userName');
+        if (userNameEl) {
+          userNameEl.textContent = `Welcome, ${user.user_metadata?.full_name || 'Parent'}`;
+        }
         window.parentDefaultCurrency = 'ZAR';
       }
 
@@ -2103,10 +2573,128 @@
       populateChildDropdown('topupChild');
       document.getElementById('walletTopUpModal').style.display = 'block'; 
     }
+    
+    // Add money modal - for parent account funding
+    function showAddMoneyModal() {
+      document.getElementById('addMoneyModal').style.display = 'block';
+      document.getElementById('addMoneyAmount').value = '';
+      document.getElementById('selectedPaymentMethod').value = '';
+      // Reset payment method selections
+      ['paymentCard', 'paymentEFT', 'paymentInstant'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.borderColor = '#e5e7eb';
+      });
+    }
+    
+    function closeAddMoneyModal() {
+      document.getElementById('addMoneyModal').style.display = 'none';
+    }
+    
+    // Select payment method
+    function selectPaymentMethod(method) {
+      document.getElementById('selectedPaymentMethod').value = method;
+      
+      // Update UI to show selection
+      ['paymentCard', 'paymentEFT', 'paymentInstant'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.borderColor = '#e5e7eb';
+      });
+      
+      const methodMap = {
+        'card': 'paymentCard',
+        'eft': 'paymentEFT',
+        'instant': 'paymentInstant'
+      };
+      
+      const selectedEl = document.getElementById(methodMap[method]);
+      if (selectedEl) selectedEl.style.borderColor = '#0ea5e9';
+    }
+    
+    // Process add money
+    async function processAddMoney() {
+      const amount = parseFloat(document.getElementById('addMoneyAmount').value);
+      const paymentMethod = document.getElementById('selectedPaymentMethod').value;
+      
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      const supabase = createClient();
+      if (!supabase) {
+        alert('Authentication required');
+        return;
+      }
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        alert('Please sign in to add money');
+        return;
+      }
+      
+      try {
+        // Get current balance
+        const { data: parentData, error: fetchError } = await supabase
+          .from('parents')
+          .select('balance, currency')
+          .eq('id', user.id)
+          .single();
+        
+        if (fetchError) throw fetchError;
+        
+        const currentBalance = parentData.balance || 0;
+        const newBalance = currentBalance + amount;
+        
+        // Update parent balance
+        const { error: updateError } = await supabase
+          .from('parents')
+          .update({ balance: newBalance })
+          .eq('id', user.id);
+        
+        if (updateError) throw updateError;
+        
+        // Record transaction
+        const { error: transError } = await supabase
+          .from('transactions')
+          .insert({
+            parent_id: user.id,
+            type: 'deposit',
+            amount: amount,
+            description: `Account funding via ${paymentMethod.toUpperCase()}`,
+            status: 'completed',
+            payment_method: paymentMethod,
+            currency: parentData.currency || 'ZAR'
+          });
+        
+        if (transError) console.error('Error recording transaction:', transError);
+        
+        const currency = parentData.currency || 'USD';
+        const symbol = getCurrencySymbol(currency);
+        
+        alert(`Success! ${symbol}${amount.toFixed(2)} has been added to your account via ${paymentMethod.toUpperCase()}.`);
+        closeAddMoneyModal();
+        
+        // Refresh dashboard data
+        await fetchAndRenderChildren();
+        await loadWalletData();
+        
+      } catch (err) {
+        console.error('Error adding money:', err);
+        alert('Error processing payment. Please try again.');
+      }
+    }
+    
     function closeWalletTopUpModal() { 
       document.getElementById('walletTopUpModal').style.display = 'none';
       document.getElementById('topupChild').value = '';
       document.getElementById('topupAmount').value = '';
+    }
+    
+    // Search Modal controls
+    function showSearchModal() {
+      alert('Search functionality coming soon! You will be able to search for transactions, children, and more.');
+      // TODO: Implement search modal
     }
 
     // Recurring Payments Modal controls
@@ -2163,7 +2751,15 @@
 
     // Load child limits for the selected child
     async function loadChildLimits() {
-      if (!supabase || !currentUserId) return;
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for loading child limits');
+        return;
+      }
 
       const childId = document.getElementById('limitsChild').value;
       if (!childId) {
@@ -2191,7 +2787,15 @@
 
     // Update child limits
     async function updateSpendingLimits() {
-      if (!supabase || !currentUserId) return;
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for updating spending limits');
+        return;
+      }
 
       const childId = document.getElementById('limitsChild').value;
       const dailyLimit = parseFloat(document.getElementById('dailyLimit').value);
@@ -2231,9 +2835,9 @@
         
         alert('Spending limits updated successfully!');
         closeSpendingLimitsModal();
-        // Refresh children list to show updated limits and activity data
+        // Refresh children list to show updated limits and wallet data
         await fetchAndRenderChildren();
-        await loadActivityData();
+        await loadWalletData();
       } catch (err) {
         alert('Error updating spending limits: ' + err.message);
       }
@@ -2241,7 +2845,15 @@
 
     // Fetch and render existing recurring payments
     async function fetchAndRenderRecurringPayments() {
-      if (!supabase || !currentUserId) return;
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for recurring payments');
+        return;
+      }
       
       const list = document.getElementById('recurringPaymentsList');
       list.innerHTML = '';
@@ -2258,7 +2870,7 @@
             start_date, 
             is_active
           `)
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .eq('is_active', true)
           .order('created_at', { ascending: false });
         
@@ -2299,7 +2911,15 @@
         
       } catch (err) {
         console.error('Error fetching recurring payments:', err);
-        list.innerHTML = '<div class="error-message">Error loading payments</div>';
+        list.innerHTML = `
+          <div class="empty-recurring">
+            <div class="empty-icon">
+              <i class="fas fa-sync-alt" style="color: #e11d48;"></i>
+            </div>
+            <p class="empty-text">No recurring payments set up yet</p>
+            <p class="empty-subtext">Click "Add New Payment" below to create automatic allowances and scheduled payments for your children.</p>
+          </div>
+        `;
       }
     }
 
@@ -2381,13 +3001,21 @@
       }
       
       try {
+        const supabase = createClient();
         if (!supabase) return;
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          alert('Please sign in to create recurring payments');
+          return;
+        }
         
         // Create recurring payment record
         const { error } = await supabase
           .from('recurring_payments')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             payment_type: paymentType,
             amount: amount,
@@ -2411,9 +3039,9 @@
         alert('Recurring payment created successfully!');
         closeAddRecurringPaymentModal();
         
-        // Refresh the recurring payments list and activity data
+        // Refresh the recurring payments list and wallet data
         fetchAndRenderRecurringPayments();
-        await loadActivityData();
+        await loadWalletData();
         
       } catch (err) {
         alert('Error creating recurring payment: ' + err.message);
@@ -2422,22 +3050,47 @@
 
     // Populate child dropdown for modals
     async function populateChildDropdown(selectId) {
-      const supabase = createClient();
-      if (!supabase || !currentUserId) return;
-      
       const select = document.getElementById(selectId);
       if (!select) {
         console.warn('populateChildDropdown: select element not found for id', selectId);
         return;
       }
+      
       // Clear existing options except the first one
       select.innerHTML = '<option value="">Select child</option>';
+      
+      // Try to get children from DOM first (faster)
+      const childCards = document.querySelectorAll('.child-card');
+      if (childCards && childCards.length > 0) {
+        childCards.forEach(card => {
+          const childId = card.dataset.childId;
+          const nameElement = card.querySelector('.child-name');
+          if (childId && nameElement) {
+            const option = document.createElement('option');
+            option.value = childId;
+            option.textContent = nameElement.textContent;
+            select.appendChild(option);
+          }
+        });
+        return;
+      }
+      
+      // Fallback to database query
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for child dropdown');
+        return;
+      }
       
       try {
         const { data, error } = await supabase
           .from('children')
           .select('id, first_name, surname')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('first_name', { ascending: true });
         
         if (error) throw error;
@@ -2457,114 +3110,208 @@
 
     // Send emergency funds
     async function sendEmergencyFunds() {
-      const childId = document.getElementById('emergencyChild').value;
-      const amount = parseFloat(document.getElementById('emergencyAmount').value);
-      
-      if (!childId) {
-        alert('Please select a child');
-        return;
-      }
-      
-      if (!amount || amount <= 0) {
-        alert('Please enter a valid amount');
-        return;
-      }
-      
       try {
-        if (!supabase) return;
+        console.log('sendEmergencyFunds called');
         
-        // First get current balance
-        const { data: currentData, error: fetchError } = await supabase
+        // Get form values
+        const childId = document.getElementById('emergencyChild')?.value;
+        const amountInput = document.getElementById('emergencyAmount')?.value;
+        const amount = parseFloat(amountInput);
+        
+        // Input validation
+        if (!childId) {
+          throw new Error('Please select a child');
+        }
+        
+        if (!amount || isNaN(amount) || amount <= 0) {
+          throw new Error('Please enter a valid amount');
+        }
+        
+        // Initialize Supabase client
+        const supabase = createClient();
+        if (!supabase) {
+          throw new Error('Failed to initialize database connection');
+        }
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error('User not authenticated:', userError);
+          window.location.href = 'parentLogin.html';
+          return;
+        }
+        
+        // Get child details for logging
+        const { data: childData, error: childError } = await supabase
           .from('children')
-          .select('balance')
+          .select('first_name, surname, balance')
           .eq('id', childId)
           .single();
+          
+        if (childError) throw new Error('Failed to fetch child details: ' + childError.message);
         
-        if (fetchError) throw fetchError;
+        console.log('Processing emergency funds for child:', {
+          childId,
+          childName: `${childData.first_name} ${childData.surname}`,
+          currentBalance: childData.balance,
+          amount,
+          newBalance: (childData.balance || 0) + amount
+        });
         
-        const newBalance = (currentData.balance || 0) + amount;
-        
-        // Update child's balance
-        const { error } = await supabase
+        // Update child's balance directly
+        const newBalance = (childData.balance || 0) + amount;
+        const { error: updateError } = await supabase
           .from('children')
           .update({ balance: newBalance })
           .eq('id', childId);
         
-        if (error) throw error;
+        if (updateError) throw new Error('Failed to update child balance: ' + updateError.message);
         
         // Create transaction record
         const transactionType = selectedChildForEmergency?.isFromEmergencyRequest ? 'emergency_fund_approved' : 'emergency_fund';
         const transactionDescription = selectedChildForEmergency?.isFromEmergencyRequest ? 
           'Emergency request approved' : 'Emergency funds sent';
         
-        const { error: transactionError } = await supabase
+        console.log('Creating emergency fund transaction:', {
+          parent_id: user.id,
+          child_id: childId,
+          amount: amount,
+          type: transactionType,
+          description: transactionDescription,
+          status: 'completed',
+          currency: window.parentDefaultCurrency || 'ZAR'
+        });
+        
+        const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             amount: amount,
             type: transactionType,
             description: transactionDescription,
-            status: 'completed'
-          });
-        
-        // Note: Transaction record above already tracks this activity
-        // No need for separate parent activity tracking to avoid duplicates
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
+          })
+          .select();
         
         if (transactionError) {
-          console.error('Error creating transaction record:', transactionError);
+          console.error('Error creating transaction record (non-fatal):', transactionError);
           // Don't fail the whole operation if transaction record fails
+        } else {
+          console.log('Emergency fund transaction created successfully:', transactionData);
         }
         
         // If this was from an emergency request, update the request status
         if (selectedChildForEmergency?.isFromEmergencyRequest && selectedChildForEmergency.requestId) {
           try {
+            console.log('Updating emergency request status for request ID:', selectedChildForEmergency.requestId);
+            
             const { error: requestUpdateError } = await supabase
               .from('emergency_requests')
               .update({ 
                 status: 'approved',
                 parent_response: 'Emergency request approved and funds sent',
-                updated_at: new Date().toISOString()
+                updated_at: new Date().toISOString(),
+                resolved_at: new Date().toISOString()
               })
               .eq('id', selectedChildForEmergency.requestId);
             
             if (requestUpdateError) {
               console.error('Error updating emergency request status:', requestUpdateError);
+              // Continue execution even if this part fails
             } else {
+              console.log('Successfully updated emergency request status');
+              
               // Remove from pending requests in localStorage
-              const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
-              const updatedRequests = pendingRequests.filter(req => 
-                req.id !== selectedChildForEmergency.requestId && 
-                !(req.child_id === selectedChildForEmergency.id && 
-                  req.amount === selectedChildForEmergency.requestedAmount &&
-                  req.reason === (selectedChildForEmergency.reason || req.reason))
-              );
-              localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
-              console.log('Removed emergency request from localStorage. Before:', pendingRequests.length, 'After:', updatedRequests.length);
+              try {
+                const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
+                console.log('Current pending requests in localStorage:', pendingRequests);
+                
+                const updatedRequests = pendingRequests.filter(req => 
+                  req.id !== selectedChildForEmergency.requestId && 
+                  !(req.child_id === selectedChildForEmergency.id && 
+                    req.amount === selectedChildForEmergency.requestedAmount &&
+                    req.reason === (selectedChildForEmergency.reason || req.reason))
+                );
+                
+                localStorage.setItem('pendingEmergencyRequests', JSON.stringify(updatedRequests));
+                console.log('Updated pending requests in localStorage. Before:', pendingRequests.length, 'After:', updatedRequests.length);
+              } catch (storageError) {
+                console.error('Error updating localStorage:', storageError);
+              }
             }
           } catch (err) {
-            console.error('Error updating emergency request:', err);
+            console.error('Error in emergency request update process:', err);
+            // Continue with success flow even if this part fails
           }
         }
         
-        const currency = window.parentDefaultCurrency || 'USD';
+        // Get currency symbol for success message
+        const currency = window.parentDefaultCurrency || 'ZAR';
         const symbol = getCurrencySymbol(currency);
-        alert(`Emergency funds sent successfully! ${symbol}${amount.toFixed(2)} added to child's wallet.`);
+        
+        // Show success message with formatted amount
+        const successMessage = `Emergency funds sent successfully! ${symbol}${amount.toFixed(2)} has been added to ${childData.first_name}'s wallet.`;
+        console.log(successMessage);
+        alert(successMessage);
+        
+        // Close the modal
         closeEmergencyFundModal();
         
-        // Refresh children list, notifications, and activity data
-        await fetchAndRenderChildren();
-        await loadNotifications();
-        await loadActivityData();
-        await loadSafetyAlerts();
-        
-        // Force notification badge update after emergency fund approval
-        setTimeout(() => {
-          loadNotifications();
-        }, 1000);
+        // Refresh all necessary data
+        try {
+          console.log('Refreshing dashboard data...');
+          await Promise.all([
+            fetchAndRenderChildren(),
+            loadNotifications(),
+            loadWalletData(),
+            loadSafetyAlerts()
+          ]);
+          console.log('Dashboard data refreshed successfully');
+          
+          // Trigger a refresh on the student's dashboard if they're logged in
+          console.log('Triggering student dashboard refresh for child:', childId);
+          // Update localStorage to trigger refresh
+          localStorage.setItem('lastTransactionUpdate', JSON.stringify({
+            childId: childId,
+            timestamp: new Date().toISOString(),
+            amount: amount,
+            type: transactionType
+          }));
+        } catch (refreshError) {
+          console.error('Error refreshing dashboard data:', refreshError);
+          // Non-critical error, continue
+        }
         
       } catch (err) {
-        alert('Error sending emergency funds: ' + err.message);
+        console.error('Error in sendEmergencyFunds:', {
+          error: err,
+          message: err.message,
+          stack: err.stack
+        });
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to send emergency funds. ';
+        
+        if (err.message.includes('network') || err.message.includes('fetch')) {
+          errorMessage += 'Please check your internet connection and try again.';
+        } else if (err.message.includes('permission') || err.message.includes('auth')) {
+          errorMessage += 'Your session may have expired. Please sign in again.';
+          setTimeout(() => window.location.href = 'parentLogin.html', 2000);
+        } else {
+          errorMessage += `Error: ${err.message}`;
+        }
+        
+        alert(errorMessage);
+        
+        // Re-enable the send button if it exists
+        const sendBtn = document.getElementById('sendEmergencyBtn');
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = 'Send Emergency Funds';
+        }
       }
     }
 
@@ -2582,7 +3329,9 @@
          return;
        }
        
-       if (!currentUserId) {
+       // Get authenticated user
+       const { data: { user }, error: authError } = await supabase.auth.getUser();
+       if (authError || !user) {
          alert('Please sign in to send money');
          return;
        }
@@ -2596,30 +3345,44 @@
        }
        
        try {
-         console.log('Sending money to child:', selectedChildForMoney.id, 'Amount:', amount);
-         
-         // First get current balance
-         const { data: currentData, error: fetchError } = await supabase
-           .from('children')
-           .select('balance')
-           .eq('id', selectedChildForMoney.id)
-           .single();
-         
-         console.log('Current balance fetch result:', { currentData, fetchError });
-         
-         if (fetchError) {
-           console.error('Error fetching current balance:', fetchError);
-           throw fetchError;
-         }
-         
-         const newBalance = (currentData.balance || 0) + amount;
-         console.log('Updating balance from', currentData.balance, 'to', newBalance);
-         
-         // Update child's balance
-         const { error: updateError } = await supabase
-           .from('children')
-           .update({ balance: newBalance })
-           .eq('id', selectedChildForMoney.id);
+        console.log('Sending money to child:', selectedChildForMoney.id, 'Amount:', amount);
+        
+        // Initialize Supabase client
+        const supabase = createClient();
+        if (!supabase) {
+          throw new Error('Failed to initialize database connection');
+        }
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error('User not authenticated:', userError);
+          window.location.href = 'parentLogin.html';
+          return;
+        }
+        
+        // First get current balance
+        const { data: currentData, error: fetchError } = await supabase
+          .from('children')
+          .select('balance, first_name')
+          .eq('id', selectedChildForMoney.id)
+          .single();
+        
+        console.log('Current balance fetch result:', { currentData, fetchError });
+        
+        if (fetchError) {
+          console.error('Error fetching current balance:', fetchError);
+          throw fetchError;
+        }
+        
+        const newBalance = (currentData.balance || 0) + amount;
+        console.log('Updating balance from', currentData.balance, 'to', newBalance);
+        
+        // Update child's balance
+        const { error: updateError } = await supabase
+          .from('children')
+          .update({ balance: newBalance })
+          .eq('id', selectedChildForMoney.id);
          
          console.log('Balance update result:', { updateError });
          
@@ -2633,16 +3396,29 @@
         const transactionDescription = selectedChildForMoney.isFromRequest ? 
           'Money request approved' : (note || `Money sent from parent`);
         
-        const { error: transactionError } = await supabase
+        console.log('Creating money transfer transaction:', {
+          parent_id: user.id,
+          child_id: selectedChildForMoney.id,
+          amount: amount,
+          type: transactionType,
+          description: transactionDescription,
+          status: 'completed',
+          currency: window.parentDefaultCurrency || 'ZAR'
+        });
+        
+        const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: selectedChildForMoney.id,
             amount: amount,
             type: transactionType,
             description: transactionDescription,
-            status: 'completed'
-          });
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
+          })
+          .select();
         
         // Note: Transaction record above already tracks this activity
         // No need for separate parent activity tracking to avoid duplicates
@@ -2650,6 +3426,8 @@
          if (transactionError) {
            console.error('Error creating transaction record:', transactionError);
            // Don't fail the whole operation if transaction record fails
+         } else {
+           console.log('Transaction created successfully:', transactionData);
          }
          
          // If this was from a money request, update the request status
@@ -2683,14 +3461,28 @@
            }
          }
          
-         const currency = window.parentDefaultCurrency || 'USD';
-         const symbol = getCurrencySymbol(currency);
-         alert(`Money sent successfully! ${symbol}${amount.toFixed(2)} added to ${selectedChildForMoney.firstName}'s wallet.`);
-         closeSendMoneyModal();
+         const currency = window.parentDefaultCurrency || 'ZAR';
+        const symbol = getCurrencySymbol(currency);
+        alert(`Money sent successfully! ${symbol}${amount.toFixed(2)} added to ${currentData.first_name}'s wallet.`);
+        closeSendMoneyModal();
          
          // Refresh children list and notifications
          await fetchAndRenderChildren();
          await loadNotifications();
+         
+         // Trigger a refresh on the student's dashboard if they're logged in
+         try {
+           console.log('Triggering student dashboard refresh for child:', selectedChildForMoney.id);
+           // Update localStorage to trigger refresh
+           localStorage.setItem('lastTransactionUpdate', JSON.stringify({
+             childId: selectedChildForMoney.id,
+             timestamp: new Date().toISOString(),
+             amount: amount,
+             type: transactionType
+           }));
+         } catch (err) {
+           console.error('Error triggering student dashboard refresh:', err);
+         }
          
        } catch (err) {
          alert('Error sending money: ' + err.message);
@@ -2713,7 +3505,19 @@
       }
       
       try {
-        if (!supabase) return;
+        // Initialize Supabase client
+        const supabase = createClient();
+        if (!supabase) {
+          throw new Error('Failed to initialize database connection');
+        }
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error('User not authenticated:', userError);
+          window.location.href = 'parentLogin.html';
+          return;
+        }
         
         // First get current balance
         const { data: currentData, error: fetchError } = await supabase
@@ -2738,12 +3542,14 @@
         const { error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             amount: amount,
             type: 'wallet_topup',
             description: 'Wallet top-up from parent',
-            status: 'completed'
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
           });
         
         if (transactionError) {
@@ -2753,14 +3559,14 @@
         // Note: Transaction record above already tracks this activity
         // No need for separate parent activity tracking to avoid duplicates
         
-        const currency = window.parentDefaultCurrency || 'USD';
+        const currency = window.parentDefaultCurrency || 'ZAR';
         const symbol = getCurrencySymbol(currency);
         alert(`Wallet top-up successful! ${symbol}${amount.toFixed(2)} added to child's wallet.`);
         closeWalletTopUpModal();
         
-        // Refresh children list to show updated balance and activity data
+        // Refresh children list to show updated balance and wallet data
         await fetchAndRenderChildren();
-        await loadActivityData();
+        await loadWalletData();
         
       } catch (err) {
         alert('Error topping up wallet: ' + err.message);
@@ -2824,7 +3630,7 @@
         // Clear inputs
         ['childFirstName','childLastName','childEmail','childPassword','childWeeklyLimit','childDailyLimit'].forEach(id => { const el = document.getElementById(id); if (el) el.value=''; });
         await fetchAndRenderChildren();
-        await loadActivityData();
+        await loadWalletData();
       } catch (err) {
         alert(err.message || 'Could not create child account.');
       }
@@ -2871,6 +3677,7 @@
       const list = document.getElementById('childrenList');
       const card = document.createElement('div');
       card.className = 'child-card';
+      card.dataset.childId = child.id;
 
       const left = document.createElement('div');
       left.className = 'child-left';
@@ -3062,7 +3869,118 @@
       }
     });
 
-    function showProfile() { alert('Profile settings coming soon!'); document.getElementById('userMenuDropdown').style.display = 'none'; }
+    // Profile menu toggle
+    function toggleProfileMenu() {
+      const dropdown = document.getElementById('profileMenuDropdown');
+      if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.style.display = 'none';
+      }
+    }
+    
+    // Show profile menu on hover
+    function showProfileMenu() {
+      const dropdown = document.getElementById('profileMenuDropdown');
+      dropdown.style.display = 'block';
+    }
+    
+    // Hide profile menu when mouse leaves
+    function hideProfileMenu() {
+      const dropdown = document.getElementById('profileMenuDropdown');
+      // Small delay to allow clicking on menu items
+      setTimeout(() => {
+        if (!dropdown.matches(':hover')) {
+          dropdown.style.display = 'none';
+        }
+      }, 100);
+    }
+    
+    // Show settings page
+    async function showSettingsPage() {
+      document.getElementById('profileMenuDropdown').style.display = 'none';
+      showSection('settings');
+      await loadSettingsData();
+    }
+    
+    // Load settings data
+    async function loadSettingsData() {
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for settings data');
+        return;
+      }
+      
+      try {
+        // Load parent data
+        const { data: parentData, error: parentError } = await supabase
+          .from('parents')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (parentError) throw parentError;
+        
+        // Load children count
+        const { data: childrenData, error: childrenError } = await supabase
+          .from('children')
+          .select('id')
+          .eq('parent_id', user.id);
+        
+        const childrenCount = childrenData ? childrenData.length : 0;
+        
+        // Load transaction count
+        const { data: transactionsData, error: transError } = await supabase
+          .from('transactions')
+          .select('id')
+          .eq('parent_id', user.id);
+        
+        const transactionCount = transactionsData ? transactionsData.length : 0;
+        
+        // Update UI
+        document.getElementById('settingsFullName').textContent = `${parentData.first_name || ''} ${parentData.surname || ''}`.trim() || 'Not set';
+        document.getElementById('settingsEmail').textContent = parentData.email || 'Not set';
+        document.getElementById('settingsPhone').textContent = parentData.phone_number || 'Not set';
+        document.getElementById('settingsCurrency').textContent = parentData.currency || 'USD';
+        document.getElementById('settingsChildrenCount').textContent = childrenCount;
+        document.getElementById('settingsTotalTransactions').textContent = transactionCount;
+        
+        // Update balance
+        const currency = parentData.currency || 'USD';
+        const symbol = getCurrencySymbol(currency);
+        const balance = parentData.balance || 0;
+        document.getElementById('settingsTotalBalance').textContent = `${symbol}${balance.toFixed(2)}`;
+        
+      } catch (err) {
+        console.error('Error loading settings data:', err);
+      }
+    }
+    
+    // Edit profile function
+    function editProfile() {
+      alert('Edit profile functionality coming soon!');
+      // TODO: Implement edit profile modal
+    }
+    
+    // Change password function
+    function changePassword() {
+      alert('Change password functionality coming soon!');
+      // TODO: Implement change password modal
+    }
+    
+    // Close profile menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const profileMenu = document.getElementById('profileMenuDropdown');
+      const profileContainer = event.target.closest('[onmouseenter="showProfileMenu()"]');
+      
+      if (profileMenu && !profileContainer && !profileMenu.contains(event.target)) {
+        profileMenu.style.display = 'none';
+      }
+    });
 
     // Sign out function
     async function signOut() {
@@ -3071,52 +3989,12 @@
       try { await supabase.auth.signOut(); window.location.href = 'index.html'; } catch (err) { alert('Error signing out'); }
     }
 
-    // Placeholder sections
-    function showSpendingLimitsModal() { 
-      populateChildDropdown('limitsChild'); // Populate the child dropdown
-      document.getElementById('spendingLimitsModal').style.display = 'block';
-      loadChildLimits(); // Load current limits for the selected child
+    // Logout function (alias for signOut)
+    function logout() {
+      signOut();
     }
-    function showRecurringPaymentsModal() { 
-      document.getElementById('recurringPaymentsModal').style.display = 'block';
-      fetchAndRenderRecurringPayments();
-    }
-    function showSafetySettings() { alert('Safety settings coming soon!'); }
 
     function viewChildActivity(childName) { alert(`Viewing activity for ${childName}`); }
-
-    function showSection(sectionName, event) {
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      if (event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
-      }
-      
-      // Hide all sections
-      document.querySelectorAll('.section-content').forEach(section => {
-        section.style.display = 'none';
-      });
-      
-      // Show selected section
-      document.getElementById(sectionName + 'Section').style.display = 'block';
-      
-      // Load data based on section
-      if (sectionName === 'pay') {
-        loadQrPayments();
-      } else if (sectionName === 'activity') {
-        loadActivityData();
-      } else if (sectionName === 'notifications') {
-        // Mark notifications as viewed now and clear the badge immediately
-        try {
-          localStorage.setItem('lastViewedNotificationsAt', new Date().toISOString());
-        } catch (e) {
-          console.warn('Unable to persist last viewed notifications timestamp', e);
-        }
-        updateNotificationBadge(0);
-        loadNotifications();
-      } else if (sectionName === 'rewards') {
-        loadParentRewardsData();
-      }
-    }
 
     // QR Scanner Functions
     function startQRScan() {
@@ -3140,7 +4018,7 @@
       `;
     }
 
-         // Legacy Activity Functions - now handled by enhanced loadActivityData above
+         // Legacy Activity Functions - now handled by enhanced loadWalletData above
      // This function is kept for backward compatibility but redirects to the enhanced version
 
     // Legacy function - now redirects to enhanced activity loading
@@ -3246,20 +4124,33 @@
     // Update notification badge count
     function updateNotificationBadge(count) {
       const badge = document.getElementById('notificationBadge');
-      if (!badge) return;
+      const headerBadge = document.getElementById('headerNotificationBadge');
       
-      if (count > 0) {
-        badge.textContent = count > 99 ? '99+' : count.toString();
-        badge.style.display = 'flex';
-        badge.classList.add('pulse');
-        
-        // Remove pulse animation after 3 seconds
-        setTimeout(() => {
+      // Update bottom nav badge (if it exists)
+      if (badge) {
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : count.toString();
+          badge.style.display = 'flex';
+          badge.classList.add('pulse');
+          
+          // Remove pulse animation after 3 seconds
+          setTimeout(() => {
+            badge.classList.remove('pulse');
+          }, 3000);
+        } else {
+          badge.style.display = 'none';
           badge.classList.remove('pulse');
-        }, 3000);
-      } else {
-        badge.style.display = 'none';
-        badge.classList.remove('pulse');
+        }
+      }
+      
+      // Update header badge
+      if (headerBadge) {
+        if (count > 0) {
+          headerBadge.textContent = count > 99 ? '99+' : count.toString();
+          headerBadge.style.display = 'flex';
+        } else {
+          headerBadge.style.display = 'none';
+        }
       }
     }
 
@@ -3735,12 +4626,12 @@
       const categoryIcons = {
         wallet_management: { icon: 'fas fa-wallet', color: '#10b981' },
         emergency_transfer: { icon: 'fas fa-exclamation-triangle', color: '#ef4444' },
-        money_request: { icon: 'fas fa-hand-holding-usd', color: '#3b82f6' },
+        money_request: { icon: 'fas fa-hand-holding-usd', color: '#e11d48' },
         direct_transfer: { icon: 'fas fa-exchange-alt', color: '#8b5cf6' },
         recurring_setup: { icon: 'fas fa-sync-alt', color: '#f59e0b' },
         account_management: { icon: 'fas fa-cog', color: '#64748b' },
         food: { icon: 'fas fa-utensils', color: '#f59e0b' },
-        transport: { icon: 'fas fa-bus', color: '#3b82f6' },
+        transport: { icon: 'fas fa-bus', color: '#e11d48' },
         school_supplies: { icon: 'fas fa-book', color: '#8b5cf6' },
         entertainment: { icon: 'fas fa-gamepad', color: '#ef4444' }
       };
@@ -4389,10 +5280,10 @@
     // Test Alerts functionality
     function testAlerts() {
       const testMessages = [
-        "🚨 Test Alert: Out-of-hours spending detected at 22:30",
+        "⚠ Test Alert: Out-of-hours spending detected at 22:30",
         "📍 Test Alert: Unusual location spending - Mall XYZ (15km from home)",
-        "💰 Test Alert: Large transaction of $45 exceeds single limit of $25",
-        "📱 Test Alert: Emergency contact notification sent to Mom (+27 123 456 789)"
+        "💵 Test Alert: Large transaction of $45 exceeds single limit of $25",
+        "📞 Test Alert: Emergency contact notification sent to Mom (+27 123 456 789)"
       ];
       
       let messageIndex = 0;
@@ -4436,8 +5327,15 @@
           secondaryApp: document.getElementById('secondaryApp').checked
         };
 
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          alert('Please sign in to save safety settings');
+          return;
+        }
+
         // Store settings in localStorage for now (until database table is created)
-        localStorage.setItem('safetySettings_' + currentUserId, JSON.stringify(settings));
+        localStorage.setItem('safetySettings_' + user.id, JSON.stringify(settings));
         
         alert('✅ Safety alert settings saved successfully!');
         closeSafetySettingsModal();
@@ -4448,7 +5346,15 @@
 
     // Parent Rewards Management Functions
     async function loadParentRewardsData() {
-      if (!currentUserId) return;
+      // Get authenticated user
+      const supabase = createClient();
+      if (!supabase) return;
+      
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.log('User not authenticated for rewards data');
+        return;
+      }
       
       try {
         // Load overview statistics
@@ -4470,12 +5376,19 @@
           console.log('Supabase client not available, using sample data');
           return;
         }
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for active rewards');
+          return;
+        }
 
         // Load ALL rewards (both active and inactive) for the Active Rewards tab
         const { data: rewards, error } = await supabase
           .from('rewards_store')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -4606,11 +5519,18 @@
           console.log('Supabase client not available');
           return;
         }
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for rewards overview');
+          return;
+        }
 
         const { data: rewardsResult, error } = await supabase
           .from('rewards_store')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .eq('is_active', true);
 
         if (error) throw error;
@@ -4632,11 +5552,18 @@
           // Use the existing sample data in the HTML
           return;
         }
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for rewards store');
+          return;
+        }
 
         const { data: rewards, error } = await supabase
           .from('rewards_store')
           .select('*')
-          .eq('parent_id', currentUserId)
+          .eq('parent_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -4841,20 +5768,26 @@
 
       try {
         const supabase = createClient();
-        if (supabase && currentUserId) {
-          // Update in database
-          const { error } = await supabase
-            .from('rewards_store')
-            .update({
-              title: title,
-              description: description,
-              points_cost: points,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', currentEditingRewardId);
-
-          if (error) throw error;
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for editing reward');
+          return;
         }
+        
+        // Update in database
+        const { error } = await supabase
+          .from('rewards_store')
+          .update({
+            title: title,
+            description: description,
+            points_cost: points,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentEditingRewardId);
+
+        if (error) throw error;
 
         // Update UI immediately
         const editButton = document.querySelector(`button[onclick="editReward('${currentEditingRewardId}')"]`);
@@ -4862,41 +5795,20 @@
           const rewardCard = editButton.closest('.reward-card');
           if (rewardCard) {
             const titleElement = rewardCard.querySelector('.reward-title');
-            const descElement = rewardCard.querySelector('.reward-description');
-            const costElement = rewardCard.querySelector('.cost-value');
-            const iconElement = rewardCard.querySelector('.reward-icon i');
+            const pointsElement = rewardCard.querySelector('.reward-points');
+            const descriptionElement = rewardCard.querySelector('.reward-description');
             
             if (titleElement) titleElement.textContent = title;
-            if (descElement) descElement.textContent = description || 'No description';
-            if (costElement) costElement.textContent = `${points} points`;
-            if (iconElement) iconElement.className = icon;
+            if (pointsElement) pointsElement.textContent = `${points} pts`;
+            if (descriptionElement) descriptionElement.textContent = description;
           }
         }
 
+        alert('✅ Reward updated successfully!');
         closeEditRewardModal();
-        alert('Reward updated successfully!');
-        
       } catch (err) {
         console.error('Error updating reward:', err);
-        // Still update UI even if database fails
-        const editButton = document.querySelector(`button[onclick="editReward('${currentEditingRewardId}')"]`);
-        if (editButton) {
-          const rewardCard = editButton.closest('.reward-card');
-          if (rewardCard) {
-            const titleElement = rewardCard.querySelector('.reward-title');
-            const descElement = rewardCard.querySelector('.reward-description');
-            const costElement = rewardCard.querySelector('.cost-value');
-            const iconElement = rewardCard.querySelector('.reward-icon i');
-            
-            if (titleElement) titleElement.textContent = title;
-            if (descElement) descElement.textContent = description || 'No description';
-            if (costElement) costElement.textContent = `${points} points`;
-            if (iconElement) iconElement.className = icon;
-          }
-        }
-        
-        closeEditRewardModal();
-        alert('Reward updated locally! (Note: Database connection unavailable)');
+        alert('Error updating reward. Please try again.');
       }
     }
     
@@ -4908,7 +5820,12 @@
         const newStatus = !isCurrentlyActive;
         
         const supabase = createClient();
-        if (supabase && currentUserId) {
+        
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for toggling reward status');
+        } else {
           // Update in database
           const { error } = await supabase
             .from('rewards_store')
@@ -5004,12 +5921,16 @@
         const supabase = createClient();
         let data = null;
         
-        if (supabase && currentUserId) {
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.log('User not authenticated for reward creation');
+        } else {
           // Try to save to database
           const result = await supabase
           .from('rewards_store')
           .insert([{
-            parent_id: currentUserId,
+            parent_id: user.id,
             title: title,
             description: description,
             points_cost: points,
@@ -5025,8 +5946,6 @@
           
           data = result.data;
           console.log('Reward created successfully in database:', data);
-        } else {
-          console.log('No supabase client or currentUserId available');
         }
 
         // Add to UI immediately - use the returned data if available, otherwise use temp ID
@@ -5223,7 +6142,8 @@
           console.warn('Amount was not numeric; defaulting to 0');
           normalizedAmount = 0;
         }
-      // Store the request details for the send money form
+        
+        // Store the request details for the send money form
       selectedChildForMoney = { 
         id: childId, 
         firstName: 'Child', 
@@ -5273,9 +6193,30 @@
 
     async function declineMoneyRequest(requestId) {
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for declining money request');
+        return;
+      }
       
       try {
+        // First get the request details to create a transaction
+        let requestDetails = null;
+        if (requestId && !requestId.startsWith('temp-')) {
+          const { data: requestData, error: fetchError } = await supabase
+            .from('money_requests')
+            .select('*')
+            .eq('id', requestId)
+            .single();
+          
+          if (!fetchError && requestData) {
+            requestDetails = requestData;
+          }
+        }
+        
         // First remove from localStorage immediately
         const pendingRequests = JSON.parse(localStorage.getItem('pendingMoneyRequests') || '[]');
         const updatedRequests = pendingRequests.filter(req => req.id !== requestId);
@@ -5294,6 +6235,28 @@
             .eq('id', requestId);
           
           if (error) throw error;
+          
+          // Create a transaction record for the declined request
+          if (requestDetails) {
+            const { error: transactionError } = await supabase
+              .from('transactions')
+              .insert({
+                parent_id: user.id,
+                child_id: requestDetails.child_id,
+                amount: requestDetails.amount || 0,
+                type: 'money_request_declined',
+                description: 'Money request declined',
+                status: 'declined',
+                currency: window.parentDefaultCurrency || 'ZAR',
+                created_at: new Date().toISOString()
+              });
+            
+            if (transactionError) {
+              console.error('Error creating declined request transaction:', transactionError);
+            } else {
+              console.log('Declined money request transaction created');
+            }
+          }
         }
         
         alert('Money request declined.');
@@ -5320,7 +6283,8 @@
           console.warn('Amount was not numeric; defaulting to 0');
           normalizedAmount = 0;
         }
-      // Store the request details for the emergency fund form
+        
+        // Store the request details for the emergency fund form
       selectedChildForEmergency = { 
         id: childId, 
         firstName: 'Child', 
@@ -5370,9 +6334,30 @@
 
     async function declineEmergencyRequest(requestId) {
       const supabase = createClient();
-      if (!supabase || !currentUserId) return;
+      if (!supabase) return;
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('User not authenticated for declining emergency request');
+        return;
+      }
       
       try {
+        // First get the request details to create a transaction
+        let requestDetails = null;
+        if (requestId && !requestId.startsWith('temp-')) {
+          const { data: requestData, error: fetchError } = await supabase
+            .from('emergency_requests')
+            .select('*')
+            .eq('id', requestId)
+            .single();
+          
+          if (!fetchError && requestData) {
+            requestDetails = requestData;
+          }
+        }
+        
         // First remove from localStorage immediately
         const pendingRequests = JSON.parse(localStorage.getItem('pendingEmergencyRequests') || '[]');
         const updatedRequests = pendingRequests.filter(req => req.id !== requestId);
@@ -5391,6 +6376,28 @@
             .eq('id', requestId);
           
           if (error) throw error;
+          
+          // Create a transaction record for the declined request
+          if (requestDetails) {
+            const { error: transactionError } = await supabase
+              .from('transactions')
+              .insert({
+                parent_id: user.id,
+                child_id: requestDetails.child_id,
+                amount: requestDetails.amount || 0,
+                type: 'emergency_request_declined',
+                description: 'Emergency request declined',
+                status: 'declined',
+                currency: window.parentDefaultCurrency || 'ZAR',
+                created_at: new Date().toISOString()
+              });
+            
+            if (transactionError) {
+              console.error('Error creating declined emergency request transaction:', transactionError);
+            } else {
+              console.log('Declined emergency request transaction created');
+            }
+          }
         }
         
         alert('Emergency request declined.');
@@ -5475,8 +6482,21 @@
     }
 
     async function confirmParentQRPayment() {
-      if (!parentQrScannedData || !currentUserId) {
+      if (!parentQrScannedData) {
         alert('Payment data not available');
+        return;
+      }
+      
+      const supabase = createClient();
+      if (!supabase) {
+        alert('Authentication required');
+        return;
+      }
+      
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        alert('Please sign in to make payments');
         return;
       }
       
@@ -5522,16 +6542,18 @@
         
         if (updateError) throw updateError;
         
-        // Create transaction record
+        // Record transaction
         const { error: transactionError } = await supabase
           .from('transactions')
           .insert({
-            parent_id: currentUserId,
+            parent_id: user.id,
             child_id: childId,
             amount: -amount, // Negative for expense
             type: 'qr_payment',
             description: `QR Payment to ${parentQrScannedData.merchant} - ${parentQrScannedData.description}`,
-            status: 'completed'
+            status: 'completed',
+            currency: window.parentDefaultCurrency || 'ZAR',
+            created_at: new Date().toISOString()
           });
         
         if (transactionError) {

@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Educational Game Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+        
+        h1 {
+            margin: 20px 0;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .subtitle {
+            margin-bottom: 30px;
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .age-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .age-btn {
+            padding: 20px 40px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .age-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .age-btn:hover::before {
+            left: 100%;
+        }
+        
+        .age-btn:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .primary-btn {
+            background-color: #FFDAC1;
+            color: #B56727;
+        }
+        
+        .highschool-btn {
+            background-color: #E2F0CB;
+            color: #4A6741;
+        }
+        
+        .game-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+            display: none;
+            min-height: 600px;
+            color: #333;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-title {
+            color: #2575fc;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-modes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .mode-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Primary School Game Styles */
+        .primary-game {
+            background-color: #FFF2E6;
+        }
+        
+        .spelling-container {
+            margin: 30px 0;
+        }
+        
+        .word-display {
+            font-size: 3.5rem;
+            margin: 20px 0;
+            color: #2575fc;
+            letter-spacing: 8px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .spelling-input {
+            padding: 15px;
+            font-size: 1.8rem;
+            border: 3px solid #6a11cb;
+            border-radius: 10px;
+            margin: 20px 0;
+            width: 300px;
+            text-align: center;
+        }
+        
+        .sound-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .sound-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .next-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .next-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Vocabulary Game Styles */
+        .vocabulary-game {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .vocab-question {
+            font-size: 1.8rem;
+            margin: 15px 0;
+            color: #6a11cb;
+        }
+        
+        .vocab-options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .vocab-option {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+        
+        .vocab-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .vocab-option.correct {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            animation: pop 0.5s;
+        }
+        
+        .vocab-option.incorrect {
+            background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+            animation: shake 0.5s;
+        }
+        
+        /* Word Search Styles */
+        .wordsearch-container {
+            margin: 20px auto;
+            max-width: 500px;
+        }
+        
+        .wordsearch-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            margin: 20px auto;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .wordsearch-cell {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        
+        .wordsearch-cell.selected {
+            background-color: #6a11cb;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .wordsearch-cell.found {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .word-item {
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .word-item.found {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            text-decoration: line-through;
+        }
+        
+        .score {
+            font-size: 1.8rem;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #6a11cb;
+        }
+        
+        /* High School Game Styles */
+        .highschool-game {
+            background-color: #E6F7FF;
+        }
+        
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .question {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #2575fc;
+            font-weight: bold;
+        }
+        
+        .idiom-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #6a11cb;
+            font-style: italic;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .answer {
+            padding: 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .answer:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .answer.correct {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            animation: celebrate 0.5s;
+        }
+        
+        .answer.incorrect {
+            background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+            animation: shake 0.5s;
+        }
+        
+        .timer {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ff4d4d;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .back-btn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .progress {
+            height: 15px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 10px;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0.7;
+            border-radius: 50%;
+            animation: confetti-fall 5s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(1000px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .challenge-complete {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 20px 0;
+            animation: pop 0.5s;
+        }
+        
+        .hint {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #6a11cb;
+            font-style: italic;
+        }
+        
+        .feedback {
+            font-size: 2rem;
+            margin: 20px 0;
+            min-height: 60px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .correct-feedback {
+            color: #4CAF50;
+            animation: pop 0.5s;
+        }
+        
+        .incorrect-feedback {
+            color: #F44336;
+            animation: shake 0.5s;
+        }
+        
+        /* Fill in the Blank Styles */
+        .fill-blank-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .sentence {
+            font-size: 2rem;
+            margin: 30px 0;
+            line-height: 1.6;
+        }
+        
+        .blank {
+            display: inline-block;
+            min-width: 150px;
+            border-bottom: 3px dashed #6a11cb;
+            text-align: center;
+            margin: 0 5px;
+            font-weight: bold;
+            color: #6a11cb;
+        }
+        
+        .blank-options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .blank-option {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+        
+        .blank-option:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Story Completion Styles */
+        .story-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        
+        .story-text {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin: 20px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .story-blank {
+            display: inline-block;
+            min-width: 120px;
+            border-bottom: 2px dashed #6a11cb;
+            text-align: center;
+            margin: 0 5px;
+        }
+        
+        .story-input {
+            padding: 10px;
+            font-size: 1.2rem;
+            border: 2px solid #6a11cb;
+            border-radius: 5px;
+            width: 120px;
+            text-align: center;
+        }
+        
+        .story-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
+        .story-option {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .story-option:hover {
+            transform: scale(1.05);
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @media (max-width: 768px) {
+            .answers {
+                grid-template-columns: 1fr;
+            }
+            
+            .age-btn {
+                padding: 15px 25px;
+                font-size: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .wordsearch-grid {
+                grid-template-columns: repeat(10, 1fr);
+            }
+            
+            .wordsearch-cell {
+                width: 25px;
+                height: 25px;
+                font-size: 0.8rem;
+            }
+            
+            .sentence {
+                font-size: 1.6rem;
+            }
+            
+            .story-text {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-gamepad"></i> Ultimate Educational Game Suite</h1>
+        <p class="subtitle">Select an age group to play exciting educational games with multiple challenges!</p>
+        
+        <div class="age-selector">
+            <button class="age-btn primary-btn" onclick="showGame('primary')">
+                <i class="fas fa-spell-check"></i> Primary School - Word Challenges
+            </button>
+            <button class="age-btn highschool-btn" onclick="showGame('highschool')">
+                <i class="fas fa-brain"></i> High School - Language Master
+            </button>
+        </div>
+        
+        <!-- Primary School Game -->
+        <div id="primary-game" class="game-container primary-game">
+            <h2 class="game-title"><i class="fas fa-spell-check"></i> Word Challenges</h2>
+            <p>Test your spelling and vocabulary skills with these fun challenges!</p>
+            
+            <div class="game-modes">
+                <button class="mode-btn active" onclick="switchPrimaryMode('spelling')">Spelling Challenge</button>
+                <button class="mode-btn" onclick="switchPrimaryMode('vocabulary')">Vocabulary Builder</button>
+                <button class="mode-btn" onclick="switchPrimaryMode('wordsearch')">Word Search</button>
+            </div>
+            
+            <!-- Spelling Game -->
+            <div id="spelling-game">
+                <div class="spelling-container">
+                    <div class="word-display" id="word-display">_ _ _</div>
+                    <div class="hint" id="spelling-hint">Type the word: <span id="word-to-spell" style="font-weight: bold;">CAT</span></div>
+                    
+                    <input type="text" class="spelling-input" id="spelling-input" placeholder="Type the word here">
+                    <button class="sound-btn" onclick="checkSpelling()">Check Spelling</button>
+                </div>
+                
+                <div class="feedback" id="primary-feedback"></div>
+                <div class="score">Score: <span id="primary-score">0</span> | Streak: <span id="streak">0</span> <i class="fas fa-fire"></i></div>
+            </div>
+            
+            <!-- Vocabulary Game -->
+            <div id="vocabulary-game" class="hidden">
+                <div class="vocabulary-game">
+                    <div class="vocab-question" id="vocab-question">What is the meaning of the word 'brave'?</div>
+                    
+                    <div class="vocab-options" id="vocab-options">
+                        <!-- Vocabulary options will be generated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="feedback" id="vocab-feedback"></div>
+                <div class="score">Correct Answers: <span id="vocab-score">0</span>/5</div>
+            </div>
+            
+            <!-- Word Search Game -->
+            <div id="wordsearch-game" class="hidden">
+                <div class="feedback" id="wordsearch-feedback">Find the hidden words in the grid! Click and drag to select words.</div>
+                
+                <div class="word-list" id="word-list">
+                    <!-- Word list will be generated by JavaScript -->
+                </div>
+                
+                <div class="wordsearch-container">
+                    <div class="wordsearch-grid" id="wordsearch-grid">
+                        <!-- Word search grid will be generated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="score">Words Found: <span id="wordsearch-score">0</span>/<span id="total-words">5</span></div>
+                <button class="next-btn" onclick="generateWordSearch()">
+                    <i class="fas fa-redo"></i> New Word Search
+                </button>
+            </div>
+            
+            <button class="back-btn" onclick="showAgeSelector()"><i class="fas fa-arrow-left"></i> Back to Age Selection</button>
+        </div>
+        
+        <!-- High School Game -->
+        <div id="highschool-game" class="game-container highschool-game">
+            <h2 class="game-title"><i class="fas fa-brain"></i> Language Master Challenge</h2>
+            <p>Test your knowledge of English with these challenging games!</p>
+            
+            <div class="game-modes">
+                <button class="mode-btn active" onclick="switchHighschoolMode('quiz')">Idiom Quiz</button>
+                <button class="mode-btn" onclick="switchHighschoolMode('fillblank')">Fill in the Blank</button>
+                <button class="mode-btn" onclick="switchHighschoolMode('story')">Story Completion</button>
+            </div>
+            
+            <!-- Idiom Quiz -->
+            <div id="quiz-game">
+                <div class="timer"><i class="fas fa-clock"></i> Time: <span id="timer">30</span> seconds</div>
+                
+                <div class="progress">
+                    <div class="progress-bar" id="highschool-progress"></div>
+                </div>
+                
+                <div class="quiz-container">
+                    <div class="idiom-display" id="idiom-display">Break a leg</div>
+                    <div class="question" id="quiz-question">What does this idiom mean?</div>
+                    <div class="hint" id="quiz-hint">Hint: This is said to performers for good luck</div>
+                    
+                    <div class="answers" id="quiz-answers">
+                        <!-- Answers will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="feedback" id="highschool-feedback"></div>
+                    <div class="score">Score: <span id="highschool-score">0</span>/<span id="total-questions">0</span></div>
+                </div>
+            </div>
+            
+            <!-- Fill in the Blank -->
+            <div id="fillblank-game" class="hidden">
+                <div class="timer"><i class="fas fa-clock"></i> Time: <span id="fillblank-timer">30</span> seconds</div>
+                
+                <div class="progress">
+                    <div class="progress-bar" id="fillblank-progress"></div>
+                </div>
+                
+                <div class="fill-blank-container">
+                    <div class="sentence" id="fillblank-sentence">The cat sat on the <span class="blank" id="blank-word">______</span>.</div>
+                    
+                    <div class="blank-options" id="fillblank-options">
+                        <!-- Blank options will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="feedback" id="fillblank-feedback"></div>
+                    <div class="score">Score: <span id="fillblank-score">0</span>/<span id="total-fillblank">0</span></div>
+                </div>
+            </div>
+            
+            <!-- Story Completion -->
+            <div id="story-game" class="hidden">
+                <div class="timer"><i class="fas fa-clock"></i> Time: <span id="story-timer">60</span> seconds</div>
+                
+                <div class="progress">
+                    <div class="progress-bar" id="story-progress"></div>
+                </div>
+                
+                <div class="story-container">
+                    <div class="story-text" id="story-text">
+                        Once upon a time, there was a <span class="story-blank" id="story-blank-1">______</span> who lived in a <span class="story-blank" id="story-blank-2">______</span>. 
+                        Every day, the <span class="story-blank" id="story-blank-3">______</span> would go to the <span class="story-blank" id="story-blank-4">______</span> to find food. 
+                        One day, the <span class="story-blank" id="story-blank-5">______</span> discovered a magical <span class="story-blank" id="story-blank-6">______</span> that could grant wishes.
+                    </div>
+                    
+                    <div class="story-options" id="story-options">
+                        <!-- Story options will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="feedback" id="story-feedback"></div>
+                    <div class="score">Words Placed: <span id="story-score">0</span>/6</div>
+                </div>
+            </div>
+            
+            <button class="back-btn" onclick="showAgeSelector()"><i class="fas fa-arrow-left"></i> Back to Age Selection</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let currentGame = null;
+        let currentMode = {
+            primary: 'spelling',
+            highschool: 'quiz'
+        };
+        
+        // Primary school game variables
+        let primaryScore = 0;
+        let vocabScore = 0;
+        let wordsearchScore = 0;
+        let streak = 0;
+        let usedVocabWords = [];
+        
+        // Word Search variables
+        let wordSearchGrid = [];
+        let selectedCells = [];
+        let foundWords = [];
+        let wordSearchWords = [];
+        let currentDirection = null;
+        let startCell = null;
+        let isSelecting = false;
+        
+        // High school game variables
+        let highschoolScore = 0;
+        let fillblankScore = 0;
+        let storyScore = 0;
+        let currentQuestionIndex = 0;
+        let currentFillblankIndex = 0;
+        let currentStoryIndex = 0;
+        let timerInterval;
+        let timeLeft = 30;
+        let storyWords = [];
+        
+        // Primary school game data
+        const spellingWords = [
+            { word: "CAT", hint: "A small furry animal that says 'meow'" },
+            { word: "DOG", hint: "A loyal pet that says 'woof'" },
+            { word: "FISH", hint: "Swims in water and has gills" },
+            { word: "BIRD", hint: "Has feathers and can fly" },
+            { word: "BOOK", hint: "You read this to learn stories" },
+            { word: "TREE", hint: "Tall plant with leaves and branches" },
+            { word: "MOON", hint: "Shines in the night sky" },
+            { word: "STAR", hint: "Twinkles in the sky at night" },
+            { word: "RAIN", hint: "Falls from clouds when it's wet" },
+            { word: "SNOW", hint: "White flakes that fall in winter" }
+        ];
+        let currentWord = {};
+        
+        // Vocabulary words and definitions
+        const vocabularyWords = [
+            { word: "Brave", definition: "Showing courage", options: ["Scared", "Showing courage", "Happy", "Angry"] },
+            { word: "Generous", definition: "Willing to give and share", options: ["Selfish", "Willing to give and share", "Sad", "Tired"] },
+            { word: "Curious", definition: "Eager to know or learn something", options: ["Bored", "Eager to know or learn something", "Angry", "Sleepy"] },
+            { word: "Patient", definition: "Able to wait without complaining", options: ["Impatient", "Able to wait without complaining", "Excited", "Nervous"] },
+            { word: "Honest", definition: "Telling the truth", options: ["Lying", "Telling the truth", "Playing", "Running"] }
+        ];
+        let currentVocabWord = {};
+        
+        // Word Search words
+        const wordSearchWordLists = [
+            ["APPLE", "BANANA", "CHERRY", "GRAPE", "MANGO"],
+            ["TIGER", "LION", "BEAR", "WOLF", "DEER"],
+            ["RED", "BLUE", "GREEN", "YELLOW", "PURPLE"],
+            ["SUN", "MOON", "STAR", "SKY", "CLOUD"],
+            ["BOOK", "PEN", "PAPER", "DESK", "CHAIR"]
+        ];
+        
+        // High school game data
+        const idiomQuestions = [
+            {
+                idiom: "Break a leg",
+                question: "What does this idiom mean?",
+                answers: ["To wish someone good luck", "To actually break a leg", "To work very hard", "To give up easily"],
+                correct: 0,
+                hint: "This is said to performers for good luck"
+            },
+            {
+                idiom: "Bite the bullet",
+                question: "What does this idiom mean?",
+                answers: ["To eat something hard", "To endure a painful situation", "To make a difficult decision", "To attack someone"],
+                correct: 1,
+                hint: "This means to endure something painful or difficult"
+            },
+            {
+                idiom: "Hit the nail on the head",
+                question: "What does this idiom mean?",
+                answers: ["To do something perfectly", "To make a mistake", "To be completely wrong", "To describe exactly what is causing a situation"],
+                correct: 3,
+                hint: "This means to be exactly right about something"
+            },
+            {
+                idiom: "Piece of cake",
+                question: "What does this idiom mean?",
+                answers: ["A delicious dessert", "Something very easy", "A difficult task", "A small portion"],
+                correct: 1,
+                hint: "This means something is very easy to do"
+            },
+            {
+                idiom: "Cost an arm and a leg",
+                question: "What does this idiom mean?",
+                answers: ["To be very expensive", "To be very painful", "To require great effort", "To be physically demanding"],
+                correct: 0,
+                hint: "This means something is very expensive"
+            }
+        ];
+        
+        // Fill in the blank data
+        const fillblankQuestions = [
+            {
+                sentence: "The cat sat on the ______.",
+                correct: "mat",
+                options: ["mat", "dog", "car", "tree"]
+            },
+            {
+                sentence: "She went to the ______ to buy some groceries.",
+                correct: "store",
+                options: ["store", "park", "school", "beach"]
+            },
+            {
+                sentence: "The sun ______ in the east.",
+                correct: "rises",
+                options: ["rises", "sets", "shines", "hides"]
+            },
+            {
+                sentence: "He was so tired that he fell ______ immediately.",
+                correct: "asleep",
+                options: ["asleep", "awake", "sick", "down"]
+            },
+            {
+                sentence: "The children played ______ in the park.",
+                correct: "happily",
+                options: ["happily", "sadly", "quietly", "angrily"]
+            }
+        ];
+        
+        // Story completion data
+        const storyData = [
+            {
+                text: "Once upon a time, there was a <span class='story-blank' id='story-blank-1'>______</span> who lived in a <span class='story-blank' id='story-blank-2'>______</span>. Every day, the <span class='story-blank' id='story-blank-3'>______</span> would go to the <span class='story-blank' id='story-blank-4'>______</span> to find food. One day, the <span class='story-blank' id='story-blank-5'>______</span> discovered a magical <span class='story-blank' id='story-blank-6'>______</span> that could grant wishes.",
+                blanks: [
+                    { id: 1, correct: "rabbit", options: ["rabbit", "dragon", "giant", "wizard"] },
+                    { id: 2, correct: "forest", options: ["forest", "castle", "city", "cave"] },
+                    { id: 3, correct: "rabbit", options: ["rabbit", "king", "child", "bird"] },
+                    { id: 4, correct: "meadow", options: ["meadow", "river", "mountain", "ocean"] },
+                    { id: 5, correct: "rabbit", options: ["rabbit", "princess", "knight", "monster"] },
+                    { id: 6, correct: "stone", options: ["stone", "sword", "book", "flower"] }
+                ]
+            },
+            {
+                text: "In a faraway land, there was a young <span class='story-blank' id='story-blank-1'>______</span> who dreamed of becoming a <span class='story-blank' id='story-blank-2'>______</span>. Every day, they practiced <span class='story-blank' id='story-blank-3'>______</span> for hours. One day, a famous <span class='story-blank' id='story-blank-4'>______</span> visited their town and noticed their <span class='story-blank' id='story-blank-5'>______</span>. The <span class='story-blank' id='story-blank-6'>______</span> offered to become their mentor.",
+                blanks: [
+                    { id: 1, correct: "artist", options: ["artist", "scientist", "athlete", "musician"] },
+                    { id: 2, correct: "master", options: ["master", "teacher", "ruler", "hero"] },
+                    { id: 3, correct: "painting", options: ["painting", "running", "reading", "singing"] },
+                    { id: 4, correct: "painter", options: ["painter", "writer", "explorer", "inventor"] },
+                    { id: 5, correct: "talent", options: ["talent", "strength", "wisdom", "courage"] },
+                    { id: 6, correct: "painter", options: ["painter", "king", "wizard", "scholar"] }
+                ]
+            }
+        ];
+        
+        // Show the age selection screen
+        function showAgeSelector() {
+            document.querySelectorAll('.game-container').forEach(game => {
+                game.style.display = 'none';
+            });
+            currentGame = null;
+            clearInterval(timerInterval);
+        }
+        
+        // Show the selected game
+        function showGame(gameType) {
+            showAgeSelector();
+            currentGame = gameType;
+            
+            if (gameType === 'primary') {
+                document.getElementById('primary-game').style.display = 'block';
+                startPrimaryGame();
+            } else if (gameType === 'highschool') {
+                document.getElementById('highschool-game').style.display = 'block';
+                startHighschoolGame();
+            }
+        }
+        
+        // Switch between primary school game modes
+        function switchPrimaryMode(mode) {
+            currentMode.primary = mode;
+            
+            // Update active button
+            document.querySelectorAll('#primary-game .mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Hide all game sections
+            document.getElementById('spelling-game').classList.add('hidden');
+            document.getElementById('vocabulary-game').classList.add('hidden');
+            document.getElementById('wordsearch-game').classList.add('hidden');
+            
+            // Show selected game section
+            document.getElementById(`${mode}-game`).classList.remove('hidden');
+            
+            // Initialize the selected game
+            if (mode === 'spelling') {
+                startSpellingGame();
+            } else if (mode === 'vocabulary') {
+                startVocabularyGame();
+            } else if (mode === 'wordsearch') {
+                startWordSearch();
+            }
+        }
+        
+        // Switch between high school game modes
+        function switchHighschoolMode(mode) {
+            currentMode.highschool = mode;
+            
+            // Update active button
+            document.querySelectorAll('#highschool-game .mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Hide all game sections
+            document.getElementById('quiz-game').classList.add('hidden');
+            document.getElementById('fillblank-game').classList.add('hidden');
+            document.getElementById('story-game').classList.add('hidden');
+            
+            // Show selected game section
+            document.getElementById(`${mode}-game`).classList.remove('hidden');
+            
+            // Initialize the selected game
+            if (mode === 'quiz') {
+                startIdiomQuiz();
+            } else if (mode === 'fillblank') {
+                startFillBlank();
+            } else if (mode === 'story') {
+                startStoryGame();
+            }
+        }
+        
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+            const gameContainer = document.querySelector('.game-container');
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                gameContainer.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Primary School Game Functions
+        function startPrimaryGame() {
+            startSpellingGame();
+        }
+        
+        function startSpellingGame() {
+            primaryScore = 0;
+            streak = 0;
+            document.getElementById('primary-score').textContent = primaryScore;
+            document.getElementById('streak').textContent = streak;
+            nextSpellingWord();
+        }
+        
+        function nextSpellingWord() {
+            // Select a random word that hasn't been used recently
+            let availableWords = spellingWords.filter(word => !usedVocabWords.includes(word.word));
+            if (availableWords.length === 0) {
+                availableWords = [...spellingWords];
+                usedVocabWords = [];
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableWords.length);
+            currentWord = availableWords[randomIndex];
+            usedVocabWords.push(currentWord.word);
+            
+            // Create the word display with dashes
+            const wordDisplay = document.getElementById('word-display');
+            wordDisplay.innerHTML = '';
+            
+            for (let i = 0; i < currentWord.word.length; i++) {
+                const dash = document.createElement('span');
+                dash.textContent = '_ ';
+                wordDisplay.appendChild(dash);
+            }
+            
+            document.getElementById('word-to-spell').textContent = currentWord.word;
+            document.getElementById('spelling-hint').textContent = `Hint: ${currentWord.hint}`;
+            document.getElementById('spelling-input').value = '';
+            
+            document.getElementById('primary-feedback').textContent = '';
+            document.getElementById('primary-feedback').className = 'feedback';
+        }
+        
+        function checkSpelling() {
+            const userAnswer = document.getElementById('spelling-input').value.toUpperCase();
+            
+            if (userAnswer === currentWord.word) {
+                document.getElementById('primary-feedback').textContent = "Correct! Well done!";
+                document.getElementById('primary-feedback').className = 'feedback correct-feedback';
+                primaryScore++;
+                streak++;
+                document.getElementById('primary-score').textContent = primaryScore;
+                document.getElementById('streak').textContent = streak;
+                
+                // Create confetti for streak of 3 or more
+                if (streak >= 3) {
+                    createConfetti();
+                }
+                
+                setTimeout(nextSpellingWord, 1500);
+            } else {
+                document.getElementById('primary-feedback').textContent = `Incorrect! The correct spelling is: ${currentWord.word}`;
+                document.getElementById('primary-feedback').className = 'feedback incorrect-feedback';
+                streak = 0;
+                document.getElementById('streak').textContent = streak;
+                
+                // Update the word display to show the correct word
+                const wordDisplay = document.getElementById('word-display');
+                wordDisplay.innerHTML = '';
+                
+                for (let i = 0; i < currentWord.word.length; i++) {
+                    const letter = document.createElement('span');
+                    letter.textContent = currentWord.word[i] + ' ';
+                    wordDisplay.appendChild(letter);
+                }
+                
+                setTimeout(nextSpellingWord, 2500);
+            }
+        }
+        
+        function startVocabularyGame() {
+            vocabScore = 0;
+            usedVocabWords = [];
+            document.getElementById('vocab-score').textContent = vocabScore;
+            nextVocabularyWord();
+        }
+        
+        function nextVocabularyWord() {
+            if (vocabScore >= 5) {
+                document.getElementById('vocab-question').textContent = "Congratulations! You completed all vocabulary questions!";
+                document.getElementById('vocab-options').innerHTML = '';
+                createConfetti();
+                return;
+            }
+            
+            // Select a random vocabulary word that hasn't been used
+            let availableWords = vocabularyWords.filter(word => !usedVocabWords.includes(word.word));
+            if (availableWords.length === 0) {
+                availableWords = [...vocabularyWords];
+                usedVocabWords = [];
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableWords.length);
+            currentVocabWord = availableWords[randomIndex];
+            usedVocabWords.push(currentVocabWord.word);
+            
+            document.getElementById('vocab-question').textContent = `What is the meaning of the word '${currentVocabWord.word}'?`;
+            
+            // Generate answer options
+            const vocabOptionsContainer = document.getElementById('vocab-options');
+            vocabOptionsContainer.innerHTML = '';
+            
+            // Shuffle the options
+            const shuffledOptions = [...currentVocabWord.options].sort(() => Math.random() - 0.5);
+            
+            // Create option elements
+            shuffledOptions.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'vocab-option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => checkVocabularyAnswer(option, optionElement);
+                vocabOptionsContainer.appendChild(optionElement);
+            });
+            
+            document.getElementById('vocab-feedback').textContent = '';
+            document.getElementById('vocab-feedback').className = 'feedback';
+        }
+        
+        function checkVocabularyAnswer(selectedAnswer, optionElement) {
+            if (selectedAnswer === currentVocabWord.definition) {
+                document.getElementById('vocab-feedback').textContent = "Correct! Well done!";
+                document.getElementById('vocab-feedback').className = 'feedback correct-feedback';
+                optionElement.classList.add('correct');
+                vocabScore++;
+                document.getElementById('vocab-score').textContent = vocabScore;
+                
+                setTimeout(nextVocabularyWord, 1500);
+            } else {
+                document.getElementById('vocab-feedback').textContent = "Incorrect! Try again.";
+                document.getElementById('vocab-feedback').className = 'feedback incorrect-feedback';
+                optionElement.classList.add('incorrect');
+                
+                // Shake the incorrect option
+                optionElement.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    optionElement.style.animation = '';
+                }, 500);
+            }
+        }
+        
+        // Word Search Game
+        function startWordSearch() {
+            wordsearchScore = 0;
+            foundWords = [];
+            selectedCells = [];
+            generateWordSearch();
+        }
+        
+        function generateWordSearch() {
+            // Select a random word list
+            const randomIndex = Math.floor(Math.random() * wordSearchWordLists.length);
+            wordSearchWords = wordSearchWordLists[randomIndex];
+            
+            document.getElementById('wordsearch-score').textContent = foundWords.length;
+            document.getElementById('total-words').textContent = wordSearchWords.length;
+            document.getElementById('wordsearch-feedback').textContent = "Find the hidden words in the grid! Click and drag to select words.";
+            
+            // Generate word list display
+            const wordListContainer = document.getElementById('word-list');
+            wordListContainer.innerHTML = '';
+            
+            wordSearchWords.forEach(word => {
+                const wordElement = document.createElement('div');
+                wordElement.className = 'word-item';
+                wordElement.textContent = word;
+                wordElement.id = `word-${word}`;
+                wordListContainer.appendChild(wordElement);
+            });
+            
+            // Generate the grid
+            generateWordSearchGrid();
+        }
+        
+        function generateWordSearchGrid() {
+            const gridSize = 10;
+            wordSearchGrid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+            
+            // Place words in the grid
+            wordSearchWords.forEach(word => {
+                placeWordInGrid(word);
+            });
+            
+            // Fill empty cells with random letters
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (wordSearchGrid[i][j] === '') {
+                        wordSearchGrid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    }
+                }
+            }
+            
+            // Display the grid
+            const gridContainer = document.getElementById('wordsearch-grid');
+            gridContainer.innerHTML = '';
+            
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'wordsearch-cell';
+                    cell.textContent = wordSearchGrid[i][j];
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    // Add event listeners for selection
+                    cell.addEventListener('mousedown', startSelection);
+                    cell.addEventListener('mouseenter', continueSelection);
+                    cell.addEventListener('mouseup', endSelection);
+                    
+                    gridContainer.appendChild(cell);
+                }
+            }
+        }
+        
+        function placeWordInGrid(word) {
+            const directions = [
+                [0, 1],   // Horizontal
+                [1, 0],   // Vertical
+                [1, 1],   // Diagonal down-right
+                [1, -1]   // Diagonal down-left
+            ];
+            
+            const gridSize = 10;
+            let placed = false;
+            
+            while (!placed) {
+                const direction = directions[Math.floor(Math.random() * directions.length)];
+                const row = Math.floor(Math.random() * gridSize);
+                const col = Math.floor(Math.random() * gridSize);
+                
+                // Check if word fits in this position and direction
+                let fits = true;
+                for (let i = 0; i < word.length; i++) {
+                    const newRow = row + direction[0] * i;
+                    const newCol = col + direction[1] * i;
+                    
+                    if (newRow < 0 || newRow >= gridSize || newCol < 0 || newCol >= gridSize) {
+                        fits = false;
+                        break;
+                    }
+                    
+                    // Check if cell is empty or has the same letter
+                    if (wordSearchGrid[newRow][newCol] !== '' && wordSearchGrid[newRow][newCol] !== word[i]) {
+                        fits = false;
+                        break;
+                    }
+                }
+                
+                // Place the word if it fits
+                if (fits) {
+                    for (let i = 0; i < word.length; i++) {
+                        const newRow = row + direction[0] * i;
+                        const newCol = col + direction[1] * i;
+                        wordSearchGrid[newRow][newCol] = word[i];
+                    }
+                    placed = true;
+                }
+            }
+        }
+        
+        function startSelection(event) {
+            isSelecting = true;
+            selectedCells = [];
+            const cell = event.target;
+            if (cell.classList.contains('wordsearch-cell')) {
+                selectedCells.push(cell);
+                cell.classList.add('selected');
+            }
+            startCell = cell;
+        }
+        
+        function continueSelection(event) {
+            if (!isSelecting) return;
+            
+            const cell = event.target;
+            if (cell.classList.contains('wordsearch-cell') && !selectedCells.includes(cell)) {
+                // Check if the selection is in a straight line
+                if (isValidSelection(cell)) {
+                    selectedCells.push(cell);
+                    cell.classList.add('selected');
+                }
+            }
+        }
+        
+        function endSelection() {
+            isSelecting = false;
+            
+            if (selectedCells.length > 1) {
+                // Get the selected word
+                const selectedWord = selectedCells.map(cell => cell.textContent).join('');
+                
+                // Check if the word is in the word list
+                if (wordSearchWords.includes(selectedWord) && !foundWords.includes(selectedWord)) {
+                    // Mark the word as found
+                    foundWords.push(selectedWord);
+                    document.getElementById(`word-${selectedWord}`).classList.add('found');
+                    
+                    // Mark cells as found
+                    selectedCells.forEach(cell => {
+                        cell.classList.remove('selected');
+                        cell.classList.add('found');
+                    });
+                    
+                    // Update score
+                    wordsearchScore = foundWords.length;
+                    document.getElementById('wordsearch-score').textContent = wordsearchScore;
+                    document.getElementById('wordsearch-feedback').textContent = `Great! You found "${selectedWord}"!`;
+                    document.getElementById('wordsearch-feedback').className = 'feedback correct-feedback';
+                    
+                    // Check if all words are found
+                    if (foundWords.length === wordSearchWords.length) {
+                        document.getElementById('wordsearch-feedback').textContent = "Congratulations! You found all the words!";
+                        createConfetti();
+                    }
+                } else {
+                    // Clear selection if not a valid word
+                    selectedCells.forEach(cell => {
+                        cell.classList.remove('selected');
+                    });
+                    
+                    if (wordSearchWords.includes(selectedWord) && foundWords.includes(selectedWord)) {
+                        document.getElementById('wordsearch-feedback').textContent = `You already found "${selectedWord}"!`;
+                        document.getElementById('wordsearch-feedback').className = 'feedback incorrect-feedback';
+                    } else {
+                        document.getElementById('wordsearch-feedback').textContent = `"${selectedWord}" is not in the word list.`;
+                        document.getElementById('wordsearch-feedback').className = 'feedback incorrect-feedback';
+                    }
+                }
+            } else {
+                // Clear selection if only one cell selected
+                selectedCells.forEach(cell => {
+                    cell.classList.remove('selected');
+                });
+            }
+            
+            selectedCells = [];
+        }
+        
+        function isValidSelection(cell) {
+            if (selectedCells.length === 0) return true;
+            
+            const firstCell = selectedCells[0];
+            const lastCell = selectedCells[selectedCells.length - 1];
+            
+            const firstRow = parseInt(firstCell.dataset.row);
+            const firstCol = parseInt(firstCell.dataset.col);
+            const lastRow = parseInt(lastCell.dataset.row);
+            const lastCol = parseInt(lastCell.dataset.col);
+            const newRow = parseInt(cell.dataset.row);
+            const newCol = parseInt(cell.dataset.col);
+            
+            // Check if the new cell is in the same row, column, or diagonal as the previous cells
+            if (selectedCells.length === 1) {
+                // For the second cell, any direction is valid
+                return true;
+            } else {
+                // For subsequent cells, check if they continue in the same direction
+                const rowDiff = lastRow - firstRow;
+                const colDiff = lastCol - firstCol;
+                
+                // Normalize the direction
+                const gcd = Math.abs(gcdTwoNumbers(rowDiff, colDiff));
+                const dirRow = rowDiff / gcd;
+                const dirCol = colDiff / gcd;
+                
+                // Check if the new cell continues in the same direction
+                const expectedRow = lastRow + dirRow;
+                const expectedCol = lastCol + dirCol;
+                
+                return newRow === expectedRow && newCol === expectedCol;
+            }
+        }
+        
+        function gcdTwoNumbers(a, b) {
+            if (b === 0) return a;
+            return gcdTwoNumbers(b, a % b);
+        }
+        
+        // High School Game Functions
+        function startHighschoolGame() {
+            startIdiomQuiz();
+        }
+        
+        function startIdiomQuiz() {
+            highschoolScore = 0;
+            currentQuestionIndex = 0;
+            timeLeft = 30;
+            document.getElementById('highschool-score').textContent = highschoolScore;
+            document.getElementById('total-questions').textContent = idiomQuestions.length;
+            document.getElementById('timer').textContent = timeLeft;
+            updateHighschoolProgress();
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            showIdiomQuestion();
+        }
+        
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('highschool-feedback').textContent = "Time's up! Game over.";
+                document.getElementById('highschool-feedback').className = 'feedback incorrect-feedback';
+                document.querySelectorAll('.answer').forEach(answer => {
+                    answer.onclick = null;
+                });
+            }
+        }
+        
+        function showIdiomQuestion() {
+            if (currentQuestionIndex >= idiomQuestions.length) {
+                document.getElementById('idiom-display').textContent = "Quiz Completed!";
+                document.getElementById('quiz-question').textContent = "";
+                document.getElementById('quiz-answers').innerHTML = '';
+                document.getElementById('highschool-feedback').textContent = `Your final score: ${highschoolScore}/${idiomQuestions.length}`;
+                document.getElementById('highschool-feedback').className = 'feedback correct-feedback';
+                clearInterval(timerInterval);
+                
+                // Create confetti if score is high
+                if (highschoolScore >= idiomQuestions.length / 2) {
+                    createConfetti();
+                }
+                return;
+            }
+            
+            const question = idiomQuestions[currentQuestionIndex];
+            document.getElementById('idiom-display').textContent = question.idiom;
+            document.getElementById('quiz-question').textContent = question.question;
+            document.getElementById('quiz-hint').textContent = question.hint;
+            
+            const answersContainer = document.getElementById('quiz-answers');
+            answersContainer.innerHTML = '';
+            
+            question.answers.forEach((answer, index) => {
+                const answerElement = document.createElement('div');
+                answerElement.className = 'answer';
+                answerElement.textContent = answer;
+                answerElement.onclick = () => checkIdiomAnswer(index, answerElement);
+                answersContainer.appendChild(answerElement);
+            });
+            
+            document.getElementById('highschool-feedback').textContent = '';
+            document.getElementById('highschool-feedback').className = 'feedback';
+        }
+        
+        function checkIdiomAnswer(selectedIndex, answerElement) {
+            const question = idiomQuestions[currentQuestionIndex];
+            
+            if (selectedIndex === question.correct) {
+                document.getElementById('highschool-feedback').textContent = "Correct! Well done!";
+                document.getElementById('highschool-feedback').className = 'feedback correct-feedback';
+                answerElement.classList.add('correct');
+                highschoolScore++;
+            } else {
+                document.getElementById('highschool-feedback').textContent = "Incorrect! Try again.";
+                document.getElementById('highschool-feedback').className = 'feedback incorrect-feedback';
+                answerElement.classList.add('incorrect');
+                
+                // Highlight the correct answer
+                const answers = document.querySelectorAll('.answer');
+                answers[question.correct].classList.add('correct');
+            }
+            
+            document.getElementById('highschool-score').textContent = highschoolScore;
+            currentQuestionIndex++;
+            updateHighschoolProgress();
+            
+            setTimeout(showIdiomQuestion, 2000);
+        }
+        
+        function updateHighschoolProgress() {
+            const progress = (currentQuestionIndex / idiomQuestions.length) * 100;
+            document.getElementById('highschool-progress').style.width = progress + '%';
+        }
+        
+        // Fill in the Blank Game
+        function startFillBlank() {
+            fillblankScore = 0;
+            currentFillblankIndex = 0;
+            timeLeft = 30;
+            document.getElementById('fillblank-score').textContent = fillblankScore;
+            document.getElementById('total-fillblank').textContent = fillblankQuestions.length;
+            document.getElementById('fillblank-timer').textContent = timeLeft;
+            updateFillblankProgress();
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateFillblankTimer, 1000);
+            
+            showFillblankQuestion();
+        }
+        
+        function updateFillblankTimer() {
+            timeLeft--;
+            document.getElementById('fillblank-timer').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('fillblank-feedback').textContent = "Time's up! Game over.";
+                document.getElementById('fillblank-feedback').className = 'feedback incorrect-feedback';
+                document.querySelectorAll('.blank-option').forEach(option => {
+                    option.onclick = null;
+                });
+            }
+        }
+        
+        function showFillblankQuestion() {
+            if (currentFillblankIndex >= fillblankQuestions.length) {
+                document.getElementById('fillblank-sentence').textContent = "Game Completed!";
+                document.getElementById('fillblank-options').innerHTML = '';
+                document.getElementById('fillblank-feedback').textContent = `Your final score: ${fillblankScore}/${fillblankQuestions.length}`;
+                document.getElementById('fillblank-feedback').className = 'feedback correct-feedback';
+                clearInterval(timerInterval);
+                
+                // Create confetti if score is high
+                if (fillblankScore >= fillblankQuestions.length / 2) {
+                    createConfetti();
+                }
+                return;
+            }
+            
+            const question = fillblankQuestions[currentFillblankIndex];
+            document.getElementById('fillblank-sentence').innerHTML = question.sentence.replace('______', '<span class="blank">______</span>');
+            
+            const optionsContainer = document.getElementById('fillblank-options');
+            optionsContainer.innerHTML = '';
+            
+            // Shuffle the options
+            const shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+            
+            shuffledOptions.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'blank-option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => checkFillblankAnswer(option, question.correct, optionElement);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            document.getElementById('fillblank-feedback').textContent = '';
+            document.getElementById('fillblank-feedback').className = 'feedback';
+        }
+        
+        function checkFillblankAnswer(selected, correct, optionElement) {
+            if (selected === correct) {
+                document.getElementById('fillblank-feedback').textContent = "Correct! Well done!";
+                document.getElementById('fillblank-feedback').className = 'feedback correct-feedback';
+                optionElement.classList.add('correct');
+                fillblankScore++;
+                
+                // Update the sentence with the correct word
+                const sentence = document.getElementById('fillblank-sentence');
+                sentence.innerHTML = fillblankQuestions[currentFillblankIndex].sentence.replace('______', `<span class="blank" style="color:#4CAF50; font-weight:bold;">${correct}</span>`);
+                
+                document.getElementById('fillblank-score').textContent = fillblankScore;
+                currentFillblankIndex++;
+                updateFillblankProgress();
+                
+                setTimeout(showFillblankQuestion, 2000);
+            } else {
+                document.getElementById('fillblank-feedback').textContent = "Incorrect! Try again.";
+                document.getElementById('fillblank-feedback').className = 'feedback incorrect-feedback';
+                optionElement.classList.add('incorrect');
+                
+                // Shake the incorrect option
+                optionElement.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    optionElement.style.animation = '';
+                }, 500);
+            }
+        }
+        
+        function updateFillblankProgress() {
+            const progress = (currentFillblankIndex / fillblankQuestions.length) * 100;
+            document.getElementById('fillblank-progress').style.width = progress + '%';
+        }
+        
+        // Story Completion Game
+        function startStoryGame() {
+            storyScore = 0;
+            currentStoryIndex = 0;
+            timeLeft = 60;
+            document.getElementById('story-score').textContent = storyScore;
+            document.getElementById('story-timer').textContent = timeLeft;
+            updateStoryProgress();
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateStoryTimer, 1000);
+            
+            showStory();
+        }
+        
+        function updateStoryTimer() {
+            timeLeft--;
+            document.getElementById('story-timer').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('story-feedback').textContent = "Time's up! Game over.";
+                document.getElementById('story-feedback').className = 'feedback incorrect-feedback';
+                document.querySelectorAll('.story-option').forEach(option => {
+                    option.onclick = null;
+                });
+            }
+        }
+        
+        function showStory() {
+            if (currentStoryIndex >= storyData.length) {
+                document.getElementById('story-text').textContent = "All stories completed!";
+                document.getElementById('story-options').innerHTML = '';
+                document.getElementById('story-feedback').textContent = "Congratulations! You completed all the stories!";
+                document.getElementById('story-feedback').className = 'feedback correct-feedback';
+                clearInterval(timerInterval);
+                createConfetti();
+                return;
+            }
+            
+            const story = storyData[currentStoryIndex];
+            document.getElementById('story-text').innerHTML = story.text;
+            
+            // Reset story words
+            storyWords = [];
+            
+            // Generate options for all blanks
+            const optionsContainer = document.getElementById('story-options');
+            optionsContainer.innerHTML = '';
+            
+            // Collect all unique options from all blanks
+            const allOptions = [];
+            story.blanks.forEach(blank => {
+                blank.options.forEach(option => {
+                    if (!allOptions.includes(option)) {
+                        allOptions.push(option);
+                    }
+                });
+            });
+            
+            // Shuffle the options
+            const shuffledOptions = [...allOptions].sort(() => Math.random() - 0.5);
+            
+            // Create option elements
+            shuffledOptions.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'story-option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectStoryWord(option, optionElement);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            document.getElementById('story-feedback').textContent = '';
+            document.getElementById('story-feedback').className = 'feedback';
+        }
+        
+        function selectStoryWord(word, optionElement) {
+            // Find the first empty blank
+            let blankId = null;
+            for (let i = 0; i < storyData[currentStoryIndex].blanks.length; i++) {
+                const blank = storyData[currentStoryIndex].blanks[i];
+                if (!storyWords[blank.id]) {
+                    blankId = blank.id;
+                    break;
+                }
+            }
+            
+            if (blankId) {
+                // Add the word to the story
+                storyWords[blankId] = word;
+                document.getElementById(`story-blank-${blankId}`).innerHTML = `<span style="color:#6a11cb; font-weight:bold;">${word}</span>`;
+                
+                // Disable the selected option
+                optionElement.style.opacity = '0.5';
+                optionElement.style.pointerEvents = 'none';
+                
+                // Check if all blanks are filled
+                const allFilled = storyData[currentStoryIndex].blanks.every(blank => storyWords[blank.id]);
+                
+                if (allFilled) {
+                    // Check the story
+                    checkStory();
+                }
+            }
+        }
+        
+        function checkStory() {
+            let correctCount = 0;
+            const story = storyData[currentStoryIndex];
+            
+            story.blanks.forEach(blank => {
+                if (storyWords[blank.id] === blank.correct) {
+                    correctCount++;
+                    document.getElementById(`story-blank-${blank.id}`).innerHTML = `<span style="color:#4CAF50; font-weight:bold;">${blank.correct}</span>`;
+                } else {
+                    document.getElementById(`story-blank-${blank.id}`).innerHTML = `<span style="color:#F44336; font-weight:bold;">${storyWords[blank.id]}</span> (Correct: <span style="color:#4CAF50;">${blank.correct}</span>)`;
+                }
+            });
+            
+            storyScore += correctCount;
+            document.getElementById('story-score').textContent = storyScore;
+            
+            if (correctCount === story.blanks.length) {
+                document.getElementById('story-feedback').textContent = "Perfect! You completed the story correctly!";
+                document.getElementById('story-feedback').className = 'feedback correct-feedback';
+                createConfetti();
+            } else {
+                document.getElementById('story-feedback').textContent = `You got ${correctCount} out of ${story.blanks.length} words correct.`;
+                document.getElementById('story-feedback').className = 'feedback incorrect-feedback';
+            }
+            
+            currentStoryIndex++;
+            updateStoryProgress();
+            
+            setTimeout(showStory, 4000);
+        }
+        
+        function updateStoryProgress() {
+            const progress = (currentStoryIndex / storyData.length) * 100;
+            document.getElementById('story-progress').style.width = progress + '%';
+        }
+        
+        // Initialize by showing the age selector
+        showAgeSelector();
+    </script>
+</body>
+</html>

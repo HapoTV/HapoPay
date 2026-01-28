@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Hapo Technology</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .about-hero {
+            background: linear-gradient(135deg, #e11d48 0%, #8b5cf6 100%);
+            padding: 40px 20px 60px;
+            text-align: center;
+            color: white;
+        }
+
+        .about-hero h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .about-hero p {
+            font-size: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .about-section {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .about-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .about-content.reverse {
+            direction: rtl;
+        }
+
+        .about-content.reverse > * {
+            direction: ltr;
+        }
+
+        .about-text h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #e11d48;
+            margin-bottom: 16px;
+        }
+
+        .about-text p {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+
+        .about-image {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .about-image-placeholder {
+            text-align: center;
+            color: #64748b;
+        }
+
+        .about-image-placeholder i {
+            font-size: 48px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .about-image-placeholder p {
+            font-size: 16px;
+            font-weight: 600;
+            color: #475569;
+            margin: 0;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .value-card {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .value-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(225, 29, 72, 0.12);
+        }
+
+        .value-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, #e11d48 0%, #8b5cf6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+        }
+
+        .value-card h4 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .value-card p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #64748b;
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #f9f5ff 0%, #fef2f2 100%);
+            padding: 60px 20px;
+            margin: 60px 0;
+        }
+
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 40px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e11d48 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-item p {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .mission-vision {
+            background: white;
+            padding: 48px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin: 60px auto;
+            max-width: 1200px;
+        }
+
+        .mission-vision-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .mission-vision h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #e11d48;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mission-vision h3 i {
+            font-size: 24px;
+        }
+
+        .mission-vision p {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #475569;
+        }
+
+        @media (max-width: 768px) {
+            .about-hero {
+                padding: 60px 20px 40px;
+            }
+
+            .about-hero h1 {
+                font-size: 28px;
+            }
+
+            .about-hero p {
+                font-size: 15px;
+            }
+
+            .about-section {
+                margin: 40px auto;
+            }
+
+            .about-section h2 {
+                font-size: 24px;
+            }
+
+            .about-content,
+            .mission-vision-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .values-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+
+            .mission-vision {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="nav-header-new">
+        <div class="nav-container-new">
+            <!-- Logo -->
+            <div class="nav-brand-new">
+                <img src="Uploads/Logo..png" alt="Hapo Logo" class="logo-new">
+                <div class="brand-text">
+                    <span class="brand-name-new">Hapo<strong>Pay</strong></span>
+                    <span class="brand-tagline-new">Your Money, Your Growth, The Hapo Way!</span>
+                </div>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="about.html" class="nav-link active">ABOUT US</a>
+                <a href="index.html#features" class="nav-link">FEATURES</a>
+                <a href="why-hapopay.html" class="nav-link">WHY HAPO PAY?</a>
+            </div>
+            
+            <!-- Right Actions -->
+            <div class="nav-actions-new">
+                <button class="icon-btn menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="student-login-btn-new" onclick="window.location.href='studentLogin.html'">Student Login</button>
+                <button class="parent-signup-btn-new" onclick="window.location.href='signup.html'">Parent Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <h1>About Hapo Technology</h1>
+        <p>Empowering families with innovative financial solutions that teach responsibility, build trust, and shape the financial futures of tomorrow's leaders.</p>
+    </section>
+
+    <!-- Company Story -->
+    <section class="about-section">
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Our Story</h3>
+                <p>Hapo Technology was founded with a simple yet powerful vision: to bridge the gap between traditional parenting and modern financial education. We recognized that in today's digital age, children need to learn financial responsibility early, but parents need the right tools to guide them safely.</p>
+                <p>What started as a solution for concerned parents has evolved into a comprehensive platform that serves thousands of families across Africa, helping them navigate the complexities of student spending with confidence and control.</p>
+            </div>
+            <div class="about-image">
+                <div class="about-image-placeholder">
+                    <i class="fas fa-image"></i>
+                    <p>Picture here</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-content reverse">
+            <div class="about-text">
+                <h3>About HapoPay Platform</h3>
+                <p>HapoPay is our flagship product—a smart financial platform designed specifically for families with students. It combines cutting-edge technology with practical parenting needs to create a seamless experience for both parents and children.</p>
+                <p>The platform enables parents to manage student spending conveniently through real-time monitoring, smart spending limits, and instant fund transfers. Students can make secure payments using QR codes at participating stores, while parents maintain complete oversight and control.</p>
+                <p>With support for multiple currencies including South African Rand (ZAR), Zimbabwean Dollar (ZWL), and Botswana Pula (BWP), HapoPay serves families across Southern Africa, adapting to local needs while maintaining world-class security standards.</p>
+            </div>
+            <div class="about-image">
+                <div class="about-image-placeholder">
+                    <i class="fas fa-image"></i>
+                    <p>Picture here</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission & Vision -->
+    <div class="about-section">
+        <div class="mission-vision">
+            <div class="mission-vision-grid">
+                <div>
+                    <h3><i class="fas fa-bullseye"></i> Our Mission</h3>
+                    <p>To empower parents with innovative tools that enable safe, controlled, and educational financial experiences for their children. We strive to make financial literacy accessible and practical for every family, regardless of their background or location.</p>
+                </div>
+                <div>
+                    <h3><i class="fas fa-eye"></i> Our Vision</h3>
+                    <p>To become Africa's leading family financial platform, shaping a generation of financially responsible individuals who understand the value of money, the importance of budgeting, and the power of smart financial decisions from an early age.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Values -->
+    <section class="about-section">
+        <h2>Our Core Values</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h4>Security First</h4>
+                <p>We prioritize the safety and security of your family's financial data with bank-level encryption and robust security protocols.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h4>Family-Centered</h4>
+                <p>Every feature we build is designed with families in mind, ensuring both parents and children have positive experiences.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h4>Innovation</h4>
+                <p>We continuously evolve our platform with the latest technology to provide cutting-edge solutions for modern families.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h4>Education</h4>
+                <p>We believe in teaching financial literacy through practical experience, helping children learn valuable money management skills.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-hand-holding-heart"></i>
+                </div>
+                <h4>Trust & Transparency</h4>
+                <p>We build trust through transparent operations, clear communication, and unwavering commitment to our users.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-globe-africa"></i>
+                </div>
+                <h4>African Focus</h4>
+                <p>We're proud to serve African families, understanding local needs and adapting our solutions to regional contexts.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <section style="background: #f9f5ff; padding: 60px 20px; margin: 60px 0;">
+        <div class="about-section">
+            <h2>What Makes HapoPay Different</h2>
+            <div class="values-grid" style="margin-top: 40px;">
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h4>QR Code Payments</h4>
+                <p>Students can make secure payments at participating stores using simple QR codes—no cash, no cards, just convenience.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h4>Real-Time Notifications</h4>
+                <p>Parents receive instant notifications for every transaction, ensuring complete visibility and peace of mind.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h4>Smart Analytics</h4>
+                <p>Track spending patterns, identify trends, and make informed decisions with comprehensive financial insights.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-sliders-h"></i>
+                </div>
+                <h4>Flexible Controls</h4>
+                <p>Set daily, weekly, or monthly spending limits, restrict categories, and adjust permissions as needed.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h4>Reward System</h4>
+                <p>Encourage good financial behavior with our built-in reward system that recognizes responsible spending.</p>
+            </div>
+
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h4>Multi-Platform Access</h4>
+                <p>Access HapoPay from any device—desktop, tablet, or mobile—with a seamless, responsive experience.</p>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="about-section" style="text-align: center; padding: 80px 20px;">
+        <h2 style="margin-bottom: 20px;">Ready to Get Started?</h2>
+        <p style="font-size: 18px; color: #64748b; max-width: 700px; margin: 0 auto 40px;">Join thousands of families who trust HapoPay to manage their student spending safely and effectively.</p>
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+            <button class="parent-signup-btn-new" onclick="window.location.href='signup.html'" style="padding: 16px 40px; font-size: 16px;">
+                Get Started Today
+            </button>
+            <button class="student-login-btn-new" onclick="window.location.href='#contact'" style="padding: 16px 40px; font-size: 16px;">
+                Contact Us
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: #1e293b; color: white; padding: 60px 20px 30px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 60px; margin-bottom: 50px;">
+                <!-- Brand Section -->
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                        <img src="src/lib/images/logo.jpg" alt="Hapo Logo" style="width: 50px; height: 50px; border-radius: 8px;">
+                        <span style="font-size: 24px; font-weight: 700;">Hapo Technology</span>
+                    </div>
+                    <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">Empowering Student Spending. Shaping Financial Futures. A smart financial platform for families.</p>
+                    <div style="margin-top: 20px;">
+                        <p style="color: #94a3b8; margin-bottom: 12px; font-weight: 500;">Follow us</p>
+                        <div style="display: flex; gap: 12px;">
+                            <a href="#" style="color: #94a3b8; font-size: 20px; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" style="color: #94a3b8; font-size: 20px; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" style="color: #94a3b8; font-size: 20px; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 20px; color: white;">Quick Links</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 12px;">
+                            <a href="index.html" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">Home</a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="about.html" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">About Us</a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="index.html#features" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">Features</a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="studentLogin.html" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">Student Login</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Resources -->
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 20px; color: white;">Resources</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">Blog</a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">Help Center</a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">FAQs</a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#94a3b8'">Support</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 20px; color: white;">Contact Info</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 16px; display: flex; align-items: start; gap: 10px;">
+                            <i class="fas fa-envelope" style="color: #e11d48; margin-top: 2px;"></i>
+                            <a href="mailto:info@hapotechnology.co.za" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#e11d48'" onmouseout="this.style.color='#94a3b8'">info@hapotechnology.co.za</a>
+                        </li>
+                        <li style="margin-bottom: 16px; display: flex; align-items: start; gap: 10px;">
+                            <i class="fas fa-phone" style="color: #e11d48; margin-top: 2px;"></i>
+                            <span style="color: #94a3b8;">(+27) 123-4567</span>
+                        </li>
+                        <li style="display: flex; align-items: start; gap: 10px;">
+                            <i class="fas fa-map-marker-alt" style="color: #e11d48; margin-top: 2px;"></i>
+                            <span style="color: #94a3b8; line-height: 1.5;">Cape Town, South Africa</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div style="border-top: 1px solid #334155; padding-top: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                <p style="color: #94a3b8; margin: 0; font-size: 14px;">© 2025 Hapo Technology. All rights reserved.</p>
+                <div style="display: flex; gap: 24px;">
+                    <a href="#" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#e11d48'" onmouseout="this.style.color='#94a3b8'">Privacy Policy</a>
+                    <a href="#" style="color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='#e11d48'" onmouseout="this.style.color='#94a3b8'">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
