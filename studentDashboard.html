@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,10 +13,8 @@
 <body>
   <nav class="nav-header-new" style="background: linear-gradient(135deg, #e11d48, #8b5cf6); position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; max-width: 100%;">
-      <!-- Left Icon - Profile -->
-      <button onclick="toggleStudentProfileMenu()" style="background: none; border: none; cursor: pointer; color: white; font-size: 24px; padding: 8px;">
-        <i class="fas fa-user-circle"></i>
-      </button>
+      <!-- Left spacer (profile icon removed for students) -->
+      <div style="width: 40px;"></div>
       
       <!-- Center - HapoPay Brand -->
       <div style="flex: 1; text-align: center;">
@@ -40,18 +38,6 @@
         <button onclick="studentLogout()" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; color: white; font-size: 14px; padding: 8px 16px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
           <i class="fas fa-sign-out-alt" style="margin-right: 6px;"></i>Logout
         </button>
-      </div>
-      
-      <!-- Profile Dropdown Menu -->
-      <div id="studentProfileMenuDropdown" style="display: none; position: fixed; right: 20px; top: 60px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 150px; z-index: 1001;">
-        <a href="javascript:void(0)" onclick="showStudentSettings()" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #e5e7eb; font-size: 14px; transition: background 0.2s; border-radius: 8px 8px 0 0;">
-          <i class="fas fa-cog" style="margin-right: 8px;"></i>Settings
-        </a>
-        <a href="javascript:void(0)" onclick="logoutStudent()" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='white'" style="display: block; padding: 12px 20px; color: #ef4444; text-decoration: none; font-size: 14px; transition: background 0.2s; border-radius: 0 0 8px 8px;">
-          <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i>Logout
-        </a>
-      </div>
-        </div>
       </div>
     </div>
   </nav>
@@ -243,12 +229,12 @@
         <!-- Rewards Overview -->
         <div class="section-spacer">
           <div class="rewards-overview">
-            <div class="rewards-card">
+            <div class="rewards-card" style="display: none;">
               <div class="rewards-icon">
                 <i class="fas fa-star"></i>
               </div>
               <div class="rewards-content">
-                <div class="rewards-label">Total Points</div>
+                <div class="rewards-label">Reward Points</div>
                 <div class="rewards-value" id="totalPoints">Loading...</div>
               </div>
             </div>
@@ -257,7 +243,7 @@
                 <i class="fas fa-calendar-alt"></i>
               </div>
               <div class="rewards-month-content">
-                <div class="rewards-month-label">Points This Month</div>
+                <div class="rewards-month-label">Reward Points</div>
                 <div class="rewards-month-value" id="monthlyPoints">Loading...</div>
               </div>
             </div>
@@ -437,14 +423,14 @@
                   <p class="game-description">Test your memory skills by matching pairs of cards</p>
                 </div>
               </div>
-              <div class="game-card-stats">
-                <div class="game-stat">
-                  <span class="game-stat-label">Best Score:</span>
-                  <span class="game-stat-value" id="memoryBestScore">0</span>
-                </div>
-                <div class="game-stat">
-                  <span class="game-stat-label">Points per win:</span>
-                  <span class="game-stat-value">50 pts</span>
+              <div class="game-card-stats" style="display: flex; justify-content: center; margin: 12px 0;">
+                <div class="points-by-grade" style="width: 180px; font-size: 13px; background: #f9fafb; border-radius: 8px; padding: 8px 12px; text-align: center;">
+                  <div style="font-weight: 600; margin-bottom: 6px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Points per Grade</div>
+                  <div style="display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: center;">
+                    <span>3-5:</span><span style="text-align: right;">30 (100+)</span>
+                    <span>6-8:</span><span style="text-align: right;">50 (200+)</span>
+                    <span>9-12:</span><span style="text-align: right;">75 (300+)</span>
+                  </div>
                 </div>
               </div>
               <div class="game-card-actions">
@@ -466,6 +452,15 @@
                   <p class="game-description">Enjoy a variety of fun mini-games and earn points!</p>
                 </div>
               </div>
+              <div class="game-card-stats" style="display: flex; justify-content: center; margin: 12px 0;">
+                <div class="points-by-grade" style="width: 180px; font-size: 13px; background: #f9fafb; border-radius: 8px; padding: 8px 12px; text-align: center;">
+                  <div style="font-weight: 600; margin-bottom: 6px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Points per Grade</div>
+                  <div style="display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: center;">
+                    <span>Primary:</span><span style="text-align: right;">40</span>
+                    <span>High School:</span><span style="text-align: right;">60</span>
+                  </div>
+                </div>
+              </div>
               <div class="game-card-actions">
                 <button class="btn btn-primary game-play-btn" onclick="startFunGame()">
                   <i class="fas fa-play"></i>
@@ -474,41 +469,27 @@
               </div>
             </div>
 
-            <div style="background: white; border-radius: 16px; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; border-top: 4px solid #e11d48;">
-              <div style="padding: 24px;">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-                  <div style="width: 80px; height: 80px; background: #e11d48; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <i class="fas fa-calculator" style="font-size: 36px; color: white;"></i>
-                  </div>
-                  <div>
-                    <h4 style="font-size: 24px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Math Games</h4>
-                    <p style="font-size: 14px; color: #6b7280; margin: 0;">Practice math skills across levels and earn points</p>
+            <div class="game-card" style="border-top: 4px solid #e11d48;">
+              <div class="game-card-header">
+                <div class="game-icon" style="background: #e11d48;">
+                  <i class="fas fa-calculator"></i>
+                </div>
+                <div class="game-info">
+                  <h4 class="game-title">Math Games</h4>
+                  <p class="game-description">Practice math skills across levels and earn points</p>
+                </div>
+              </div>
+              <div class="game-card-stats" style="display: flex; justify-content: center; margin: 12px 0;">
+                <div class="points-by-grade" style="width: 180px; font-size: 13px; background: #f9fafb; border-radius: 8px; padding: 8px 12px; text-align: center;">
+                  <div style="font-weight: 600; margin-bottom: 6px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">Points per Grade</div>
+                  <div style="display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: center;">
+                    <span>Primary:</span><span style="text-align: right;">20</span>
+                    <span>High School:</span><span style="text-align: right;">40</span>
                   </div>
                 </div>
-                
-                <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div style="text-align: center;">
-                      <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Best Score:</div>
-                      <div style="font-size: 28px; font-weight: 700; color: #e11d48;" id="mathBestScore">0</div>
-                    </div>
-                    <div>
-                      <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; text-align: center;">Points Per Win:</div>
-                      <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background: white; border-radius: 6px;">
-                          <span style="font-size: 13px; color: #6b7280; font-weight: 500;">Primary:</span>
-                          <span style="font-size: 16px; font-weight: 700; color: #e11d48;" id="mathPointsPrimary">-</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background: white; border-radius: 6px;">
-                          <span style="font-size: 13px; color: #6b7280; font-weight: 500;">High School:</span>
-                          <span style="font-size: 16px; font-weight: 700; color: #e11d48;" id="mathPointsHighSchool">-</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <button onclick="startMathGame()" style="width: 100%; background: #e11d48; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#be123c'" onmouseout="this.style.background='#e11d48'">
+              </div>
+              <div class="game-card-actions">
+                <button class="btn btn-primary game-play-btn" onclick="startMathGame()" style="width: 100%;">
                   <i class="fas fa-play"></i>
                   Play Now
                 </button>
@@ -657,7 +638,7 @@
          <div class="game-iframe-container">
            <iframe 
              id="memoryGameFrame" 
-             src="https://memory-game-plum-pi.vercel.app/" 
+             src="HapoPayGames/Memory-Game/index.html" 
              frameborder="0" 
              allowfullscreen
              class="memory-game-iframe">
@@ -715,12 +696,12 @@
            </button>
          </div>
        </div>
-       <div class="modal-actions">
-         <button class="btn btn-secondary" onclick="closeMemoryGame()">Close Game</button>
+       <div class="modal-actions" style="justify-content: flex-end; gap: 8px;">
          <button class="btn btn-primary" onclick="markGameCompleted()">
-           <i class="fas fa-check"></i>
-           Mark as Completed
+           <i class="fas fa-save"></i>
+           Save Session & Award Points
          </button>
+         <button class="btn btn-secondary" onclick="closeMemoryGame()">Close Game</button>
        </div>
      </div>
    </div>
@@ -747,7 +728,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script>
+    // Initialize Supabase client if not already initialized
+    // Always create a dedicated client instance from the global namespace
+    window.supabaseClient = window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
+  </script>
   <script src="student-currency-handler.js"></script>
+  <script src="js/gamePointsManager.js"></script>
   
   <script>
     // Ensure student context is hydrated even if caches were cleared
@@ -783,7 +770,6 @@
   <script>
     // Emergency Request Feature - Version 1.0
     // Updated: Emergency request modal and functionality implemented
-    const supabase = window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_KEY);
     let currentStudent = null;
 
     // Load student data on page load - WITH DATABASE CONNECTION
@@ -814,8 +800,8 @@
       try {
         console.log('Fetching student data from database...');
         
-        // Get fresh student data from database using service role to bypass RLS
-        const { data: studentData, error } = await supabase
+        // Get fresh student data from database using anon key
+        const { data: studentData, error } = await supabaseClient
           .from('children')
           .select(`
             id,
@@ -1007,7 +993,7 @@
       }
       
       try {
-        const { data: student, error } = await supabase
+        const { data: student, error } = await supabaseClient
           .from('children')
           .select('balance')
           .eq('id', currentStudent.id)
@@ -1665,7 +1651,7 @@
         // Local cache holder to avoid ReferenceError in later branches
         let cachedActivities = [];
         // Always try to fetch fresh data first, only use cache as fallback
-        if (!supabase) {
+        if (!window.supabaseClient) {
           console.log('Supabase client not available, using cached data');
           if (!tryCache()) {
             showEmptyState();
@@ -1686,9 +1672,9 @@
         
         // Try to fetch from API
         const [transactionsResult, moneyRequestsResult, emergencyRequestsResult] = await Promise.all([
-          supabase.from('transactions').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50),
-          supabase.from('money_requests').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50),
-          supabase.from('emergency_requests').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50)
+          supabaseClient.from('transactions').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50),
+          supabaseClient.from('money_requests').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50),
+          supabaseClient.from('emergency_requests').select('*').eq('child_id', studentId).order('created_at', { ascending: false }).limit(50)
         ]);
         
         const transactions = transactionsResult.data || [];
@@ -2339,8 +2325,11 @@
         const cachedPoints = localStorage.getItem('cachedStudentPoints');
         if (cachedPoints) {
           const pointsData = JSON.parse(cachedPoints);
-          document.getElementById('totalPoints').textContent = pointsData.total_points || '0';
-          document.getElementById('monthlyPoints').textContent = pointsData.points_this_month || '0';
+          const rewardTotal = pointsData.total_points || 0;
+
+          // Small card and big pink bar both show the same Reward Points balance
+          document.getElementById('totalPoints').textContent = rewardTotal.toString();
+          document.getElementById('monthlyPoints').textContent = rewardTotal.toString();
         } else {
           document.getElementById('totalPoints').textContent = '0';
           document.getElementById('monthlyPoints').textContent = '0';
@@ -2359,7 +2348,7 @@
     
     async function loadRewardsStore() {
       try {
-        const { data: rewards, error } = await supabase
+        const { data: rewards, error } = await supabaseClient
           .from('rewards_store')
           .select('*')
           .eq('parent_id', currentStudent.parent_id)
@@ -2418,21 +2407,23 @@
         }
         
         // Use the already initialized supabase client
-        if (!supabase) {
+        if (!window.supabaseClient) {
           alert('Unable to process redemption. Please try again later.');
           return;
         }
         
-        // Create redemption request
-        const { data, error } = await supabase
+        // Create redemption record in reward_redemptions table
+        // Note: table columns are points_spent, status, requested_at, redeemed_at
+        const nowIso = new Date().toISOString();
+        const { error } = await supabaseClient
           .from('reward_redemptions')
           .insert([{
             child_id: currentStudent.id,
             reward_id: rewardId,
-            points_used: pointsCost,
+            points_spent: pointsCost,
             status: 'redeemed',
-            redeemed_at: new Date().toISOString(),
-            created_at: new Date().toISOString()
+            requested_at: nowIso,
+            redeemed_at: nowIso
           }]);
           
         if (error) throw error;
@@ -2440,12 +2431,11 @@
         // Deduct points from student's total
         const newPointsTotal = currentPoints - pointsCost;
         
-        // Skip database update to avoid API calls when parent is signed out
-        // Cache the points data locally instead
+        // Cache the points data locally so rewards overview stays in sync
         const pointsData = {
           total_points: newPointsTotal,
           points_this_month: 0, // Would need to calculate this properly
-          updated_at: new Date().toISOString()
+          updated_at: nowIso
         };
         localStorage.setItem('cachedStudentPoints', JSON.stringify(pointsData));
         
@@ -2487,6 +2477,14 @@
     }
 
     function markGameCompleted() {
+      // Check if all difficulty levels are completed
+      const completedDifficulties = document.querySelectorAll('.difficulty-status[data-completed="true"]').length;
+      
+      if (completedDifficulties < 3) {
+        alert('Please complete your grade game before marking as completed');
+        return;
+      }
+      
       // Calculate points earned (base 50 points for completion)
       const pointsEarned = 50;
       
@@ -2513,26 +2511,127 @@
     }
     
     // Math Game Integration Functions
+    let lastMathGameResult = null;
+
     function startMathGame() {
-      document.getElementById('mathGameModal').style.display = 'block';
+      const modal = document.getElementById('mathGameModal');
+      modal.style.display = 'block';
+      
       // Reset completion notice
       const notice = document.getElementById('mathGameCompletionNotice');
       if (notice) {
         notice.style.display = 'none';
       }
+
+      // Disable save button until game is actually completed
+      const mathSaveBtn = document.querySelector('button[onclick="saveMathGameSession()"]');
+      if (mathSaveBtn) {
+        mathSaveBtn.disabled = true;
+        mathSaveBtn.style.opacity = '0.5';
+        mathSaveBtn.style.cursor = 'not-allowed';
+      }
+      
+      // Add message listener for game completion
+      function handleMathGameMessage(event) {
+        // Check if this is a game completion message from the math game
+        if (event.data && event.data.type === 'gameCompleted' && event.data.game === 'mathGame') {
+          const score = event.data.score || 'Completed';
+          const pointsEarned = event.data.points || 0;
+          const passed = event.data.passed === true || pointsEarned > 0;
+
+          if (!passed) {
+            alert('You completed the Math Game but did not pass. Keep trying to improve your score!');
+            // Keep save button disabled since this is not a win
+            return;
+          }
+
+          // Store result so Save button can award points only after a real win
+          lastMathGameResult = { score, pointsEarned };
+
+          // Inform student that they can now save their session
+          alert(`Math Game completed! You can now save your session and earn ${pointsEarned} points.`);
+
+          // Show completion notice in the modal (points filled when saved)
+          if (notice) {
+            notice.style.display = 'block';
+          }
+
+          // Enable save button now that the game is completed AND passed
+          const mathSaveBtn = document.querySelector('button[onclick="saveMathGameSession()"]');
+          if (mathSaveBtn) {
+            mathSaveBtn.disabled = false;
+            mathSaveBtn.style.opacity = '1';
+            mathSaveBtn.style.cursor = 'pointer';
+          }
+        }
+      }
+      
+      // Add the event listener
+      window.addEventListener('message', handleMathGameMessage);
+      
+      // Store the handler so we can remove it later
+      modal._messageHandler = handleMathGameMessage;
       
       // Reload iframe to start fresh game
       const iframe = document.getElementById('mathGameFrame');
       if (iframe) {
-        iframe.src = iframe.src;
+        // Set the src after a small delay to ensure the iframe is ready
+        setTimeout(() => {
+          iframe.src = iframe.src;
+        }, 100);
       }
     }
 
     function closeMathGame() {
-      document.getElementById('mathGameModal').style.display = 'none';
+      const modal = document.getElementById('mathGameModal');
+      modal.style.display = 'none';
+      
+      // Remove the message listener when closing the game
+      if (modal._messageHandler) {
+        window.removeEventListener('message', modal._messageHandler);
+        delete modal._messageHandler;
+      }
+    }
+
+    function saveMathGameSession() {
+      // Only allow saving if the game has actually been completed
+      if (!lastMathGameResult) {
+        alert('Please complete the Math Game before saving your session.');
+        return;
+      }
+
+      const pointsEarned = lastMathGameResult.pointsEarned || 40;
+      const score = lastMathGameResult.score || "Completed";
+      
+      // Show completion notification
+      alert(`Math Game completed! You earned ${pointsEarned} points.`);
+      
+      // Update student points using the points manager
+      if (window.gamePointsManager) {
+        window.gamePointsManager.addPoints(pointsEarned, 'Math Game');
+      }
+      // Update daily stats cards
+      incrementDailyGameStats(pointsEarned);
+      // Accumulate into rewards total points
+      incrementTotalPoints(pointsEarned);
+      
+      // Add to game activity
+      addGameActivity('Math Game', pointsEarned, score);
+      
+      // Show completion notice in the modal
+      const notice = document.getElementById('mathGameCompletionNotice');
+      if (notice) {
+        notice.style.display = 'block';
+        notice.querySelector('.points-earned').textContent = pointsEarned;
+      }
+
+      // Reset result so the student cannot claim points multiple times for one win
+      lastMathGameResult = null;
     }
 
     // Fun Game Integration Functions
+    let lastFunGameResult = null;
+
     function startFunGame() {
       document.getElementById('funGameModal').style.display = 'block';
       // Reset completion notice
@@ -2541,10 +2640,56 @@
         notice.style.display = 'none';
       }
       
+      // Disable save button until game is actually completed
+      const funSaveBtn = document.querySelector('button[onclick="saveFunGameSession()"]');
+      if (funSaveBtn) {
+        funSaveBtn.disabled = true;
+        funSaveBtn.style.opacity = '0.5';
+        funSaveBtn.style.cursor = 'not-allowed';
+      }
+      
+      // Add message listener for game completion
+      function handleGameMessage(event) {
+        // Check if this is a game completion message from the fun game
+        if (event.data && event.data.type === 'gameCompleted' && event.data.game === 'funGames') {
+          const score = event.data.score || 'Completed';
+          const pointsEarned = event.data.points || 0;
+          const passed = event.data.passed === true || pointsEarned > 0;
+
+          if (!passed) {
+            alert('You completed the Fun Game but did not pass. Try again to earn points!');
+            // Keep save button disabled since this is not a win
+            return;
+          }
+
+          // Store result so Save button can award points only after a real win
+          lastFunGameResult = { score, pointsEarned };
+
+          alert(`Fun Games completed! You can now save your session and earn ${pointsEarned} points.`);
+
+          // Enable save button now that the game is completed AND passed
+          const funSaveBtn = document.querySelector('button[onclick="saveFunGameSession()"]');
+          if (funSaveBtn) {
+            funSaveBtn.disabled = false;
+            funSaveBtn.style.opacity = '1';
+            funSaveBtn.style.cursor = 'pointer';
+          }
+
+          // Remove the event listener after handling the message
+          window.removeEventListener('message', handleGameMessage);
+        }
+      }
+      
+      // Add the event listener
+      window.addEventListener('message', handleGameMessage);
+      
       // Reload iframe to start fresh game
       const iframe = document.getElementById('funGameFrame');
       if (iframe) {
-        iframe.src = iframe.src;
+        // Set the src after a small delay to ensure the iframe is ready
+        setTimeout(() => {
+          iframe.src = iframe.src;
+        }, 100);
       }
     }
 
@@ -2553,20 +2698,35 @@
     }
 
     function saveFunGameSession() {
-      // Calculate points earned (base 40 points for completion)
-      const pointsEarned = 40;
+      // Only allow saving if the game has actually been completed
+      if (!lastFunGameResult) {
+        alert('Please complete the Fun Games before saving your session.');
+        return;
+      }
+
+      const pointsEarned = lastFunGameResult.pointsEarned || 40;
+      const score = lastFunGameResult.score || 'Completed';
       
       // Show completion notification
       alert(`Fun Games completed! You earned ${pointsEarned} points.`);
       
-      // Update student points
-      updateStudentGamePoints(pointsEarned);
+      // Update student points using the points manager
+      if (window.gamePointsManager) {
+        window.gamePointsManager.addPoints(pointsEarned, 'Fun Games');
+      }
+      // Update daily stats cards
+      incrementDailyGameStats(pointsEarned);
+      // Accumulate into rewards total points
+      incrementTotalPoints(pointsEarned);
       
       // Add to game activity
-      addGameActivity('Fun Games', pointsEarned, 'Completed');
+      addGameActivity('Fun Games', pointsEarned, score);
       
       // Close the game
       closeFunGame();
+
+      // Reset result so the student cannot claim points multiple times for one win
+      lastFunGameResult = null;
     }
 
     function initializeGameProgress() {
@@ -2690,38 +2850,59 @@
     }
 
     async function markGameCompleted() {
-      // Only allow if all difficulties are completed
-      if (gameProgress.completedDifficulties.length !== 3) {
-        alert('Please complete all difficulty levels (Easy, Medium, Hard) before marking as completed!');
-        return;
-      }
-      
-      const pointsEarned = gameProgress.roundPoints;
-      
       try {
-        // Save game session to database
-        await saveGameSession('Memory Game', pointsEarned, gameProgress.currentRound);
+        const iframe = document.getElementById('memoryGameFrame');
+        const gameWindow = iframe && iframe.contentWindow;
+        const memoryGame = gameWindow && gameWindow.memoryGame;
         
-        // Update daily game stats
-        const today = new Date().toDateString();
-        if (!dailyGameStats[today]) {
-          dailyGameStats[today] = { gamesPlayed: 0, totalPoints: 0 };
+        if (!memoryGame) {
+          alert('Game data not available. Please try again.');
+          return;
         }
-        dailyGameStats[today].gamesPlayed++;
-        dailyGameStats[today].totalPoints += pointsEarned;
         
-        // Update points display
-        updatePointsDisplay();
+        // Only allow save if the game has finished and a final score exists
+        if (memoryGame.gameStarted || !memoryGame.score || memoryGame.score <= 0) {
+          alert('Please finish your current game before saving your session.');
+          return;
+        }
+
+        // Points now depend ONLY on final high score:
+        // 1000+ => 10 points, 2000+ => 20 points, 3000+ => 30 points
+        const finalScore = memoryGame.score || 0;
+
+        // Treat scores below 1000 as a failed game - no save, no points
+        if (finalScore < 1000) {
+          alert('You need to reach at least 1000 score to pass and earn points. Please try again.');
+          return;
+        }
+
+        let pointsEarned = 0;
+        if (finalScore >= 3000) {
+          pointsEarned = 30;
+        } else if (finalScore >= 2000) {
+          pointsEarned = 20;
+        } else if (finalScore >= 1000) {
+          pointsEarned = 10;
+        }
         
-        // Prepare for next round
-        gameProgress.currentRound++;
-        gameProgress.completedDifficulties = [];
-        gameProgress.roundPoints = 0;
+        // Save game session to database with the actual final score
+        await saveGameSession('Memory Game', pointsEarned, memoryGame.score);
         
-        alert(`Round completed! You earned ${pointsEarned} points. Starting Round ${gameProgress.currentRound}!`);
+        // Update points using the shared points manager
+        if (window.gamePointsManager) {
+          window.gamePointsManager.addPoints(pointsEarned, 'Memory Game');
+        }
+        // Update daily stats cards
+        incrementDailyGameStats(pointsEarned);
+        // Accumulate into rewards total points
+        incrementTotalPoints(pointsEarned);
         
-        // Reset for next round
-        playAgain();
+        // Add to recent game activity UI
+        if (typeof addGameActivity === 'function') {
+          addGameActivity('Memory Game', pointsEarned, `Score ${memoryGame.score}`);
+        }
+        
+        alert(`Game completed! You earned ${pointsEarned} points.`);
         
       } catch (error) {
         console.error('Error marking game as completed:', error);
@@ -2737,6 +2918,7 @@
         activityList.innerHTML = '';
       }
       
+      const timestamp = new Date().toISOString();
       const activityItem = document.createElement('div');
       activityItem.className = 'game-activity-item';
       activityItem.innerHTML = `
@@ -2746,16 +2928,37 @@
         <div class="activity-content">
           <div class="activity-title">${gameName}</div>
           <div class="activity-details">Score: ${score} • Points: +${pointsEarned}</div>
-          <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+          <div class="activity-time">${new Date(timestamp).toLocaleTimeString()}</div>
         </div>
       `;
       
       activityList.insertBefore(activityItem, activityList.firstChild);
       
-      // Keep only last 5 activities
+      // Keep only last 5 activities in DOM
       const activities = activityList.querySelectorAll('.game-activity-item');
       if (activities.length > 5) {
         activities[activities.length - 1].remove();
+      }
+
+      // Also persist a compact list per student in localStorage for refresh fallback
+      try {
+        if (currentStudent && currentStudent.id) {
+          const key = `recentGameActivities_${currentStudent.id}`;
+          const existingRaw = localStorage.getItem(key);
+          const existing = existingRaw ? JSON.parse(existingRaw) : [];
+
+          const newEntry = {
+            gameName,
+            pointsEarned,
+            score,
+            timestamp
+          };
+
+          const updated = [newEntry, ...existing].slice(0, 5);
+          localStorage.setItem(key, JSON.stringify(updated));
+        }
+      } catch (e) {
+        console.log('Error caching recent game activity:', e?.message);
       }
     }
 
@@ -2826,13 +3029,58 @@
       }
     }
 
-    // Load game activity from database
+    // Load game activity from database, with localStorage fallback per student
     async function loadGameActivity() {
       if (!currentStudent) return;
-      
+      const activityList = document.getElementById('gameActivityList');
+
+      // Helper to render a list of simple cached entries
+      const renderCachedActivities = () => {
+        try {
+          const key = `recentGameActivities_${currentStudent.id}`;
+          const raw = localStorage.getItem(key);
+          const cached = raw ? JSON.parse(raw) : [];
+
+          if (!cached.length) {
+            activityList.innerHTML = `
+              <div class="empty-activity">
+                <i class="fas fa-gamepad"></i>
+                <p>No games played yet</p>
+                <small>Start playing games to see your activity here</small>
+              </div>
+            `;
+            return;
+          }
+
+          activityList.innerHTML = '';
+          cached.forEach(entry => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'game-activity-item';
+            const timeAgo = getTimeAgo(new Date(entry.timestamp));
+
+            activityItem.innerHTML = `
+              <div class="activity-icon">
+                <i class="fas fa-brain"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">${entry.gameName}</div>
+                <div class="activity-details">Score: ${entry.score} • Points: +${entry.pointsEarned}</div>
+                <div class="activity-time">${timeAgo}</div>
+              </div>
+            `;
+            activityList.appendChild(activityItem);
+          });
+        } catch (e) {
+          console.log('Error rendering cached game activity:', e?.message);
+        }
+      };
+
       try {
         // Use the already initialized supabase client
-        if (!supabase) return;
+        if (!supabase) {
+          renderCachedActivities();
+          return;
+        }
         
         const { data: sessions, error } = await supabase
           .from('game_sessions')
@@ -2844,45 +3092,64 @@
           .order('created_at', { ascending: false })
           .limit(5);
         
-        if (error) throw error;
-        
-        const activityList = document.getElementById('gameActivityList');
-        
-        if (!sessions || sessions.length === 0) {
-          activityList.innerHTML = `
-            <div class="empty-activity">
-              <i class="fas fa-gamepad"></i>
-              <p>No games played yet</p>
-              <small>Start playing games to see your activity here</small>
-            </div>
-          `;
+        if (error) {
+          console.error('Error loading game activity from Supabase:', error);
+          renderCachedActivities();
           return;
         }
         
+        if (!sessions || sessions.length === 0) {
+          // No sessions in DB yet, fall back to local cache (or empty state)
+          renderCachedActivities();
+          return;
+        }
+        
+        // Render from Supabase
         activityList.innerHTML = '';
+        const compactCache = [];
         
         sessions.forEach(session => {
           const activityItem = document.createElement('div');
           activityItem.className = 'game-activity-item';
           
-          const timeAgo = getTimeAgo(new Date(session.created_at));
+          const createdAt = new Date(session.created_at);
+          const timeAgo = getTimeAgo(createdAt);
+          const displayName = session.games?.name || session.game_type || 'Game';
+          const score = session.score || 'N/A';
+          const pts = session.points_earned || 0;
           
           activityItem.innerHTML = `
             <div class="activity-icon">
               <i class="fas fa-brain"></i>
             </div>
             <div class="activity-content">
-              <div class="activity-title">${session.games.name}</div>
-              <div class="activity-details">Score: ${session.score || 'N/A'} • Points: +${session.points_earned}</div>
+              <div class="activity-title">${displayName}</div>
+              <div class="activity-details">Score: ${score} • Points: +${pts}</div>
               <div class="activity-time">${timeAgo}</div>
             </div>
           `;
           
           activityList.appendChild(activityItem);
+
+          compactCache.push({
+            gameName: displayName,
+            pointsEarned: pts,
+            score,
+            timestamp: createdAt.toISOString()
+          });
         });
+
+        // Refresh local cache from latest Supabase data
+        try {
+          const key = `recentGameActivities_${currentStudent.id}`;
+          localStorage.setItem(key, JSON.stringify(compactCache.slice(0, 5)));
+        } catch (e) {
+          console.log('Error caching Supabase game activity:', e?.message);
+        }
         
       } catch (err) {
         console.error('Error loading game activity:', err);
+        renderCachedActivities();
       }
     }
 
@@ -2915,6 +3182,59 @@
       
       // Load game activity from database
       await loadGameActivity();
+    }
+
+    // Helper: increment today's game stats (points and games played)
+    function incrementDailyGameStats(pointsEarned) {
+      if (!currentStudent) return;
+      const today = new Date().toDateString();
+      const pointsKey = `dailyGamePoints_${currentStudent.id}_${today}`;
+      const gamesKey = `gamesPlayed_${currentStudent.id}_${today}`;
+
+      const currentPoints = parseInt(localStorage.getItem(pointsKey)) || 0;
+      const currentGames = parseInt(localStorage.getItem(gamesKey)) || 0;
+
+      const newPoints = currentPoints + (pointsEarned || 0);
+      const newGames = currentGames + 1;
+
+      localStorage.setItem(pointsKey, newPoints.toString());
+      localStorage.setItem(gamesKey, newGames.toString());
+
+      const pointsEl = document.getElementById('dailyGamePoints');
+      const gamesEl = document.getElementById('gamesPlayedToday');
+      if (pointsEl) pointsEl.textContent = newPoints;
+      if (gamesEl) gamesEl.textContent = newGames;
+    }
+
+    // Helper: accumulate game points into Rewards "Total Points" using a strict conversion
+    // 2000 game points = 20 reward points, 4000 = 40, etc. (1 reward point per 100 game points)
+    function incrementTotalPoints(pointsEarned) {
+      if (!pointsEarned || pointsEarned <= 0) return;
+
+      // Convert raw game points to reward points
+      const rewardIncrement = Math.floor(pointsEarned / 100);
+      if (rewardIncrement <= 0) return; // Not enough game points this time to grant a full reward point
+
+      const totalEl = document.getElementById('totalPoints');
+      if (!totalEl) return;
+
+      const currentDisplay = (totalEl.textContent || '0').replace(/,/g, '');
+      const currentTotal = parseInt(currentDisplay, 10) || 0;
+      const newTotal = currentTotal + rewardIncrement;
+
+      totalEl.textContent = newTotal.toLocaleString();
+
+      // Keep cachedStudentPoints in sync for reloads
+      try {
+        const cachedRaw = localStorage.getItem('cachedStudentPoints');
+        const cached = cachedRaw ? JSON.parse(cachedRaw) : {};
+        cached.total_points = newTotal;
+        cached.points_this_month = cached.points_this_month || 0;
+        cached.updated_at = new Date().toISOString();
+        localStorage.setItem('cachedStudentPoints', JSON.stringify(cached));
+      } catch (e) {
+        console.log('Error updating cachedStudentPoints:', e?.message);
+      }
     }
 
     // Load student data when page loads - use the existing DOMContentLoaded function instead
